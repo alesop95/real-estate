@@ -1,0 +1,10 @@
+{
+  "autoMemoryEnabled": false,
+  "permissions": {
+    "allow": [
+      "Bash(python tools/valuta.py:*)",
+      "Bash(python -m pytest:*)",
+      "Read(//e/real-estate/**)"
+    ]
+  }
+}

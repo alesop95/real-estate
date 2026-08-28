@@ -1,0 +1,102 @@
+# real-estate
+
+> Istruzioni di team, versionate. Questo file e' l'indice del progetto: indicizza i soli file satellite tracciati e descrive la procedura di ripresa. Le preferenze personali vivono in `CLAUDE.local.md`, ignorato da git, non qui.
+
+## Cos'e' questo progetto
+
+Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel con formule vive, quindi interattivo, che copre il costo reale dell'operazione, il mutuo, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilita', la checklist delle verifiche legali e tecniche e il registro degli immobili in valutazione.
+
+Il perimetro e' deliberatamente definito. Sono coperti l'acquisto da privato e da impresa con IVA, la prima casa e le altre, l'acquisto in quota da parte di piu' soggetti, la nuova costruzione con le tutele del d.lgs. 122/2005. Non e' coperta la ristrutturazione come progetto a se', per scelta esplicita; resta invece modellata la ristrutturazione periodica di fine ciclo, perche' e' un costo ricorrente e ignorarlo falsa il rendimento.
+
+Il progetto adotta il sistema di progetto portabile del template `E:\template-claude-developing`, nella forma minima che serve a questo obiettivo: memoria e schede di contesto versionate, regole modulari, nessun pacchetto opzionale.
+
+## Contesto operativo
+
+```
+OS sviluppo:    Windows
+Python:         3.13, dipendenza unica openpyxl
+Verifica Excel: automazione COM tramite PowerShell, richiede Excel installato
+LLM locale:     Ollama, opzionale; host in OLLAMA_HOST, default http://localhost:11434
+Identita' git:  da impostare locale al repository, vedi CLAUDE.local.md
+```
+
+L'identita' git, l'indirizzo dell'istanza Ollama e il remoto sono specifici della macchina e vivono in `CLAUDE.local.md`, che non e' versionato. Questo file, che finisce in una repository pubblica, non porta indirizzi di posta, recapiti, indirizzi di rete interni ne' percorsi personali.
+
+## Procedura di ripresa in una sessione nuova
+
+Lo stato del progetto e' interamente recuperabile su disco. Si legge per primo `.claude/memory/index.md`, che da' branch, stato di verifica di ogni scheda e punto di ripresa. Si legge poi `.claude/context/current-work.md` se c'e' una feature attiva. Le schede di dominio sotto `docs/` si aprono solo quando il task tocca la materia che descrivono, mai tutte insieme. Il registro `.claude/memory/progress.md` e quello delle decisioni `.claude/memory/decisions.md` forniscono storia e motivazioni quando servono.
+
+Prima di toccare un parametro fiscale si legge `docs/fonti.md` e si verifica la fonte: nessun numero entra nel modello senza una fonte citata e una data di verifica.
+
+## Comandi
+
+```
+python tools/valuta.py excel --con-annunci        genera il workbook e vi riversa gli annunci
+python tools/valuta.py riepilogo --prezzo ...      calcolo rapido a video, senza Excel
+python tools/valuta.py annunci elenca              registro degli immobili in valutazione
+python tools/valuta.py annunci importa --file ...  struttura un annuncio col modello locale
+python tools/valuta.py tassi --tasso 0.032        tassi correnti di mercato e confronto
+python tools/valuta.py omi cerca --comune ...      quotazioni OMI della zona
+python tools/valuta.py llm stato                   raggiungibilita' del modello locale
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
+```
+
+L'ultimo comando e' la verifica del workbook: apre il file con Excel, forza il ricalcolo completo e segnala ogni cella in errore. Va eseguito dopo ogni modifica a `excel_builder.py`, perche' la libreria che genera il file scrive le formule ma non le valuta. I test automatici si eseguono con `python -m pytest tests`, oppure lanciando direttamente i due file se pytest non e' installato.
+
+Il materiale personale, cioe' il dossier delle trattative, i riferimenti di terzi e i segnalibri, vive sotto `_notes/` ed e' interamente ignorato da git. La mappa di cosa contiene, con trascritta l'informazione dei file che sono vuoti e la portano nel nome, sta in `_notes/INDICE-MATERIALE.md`.
+
+## Indice dei file satellite tracciati
+
+Documenti pubblici, in radice.
+
+```
+README.md    descrizione del progetto per chi lo incontra la prima volta
+LICENSE      licenza MIT, con la nota che delimita cosa la licenza non garantisce
+```
+
+Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice.
+
+```
+docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
+                              detrazione degli interessi, plusvalenza, IMU
+docs/fiscalita-locazione.md  i quattro regimi a confronto, novita' 2026 sulle locazioni
+                              brevi, oneri della registrazione, rischi non catturati
+docs/due-diligence.md        verifiche per fase, conformita' catastale e urbanistica,
+                              Salva Casa, clausole della proposta, condominio, costruttore
+docs/metodo-e-metriche.md    scelte metodologiche, denominatore dei rendimenti, metriche
+                              e loro lettura, limiti dichiarati del modello
+docs/raccolta-annunci.md     registro degli annunci, vincoli dell'acquisizione automatica,
+                              quotazioni OMI, riconoscimento dei duplicati
+docs/fonti.md                registro completo delle fonti, con stato di verifica
+```
+
+Memoria e meta-stato, sotto `.claude/memory/`, letti sempre a inizio sessione.
+
+```
+.claude/memory/index.md       snapshot e tabella di sincronizzazione, da leggere per primo
+.claude/memory/progress.md    work-log append-only di passi e riconciliazioni
+.claude/memory/decisions.md   registro ADR-lite delle decisioni
+```
+
+Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
+
+```
+.claude/context/STACK.md                stack, moduli, flussi di codice
+.claude/context/design-and-security.md  paradigmi di design e limiti legali dell'acquisizione
+.claude/context/deployment.md           ambiente, esecuzione, aggiornamento fiscale annuale
+.claude/context/dev-testing.md          come si verifica il modello, doppia implementazione
+.claude/context/current-work.md         feature attiva, definition of done, domande aperte
+.claude/context/roadmap.md              direzione e priorita'
+```
+
+Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.
+
+## Vincoli di team
+
+Le operazioni di `git add`, commit e push restano manuali dell'utente: l'agente prepara i file, non committa. L'identita' git va impostata a livello locale del repository secondo `.claude/rules/git-identity-and-repo.md`. Lo stile di documentazione e di interazione e' quello di `.claude/rules/interaction-style.md`, e vale per ogni file scritto qui dentro. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
+
+Il materiale personale, raccolto sotto `_notes/` dopo il riordino del 28 agosto 2026, non e' versionato e non va pubblicato: contiene documentazione di trattative reali, fogli di calcolo di terzi e conversazioni. Nemmeno `data/annunci.csv` entra in git, perche' porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che e' la propria strategia di acquisto e non ha ragione di stare in una repository pubblica.
+
+## Avvertenza sul contenuto
+
+Il progetto produce uno strumento di analisi personale, non una consulenza fiscale, legale o finanziaria. Le aliquote implementate sono quelle vigenti alla data di revisione dichiarata in `src/immobiliare/parametri.py` e cambiano con ogni legge di bilancio. Prima di qualunque firma le posizioni soggettive vanno confermate da un notaio e da un commercialista, e la conformita' urbanistica da un tecnico abilitato.

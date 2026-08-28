@@ -1,0 +1,13 @@
+[project]
+name = "valutazione-immobiliare"
+version = "1.0.0"
+description = "Valutazione di un investimento immobiliare residenziale in Italia, con workbook Excel a formule vive"
+requires-python = ">=3.11"
+dependencies = ["openpyxl>=3.1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,32 @@
+# File personali e locali, non condivisi nel repository
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Livello privato e verboso. Qui vive tutto il materiale che non va pubblicato: il
+# dossier delle trattative reali sotto dossier/, i fogli di calcolo di terzi scaricati
+# come riferimento sotto riferimenti/, i segnalibri, e gli appunti di lavorazione.
+# La mappa di cosa contiene sta in _notes/INDICE-MATERIALE.md, anch'esso ignorato.
+_notes/
+
+# Artefatti generati, che si ricostruiscono dal codice e non vanno versionati.
+output/
+
+# L'archivio degli annunci resta locale: contiene i link agli immobili in trattativa,
+# il nome dell'agenzia e i prezzi obiettivo, cioe' la propria strategia di acquisto,
+# che non ha ragione di finire in una repository pubblica. Chi lavora in un repository
+# privato tolga questa riga.
+data/annunci.csv
+
+# Quotazioni OMI scaricate: grandi e rigenerabili con `python tools/valuta.py omi scarica`.
+data/omi/
+
+# Artefatti Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Artefatti di sistema operativo e di sincronizzazione
+Thumbs.db
+desktop.ini
+.DS_Store
