@@ -62,6 +62,7 @@ class Costruttore:
         self.foglio_immobile()
         self.foglio_mutuo()
         self.foglio_ammortamento()
+        self.foglio_simulatore()
         self.foglio_locazione()
         self.foglio_cashflow()
         self.foglio_metriche()
@@ -541,6 +542,171 @@ class Costruttore:
                 ws.cell(row=r, column=col).border = S.BORDO
             r += 1
         ws.freeze_panes = ws.cell(row=prima, column=1)
+
+    # ------------------------------------------------------ simulatore mutuo
+    def foglio_simulatore(self) -> None:
+        """Simulatore del mutuo con rimborsi volontari e percorso del tasso.
+
+        Il foglio Ammortamento risponde alla domanda semplice, cioe' come si spegne
+        il debito se non succede nulla. Questo risponde alle due domande che si
+        fanno davvero durante la vita di un mutuo: che cosa succede se verso denaro
+        in anticipo, e che cosa succede se il tasso si muove.
+
+        L'impianto riprende il foglio "calcolatore mutuo" di Paolo Coletti, che
+        ricalcola la rata mese per mese sul debito residuo effettivo: e' l'unico
+        modo di rappresentare correttamente un rimborso volontario, perche' dopo un
+        versamento straordinario o la rata scende, a parita' di durata, o la durata
+        si accorcia, a parita' di rata, e sono due scelte diverse che si dichiarano
+        alla banca.
+
+        Sulla conversione del tasso annuo in mensile convivono due convenzioni. Le
+        banche italiane dividono per dodici, ed e' quella usata dal resto del
+        workbook; la conversione finanziariamente esatta e' il tasso equivalente
+        composto. La differenza e' piccola ma non nulla, e qui si sceglie con una
+        cella invece di nasconderla.
+        """
+        ws = self.wb.create_sheet("Simulatore mutuo")
+        ws.sheet_view.showGridLines = False
+        S.larghezze_colonne(ws, {"A": 44, "B": 18, "C": 62})
+        r = S.titolo(
+            ws,
+            1,
+            "Simulatore: rimborsi volontari e percorso del tasso",
+            "Indipendente dal foglio Mutuo, cosi' si puo' provare uno scenario senza toccare l'analisi principale. I valori di partenza sono ripresi da li'.",
+        )
+
+        r = S.sezione(ws, r, "Condizioni di partenza")
+        riga = r
+        r = S.campo(ws, r, "Capitale erogato", "=mutuo_importo", S.EURO, input_utente=True, nota="Ripreso dal foglio Mutuo: si puo' sovrascrivere con un altro importo.")
+        self.nome("sim_capitale", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Durata in mesi", "=durata*12", S.NUMERO, input_utente=True)
+        self.nome("sim_mesi", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Tasso annuo di partenza", "=tasso", S.PERC, input_utente=True)
+        self.nome("sim_tasso", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Conversione del tasso mensile", "banca", input_utente=True, nota="banca per la divisione per dodici, che e' la convenzione dei contratti italiani; composta per il tasso equivalente finanziariamente esatto.")
+        conv = DataValidation(type="list", formula1='"banca,composta"', allow_blank=False)
+        ws.add_data_validation(conv)
+        conv.add(ws.cell(row=riga, column=2))
+        self.nome("sim_convenzione", ws, f"B{riga}")
+        r += 1
+
+        r = S.sezione(ws, r, "Percorso del tasso, per il variabile", secondaria=True)
+        riga = r
+        r = S.campo(ws, r, "Variazione del tasso", 0.0, S.PERC, input_utente=True, nota="Punti percentuali aggiunti o tolti al tasso di partenza. Un punto in piu' su un variabile e' uno scenario ordinario, non estremo.")
+        self.nome("sim_shock", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Mese in cui la variazione entra in vigore", 25, S.NUMERO, input_utente=True, nota="Prima di questo mese vale il tasso di partenza.")
+        self.nome("sim_shock_mese", ws, f"B{riga}")
+        r = S.nota_riga(ws, r, "Per un tasso fisso si lascia la variazione a zero. Per un variabile si prova a spostarla, e la riga della rata massima dice se lo scenario resta sostenibile: e' la sola domanda che conta davvero prima di firmare un variabile.")
+        r = S.nota_riga(ws, r, "Una precisazione che cambia il risultato. Il mutuo a tasso variabile italiano tiene ferma la scadenza e sposta l'aumento sulla rata, quindi per simulare un rialzo dei tassi va scelto sotto l'effetto \"riduci rata\". Con \"riduci durata\" la rata resta quella di partenza e a crescere e' il numero di mesi: e' il funzionamento del mutuo a rata costante e durata variabile, che esiste ma e' meno diffuso, e in caso di forte rialzo puo' allungare il piano oltre la scadenza contrattuale.")
+        r += 1
+
+        r = S.sezione(ws, r, "Rimborsi volontari", secondaria=True)
+        riga = r
+        r = S.campo(ws, r, "Versamento mensile aggiuntivo", 0.0, S.EURO, input_utente=True, nota="Somma che si aggiunge a ogni rata, oltre a quella dovuta.")
+        self.nome("sim_extra_mese", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Versamento una tantum", 0.0, S.EURO, input_utente=True, nota="Una somma sola, per esempio una liquidazione o un premio.")
+        self.nome("sim_extra_unico", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Mese del versamento una tantum", 37, S.NUMERO, input_utente=True)
+        self.nome("sim_extra_mese_unico", ws, f"B{riga}")
+        riga = r
+        r = S.campo(ws, r, "Effetto del rimborso", "riduci durata", input_utente=True, nota="riduci durata tiene ferma la rata e accorcia il piano; riduci rata tiene ferma la scadenza e abbassa la rata. Va dichiarato alla banca: non lo sceglie il foglio.")
+        eff = DataValidation(type="list", formula1='"riduci durata,riduci rata"', allow_blank=False)
+        ws.add_data_validation(eff)
+        eff.add(ws.cell(row=riga, column=2))
+        self.nome("sim_effetto", ws, f"B{riga}")
+        r = S.nota_riga(ws, r, "Sul se convenga rimborsare in anticipo la regola e' una sola, e non e' quella che si sente ripetere. Non conta che all'inizio si paghino soprattutto interessi: il denaro e' fungibile e ogni mese la scelta e' la stessa, cioe' estinguere adesso oppure pagare gli interessi per rimandare la decisione. Conviene rimborsare se non si trova un impiego che renda, al netto delle imposte, almeno quanto il tasso del mutuo. Restano due argomenti non finanziari: non avere debiti fa dormire meglio, e un mutuo estinto oggi non si riottiene domani.")
+        r += 1
+
+        r = S.sezione(ws, r, "Esito della simulazione", secondaria=True)
+        riga_rata0 = r
+        r = S.campo(ws, r, "Rata iniziale", "=IF(sim_capitale>0,PMT(sim_tasso_mensile,sim_mesi,-sim_capitale),0)", S.EURO_DEC, risultato=True)
+        self.nome("sim_rata_iniziale", ws, f"B{riga_rata0}")
+        riga = r
+        r = S.campo(ws, r, "Tasso mensile applicato", '=IF(sim_convenzione="composta",(1+sim_tasso)^(1/12)-1,sim_tasso/12)', "0.0000%")
+        self.nome("sim_tasso_mensile", ws, f"B{riga}")
+        riga_int = r
+        r = S.campo(ws, r, "Interessi totali pagati", "=SUM(sim_interessi)", S.EURO, risultato=True)
+        riga_base = r
+        r = S.campo(ws, r, "Interessi senza rimborsi volontari", "=sim_rata_iniziale*sim_mesi-sim_capitale", S.EURO, nota="Il piano di partenza, a tasso invariato e senza versamenti aggiuntivi.")
+        riga_risp = r
+        r = S.campo(ws, r, "Interessi risparmiati", f"=B{riga_base}-B{riga_int}", S.EURO, risultato=True, nota="Positivo se i rimborsi volontari, o un tasso in discesa, hanno ridotto il costo del debito.")
+        riga_dur = r
+        r = S.campo(ws, r, "Durata effettiva in mesi", "=COUNTIF(sim_pagato,\">0\")", S.NUMERO, risultato=True, nota="Piu' bassa della durata contrattuale se i rimborsi hanno accorciato il piano.")
+        r = S.campo(ws, r, "Anni risparmiati", f"=(sim_mesi-B{riga_dur})/12", S.NUMERO_DEC)
+        r = S.campo(ws, r, "Rata massima raggiunta", "=MAX(sim_rate)", S.EURO_DEC, risultato=True, nota="Solo la rata dovuta, senza i versamenti volontari. Su un tasso variabile e' il numero che dice se lo scenario e' sostenibile, e va confrontato con il reddito.")
+        r = S.campo(ws, r, "Massimo esborso in un mese", "=MAX(sim_pagato)", S.EURO_DEC, nota="Comprende anche l'eventuale versamento una tantum.")
+        r = S.campo(ws, r, "Totale versato", "=SUM(sim_pagato)", S.EURO)
+        r = S.campo(ws, r, "Costo effettivo annuo", "=IFERROR(IRR(sim_flussi)*12,\"non calcolabile\")", S.PERC, nota="Tasso interno dei flussi del solo mutuo: coincide col nominale se non ci sono rimborsi ne' variazioni di tasso.")
+        r += 1
+
+        intest = ["Mese", "Data", "Tasso annuo", "Tasso mensile", "Debito iniziale",
+                  "Interessi maturati", "Rata dovuta", "Versamento extra", "Totale pagato",
+                  "Quota interessi", "Quota capitale", "Debito residuo", "Flusso"]
+        r = S.intestazioni(ws, r, intest, [8, 13, 13, 13, 16, 16, 14, 14, 14, 14, 14, 16, 14])
+        prima = r
+
+        # Riga zero: erogazione. Serve al tasso interno, che altrimenti non avrebbe
+        # l'incasso iniziale contro cui misurare i pagamenti.
+        ws.cell(row=r, column=1, value=0).number_format = S.NUMERO
+        ws.cell(row=r, column=2, value="=data_erogazione").number_format = S.DATA
+        ws.cell(row=r, column=12, value="=sim_capitale").number_format = S.EURO
+        ws.cell(row=r, column=13, value="=sim_capitale").number_format = S.EURO
+        for col in (6, 9, 10, 11):
+            ws.cell(row=r, column=col, value=0).number_format = S.EURO
+        for col in range(1, 14):
+            ws.cell(row=r, column=col).border = S.BORDO
+            ws.cell(row=r, column=col).fill = S.FILL_CALCOLO
+        r += 1
+
+        for mese in range(1, MAX_RATE + 1):
+            p = r - 1                       # riga precedente
+            attivo = f"$L{p}>0.005"         # finche' resta debito, oltre l'arrotondamento
+            ws.cell(row=r, column=1, value=mese).number_format = S.NUMERO
+            ws.cell(row=r, column=2, value=f"=EDATE(data_erogazione,$A{r})").number_format = S.DATA
+            ws.cell(row=r, column=3, value=f"=sim_tasso+IF($A{r}>=sim_shock_mese,sim_shock,0)").number_format = S.PERC
+            ws.cell(row=r, column=4, value=f'=IF(sim_convenzione="composta",(1+$C{r})^(1/12)-1,$C{r}/12)').number_format = "0.0000%"
+            ws.cell(row=r, column=5, value=f"=IF({attivo},$L{p},0)").number_format = S.EURO_DEC
+            ws.cell(row=r, column=6, value=f"=$E{r}*$D{r}").number_format = S.EURO_DEC
+            # La rata dovuta: costante nella modalita' che accorcia il piano, ricalcolata
+            # sui mesi che restano in quella che abbassa la rata. In entrambi i casi non
+            # puo' superare quanto serve a chiudere il debito.
+            ws.cell(
+                row=r, column=7,
+                value=(
+                    f'=IF(NOT({attivo}),0,MIN($E{r}+$F{r},'
+                    f'IF(sim_effetto="riduci rata",'
+                    f'PMT($D{r},MAX(sim_mesi-$A{r}+1,1),-$E{r}),sim_rata_iniziale)))'
+                ),
+            ).number_format = S.EURO_DEC
+            ws.cell(
+                row=r, column=8,
+                value=(
+                    f"=IF(NOT({attivo}),0,MIN($E{r}+$F{r}-$G{r},"
+                    f"sim_extra_mese+IF($A{r}=sim_extra_mese_unico,sim_extra_unico,0)))"
+                ),
+            ).number_format = S.EURO_DEC
+            ws.cell(row=r, column=9, value=f"=$G{r}+$H{r}").number_format = S.EURO_DEC
+            ws.cell(row=r, column=10, value=f"=MIN($I{r},$F{r})").number_format = S.EURO_DEC
+            ws.cell(row=r, column=11, value=f"=$I{r}-$J{r}").number_format = S.EURO_DEC
+            ws.cell(row=r, column=12, value=f"=MAX(0,$E{r}+$F{r}-$I{r})").number_format = S.EURO_DEC
+            ws.cell(row=r, column=13, value=f"=-$I{r}").number_format = S.EURO_DEC
+            for col in range(1, 14):
+                ws.cell(row=r, column=col).border = S.BORDO
+                ws.cell(row=r, column=col).fill = S.FILL_CALCOLO
+            r += 1
+
+        ultima = r - 1
+        self.nome_intervallo("sim_interessi", ws, f"$J${prima+1}:$J${ultima}")
+        self.nome_intervallo("sim_pagato", ws, f"$I${prima+1}:$I${ultima}")
+        self.nome_intervallo("sim_rate", ws, f"$G${prima+1}:$G${ultima}")
+        self.nome_intervallo("sim_flussi", ws, f"$M${prima}:$M${ultima}")
+        ws.freeze_panes = ws.cell(row=prima, column=3)
 
     # -------------------------------------------------------------- locazione
     def foglio_locazione(self) -> None:
@@ -1123,6 +1289,24 @@ class Costruttore:
             ("Nella proposta", "Natura delle somme versate, acconto o caparra confirmatoria",
              "La caparra confirmatoria da' diritto al doppio in caso di inadempimento del venditore; l'acconto no. La differenza va scritta, non lasciata implicita.",
              "Articolo 1385 del codice civile", "Acquirente e legale", "da fare", ""),
+            ("Mutuo", "Farsi consegnare il PIES di ogni banca interpellata",
+             "Il Prospetto Informativo Europeo Standardizzato e' il documento personalizzato che la banca deve consegnare gratuitamente prima che il cliente sia vincolato, ed e' l'unico modo per confrontare offerte diverse sulla stessa base. Contiene anche una tabella di ammortamento esemplificativa.",
+             "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "da fare", ""),
+            ("Mutuo", "Usare i sette giorni di riflessione sull'offerta vincolante",
+             "Ricevuta l'offerta vincolante il consumatore ha diritto ad almeno sette giorni di riflessione, durante i quali l'offerta resta ferma per la banca e puo' essere accettata in qualsiasi momento. Sono giorni per confrontare, non per aspettare.",
+             "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "da fare", ""),
+            ("Mutuo", "Verificare che il tasso non sia usurario",
+             "Al momento della firma il tasso non puo' superare la soglia d'usura, determinata sul tasso effettivo globale medio pubblicato trimestralmente. E' un controllo di un minuto che si fa una volta sola.",
+             "Banca d'Italia, tassi effettivi globali medi", "Acquirente", "da fare", ""),
+            ("Mutuo", "Confrontare la polizza della banca con il mercato",
+             "La polizza incendio e scoppio e' obbligatoria ma il cliente puo' presentarne una reperita altrove, purche' di protezione equivalente, e la banca deve accettarla. Se si accetta quella proposta dalla banca, il cliente ha diritto di sapere quanta provvigione la compagnia paga alla banca stessa.",
+             "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "da fare", ""),
+            ("Mutuo", "Controllare la propria posizione in Centrale dei Rischi",
+             "L'accesso ai propri dati e' gratuito e si fa online. Una segnalazione dimenticata o una pratica ancora aperta presso un mediatore creditizio pesa sulla delibera: l'incarico di mediazione si puo' revocare per iscritto, e con esso decade la richiesta in corso.",
+             "Banca d'Italia, accesso alla Centrale dei Rischi", "Acquirente", "da fare", ""),
+            ("Mutuo", "Sapere che la portabilita' e' gratuita per legge",
+             "Trasferire il mutuo a un'altra banca, cioe' la surroga, e' per legge senza spese ne' penali, e non richiede il consenso della banca di partenza. In pratica se ne ottiene una nella vita del mutuo: le banche identificano il surrogatore seriale e negano la delibera, e le surroghe hanno spesso spread piu' alti proprio per questo.",
+             "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "n.a.", ""),
             ("Prima del rogito", "Attestato di prestazione energetica",
              "E' obbligatorio allegarlo all'atto e va indicato negli annunci. Determina anche la classe da cui partire per ogni valutazione di adeguamento futuro.",
              "APE in corso di validita'", "Venditore", "da fare", ""),
@@ -1448,6 +1632,7 @@ class Costruttore:
             ("Istituzionale", "Agenzia delle Entrate, registrazione dei contratti di locazione", "Imposta di registro sui canoni, minimi e riduzione per il canone concordato.", P.FONTI["registrazione_locazione"]),
             ("Istituzionale", "Osservatorio del mercato immobiliare, quotazioni", "Prezzi al metro quadro di compravendita e locazione per zona omogenea, semestrali e gratuiti.", P.FONTI["quotazioni_omi"]),
             ("Dati aperti", "ondata, quotazioni immobiliari Agenzia Entrate", "Le stesse quotazioni OMI ripubblicate in CSV pronti all'uso, senza registrazione ai servizi telematici.", P.FONTI["omi_open_data"]),
+            ("Istituzionale", "Banca d'Italia, guida al mutuo ipotecario", "Diritti del cliente in forma ufficiale: PIES, sette giorni di riflessione sull'offerta vincolante, portabilita' gratuita, verifica del tasso d'usura, liberta' di scelta della polizza, accesso alla Centrale dei Rischi.", "https://www.bancaditalia.it/pubblicazioni/guide-bi/guida-mutuo/"),
             ("Istituzionale", "Banca centrale europea, portale dati", "Tassi bancari armonizzati sulle nuove erogazioni per acquisto abitazione in Italia, ed Euribor. Sono la media di quello che le banche hanno davvero applicato, non un tasso pubblicitario. Interrogabili con python tools/valuta.py tassi.", "https://data.ecb.europa.eu/"),
             ("Istituzionale", "Consap, fondo di garanzia per la prima casa", "Garanzia statale fino all'ottanta per cento per under 36 con ISEE entro quarantamila euro, prorogata al 31 dicembre 2027.", P.FONTI["fondo_consap"]),
             ("Tecnica", "Carlo Pagliai, conformita' catastale e urbanistica nelle compravendite", "Differenza fra le due conformita', obblighi di legge, nullita' dell'atto e verifiche da fare.", P.FONTI["conformita_pagliai"]),

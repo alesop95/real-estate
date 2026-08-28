@@ -8,7 +8,7 @@ I parametri fiscali sono quelli in vigore al 28 agosto 2026, con le novita' dell
 
 ## Che cosa produce
 
-Il workbook ha quattordici fogli. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto e Scenari. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
+Il workbook ha quindici fogli. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto e Scenari. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
 
 Il foglio Immobile calcola le imposte di trasferimento nei quattro casi rilevanti, applica la regola prezzo-valore quando spetta, quantifica il valore economico del bonus prima casa mostrando quanto si pagherebbe senza, e arriva al costo totale dell'operazione e alla cassa che serve davvero.
 
@@ -52,6 +52,10 @@ Le quotazioni dell'Osservatorio del mercato immobiliare ancorano i prezzi a un r
 python tools/valuta.py omi scarica --semestre 2018-2
 python tools/valuta.py omi cerca --comune "NOME DEL COMUNE"
 ```
+
+## Le due guide
+
+Chi vuole solo usare il file legge `docs/guida-non-tecnica.md`, che accompagna foglio per foglio spiegando ogni voce in linguaggio comune. Chi interviene sul modello legge `docs/guida-tecnica.md`, che riporta architettura, catena di calcolo e il riferimento di ogni voce con formula, nome definito e norma di riferimento.
 
 ## Requisiti
 

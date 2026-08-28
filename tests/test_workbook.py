@@ -41,7 +41,7 @@ def workbook() -> Path:
 def test_il_workbook_si_genera_con_tutti_i_fogli():
     wb = load_workbook(workbook())
     attesi = [
-        "Guida", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Locazione",
+        "Guida", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Simulatore mutuo", "Locazione",
         "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Checklist",
         "Annunci", "Confronto immobili", "Fonti",
     ]
@@ -61,7 +61,8 @@ def test_nomi_definiti_essenziali_presenti():
         "debito_residuo_anno", "noi_annuo", "utile_locazione", "ricavo_lordo",
         "ricavo_effettivo", "flussi_tir", "flussi_tir_dal_primo",
         "cash_flow_primo_anno", "orizzonte", "data_erogazione", "rend_obiettivo",
-        "ltv_conf", "aliquota_conf", "irpef_marginale",
+        "ltv_conf", "aliquota_conf", "irpef_marginale", "sim_capitale",
+        "sim_rata_iniziale", "sim_flussi", "sim_pagato",
         "accantonamento_ristrutturazione",
     }
     mancanti = essenziali - definiti

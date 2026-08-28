@@ -386,6 +386,8 @@ FONTI = {
     "immobili_da_costruire": "https://www.notaiotassitani.it/tutele-acquisto-immobili-da-costruire/",
     "imu_2026": "https://www.immobiliare.it/news/economia/tasse-imposte-e-normative/quali-sono-le-nuove-aliquote-imu-per-il-2026-500307/",
     "tassi_bce": "https://data.ecb.europa.eu/",
+    "guida_mutuo_bankitalia": "https://www.bancaditalia.it/pubblicazioni/guide-bi/guida-mutuo/",
+    "usura_tegm": "https://www.bancaditalia.it/compiti/vigilanza/compiti-vigilanza/tegm/",
     "coletti_rendita": "https://www.paolocoletti.com/wp-content/uploads/youtube/rendita%20immobiliare.xlsx",
     "coletti_casa_o_affitto": "https://www.paolocoletti.com/wp-content/uploads/youtube/acquisto%20casa%20o%20affitto.xlsx",
     "coletti_mutuo_investimento": "https://www.paolocoletti.com/wp-content/uploads/youtube/mutuo_con_investimento.xlsx",

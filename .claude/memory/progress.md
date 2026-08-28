@@ -2,6 +2,24 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-08-28, chiusura delle fonti arretrate, simulatore del mutuo e guide d'uso
+
+File toccati: `src/immobiliare/excel_builder.py` (foglio Simulatore mutuo, sei voci di checklist, fonte Banca d'Italia), `src/immobiliare/parametri.py`, `tests/test_workbook.py`, `docs/guida-non-tecnica.md` e `docs/guida-tecnica.md` nuovi, `CLAUDE.md`, `README.md`, `_notes/INDICE-MATERIALE.md`.
+
+Materiale locale rimasto indietro, ora letto. Quattordici schermate di thread di r/ItaliaPersonalFinance, che erano l'unica copia di discussioni non piu' raggiungibili dal web perche' il dominio non e' prelevabile; le sottocartelle tematiche si sono rivelate duplicati esatti, verificato per impronta. La guida ufficiale della Banca d'Italia sul mutuo ipotecario, trentasei pagine, da cui sono uscite sei voci di checklist su diritti che quasi nessuno esercita: consegna del PIES, sette giorni di riflessione sull'offerta vincolante, gratuita' di legge della portabilita', verifica della soglia d'usura, liberta' di scelta della polizza, accesso gratuito alla Centrale dei Rischi. Il documento sul rimborso anticipato, con la correzione dell'equivoco per cui converrebbe estinguere presto perche' all'inizio si pagano soprattutto interessi. Il dossier tecnico di un immobile reale e il documento di rinuncia all'incarico di mediazione creditizia, entrambi segnalati nell'indice perche' contengono dati personali di terzi.
+
+Il testo unico regionale del turismo delle Marche non e' stato estratto: il PDF non ha mappa Unicode e il testo esce illeggibile senza riconoscimento ottico. Il quadro sul confine fra locazione turistica non imprenditoriale e attivita' ricettiva e' stato ricostruito dalle fonti in rete.
+
+Coletti, completato. Analizzati anche i fogli che mancavano del calcolatore mutuo, in particolare il Simulatore, che ricalcola la rata mese per mese sul debito residuo e ammette versamenti volontari. Restano fuori `leva.xlsx` e `leva.ipynb`, che riguardano la leva su attivi volatili e non l'immobiliare, e i quattro video segnalati dall'utente, per i quali non esiste trascrizione recuperabile.
+
+Corpus normativo, usato e non solo verificato. Estratti da `E:\legal-consultant` quindici articoli con testo e URN, che sono ora le citazioni della guida tecnica. Due conferme dal testo primario valgono piu' di qualunque sintesi: l'art. 4 del DL 50/2017 prevede il 26 per cento ridotto al 21 per una sola unita' individuata in dichiarazione, e non contempla alcuna aliquota del 30 per cento; l'art. 18 del DPR 601/1973 conferma lo 0,25 per cento sul mutuo prima casa e il 2 per cento negli altri casi.
+
+Nuovo foglio Simulatore mutuo, quindicesimo del workbook. Ricorsione mese per mese con versamenti volontari ricorrenti e una tantum, percorso del tasso con variazione a partire da un mese scelto, e le due modalita' di imputazione del rimborso, riduzione della durata oppure della rata, che vanno dichiarate alla banca e producono risultati molto diversi: sullo stesso versamento di cento euro al mese il risparmio e' di 11.373 euro riducendo la durata contro 6.543 riducendo la rata. Espone anche la scelta della convenzione di conversione del tasso mensile, divisione per dodici come nei contratti italiani oppure tasso equivalente composto. Si autovalida: a versamenti nulli e tasso invariato riproduce esattamente il piano base, con tasso interno pari al nominale.
+
+Scritte le due guide d'uso richieste, una per l'utente non tecnico che accompagna foglio per foglio in linguaggio comune, e una tecnica con architettura, catena di calcolo e riferimento di ogni voce con formula, nome definito e norma.
+
+Verifica: trentanove test verdi, workbook a quindici fogli riaperto con Excel senza celle in errore, scansione dei dati personali sui file tracciati pulita.
+
 ## 2026-08-28, riordino della cartella, colonne del registro e confronto fra immobili
 
 File toccati: `.gitignore`, il riordino di `_notes/`, `_notes/INDICE-MATERIALE.md` e `_notes/RESUME-PROMPT.md` nuovi e ignorati, `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py` nuovo, `.claude/context/deployment.md` nuovo, `LICENSE`, `CLAUDE.local.md` e `.claude/settings.local.json` nuovi e ignorati, `CLAUDE.md`, `README.md`, `docs/raccolta-annunci.md`, `.claude/context/dev-testing.md`, `.claude/context/current-work.md`.
