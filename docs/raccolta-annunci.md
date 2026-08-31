@@ -42,7 +42,18 @@ Le quotazioni dell'Osservatorio del mercato immobiliare danno, per ogni zona omo
 
 Sulle vie di accesso occorre essere precisi, perche' cambiano il modo di usare il modulo. La fornitura ufficiale e aggiornata passa dall'area riservata di Fisconline o Entratel: e' gratuita ma richiede un'autenticazione personale che uno script non puo' e non deve simulare, quindi il file va scaricato a mano una volta a semestre e passato al programma. Il mirror open data mantenuto da ondata, che il modulo sa scaricare da solo, ripubblica la stessa fonte ma si ferma al secondo semestre 2018: serve per ricostruire l'andamento storico di una zona, non per il prezzo di oggi, e il programma lo ricorda a ogni interrogazione. La consultazione puntuale a video sul servizio geopoi dell'Agenzia, infine, resta sempre disponibile senza registrazione ed e' la via piu' rapida per una singola zona.
 
-Il modulo riconosce da solo il formato del file, perche' il mirror usa la virgola come separatore con l'intestazione sulla prima riga mentre la fornitura ufficiale usa il punto e virgola e antepone una riga di metadati, e i numeri hanno la virgola decimale in entrambi i casi.
+Il modulo riconosce da solo il formato del file, perche' il mirror usa la virgola come separatore con l'intestazione sulla prima riga mentre la fornitura ufficiale usa il punto e virgola e antepone una riga di metadati, e i numeri hanno la virgola decimale in entrambi i casi. Riconosce anche la codifica, che e' l'insidia meno visibile: il mirror pubblica gia' in UTF-8, la fornitura ufficiale arriva nella codifica ANSI di Windows, e leggerla come UTF-8 non solleva errori ma sostituisce ogni accento con un segnaposto, rendendo irreperibile alla ricerca per nome proprio il Comune che si sta cercando.
+
+### Il giro semestrale, cinque minuti
+
+La fornitura si scarica due volte l'anno e la procedura e' sempre la stessa. Si accede ai servizi telematici dell'Agenzia con SPID o CIE, si entra nell'area riservata alla voce dei servizi ipotecari e catastali e dell'Osservatorio del mercato immobiliare, si sceglie Forniture dati OMI e poi Quotazioni immobiliari, si indicano semestre e ambito territoriale e si scarica il prodotto. L'archivio ottenuto si passa al programma senza estrarlo.
+
+```
+python tools/valuta.py omi importa --file "<percorso dello zip scaricato>"
+python tools/valuta.py omi cerca --comune "<Comune>"
+```
+
+Il primo comando normalizza i CSV nella cartella di cache, che non e' versionata; il secondo serve a verificare che siano entrati davvero, ed e' il controllo da fare subito perche' un ambito territoriale sbagliato produce un archivio valido che pero' non contiene il Comune di interesse. Le finestre utili sono la primavera per il secondo semestre dell'anno precedente e l'autunno per il primo semestre dell'anno in corso.
 
 Oltre agli intervalli di prezzo, il modulo espone per ogni zona il rendimento lordo implicito, cioe' il canone annuo di zona rapportato al prezzo di zona. E' il metro di paragone piu' onesto per un singolo annuncio: se un immobile promette molto piu' della sua zona, o e' un affare o c'e' qualcosa che non si e' capito, e la seconda ipotesi va esclusa prima di credere alla prima.
 

@@ -24,13 +24,15 @@ Sono state escluse tre strade che sarebbero state naturali. Un'applicazione web 
 
 `stile.py` raccoglie palette, formati numerici e funzioni di composizione delle righe del workbook, cosi' che il cambio di aspetto sia un intervento in un punto solo.
 
-`excel_builder.py` e' il generatore. La classe `Costruttore` tiene il registro dei nomi definiti e costruisce i sedici fogli in sequenza. I riferimenti fra fogli passano sempre per nomi definiti, mai per indirizzi di cella, il che rende le formule leggibili e resistenti allo spostamento delle righe.
+`excel_builder.py` e' il generatore. La classe `Costruttore` tiene il registro dei nomi definiti e costruisce i venti fogli in sequenza, uno per metodo `foglio_*`, nell'ordine dichiarato in `costruisci()`. I riferimenti fra fogli passano sempre per nomi definiti, mai per indirizzi di cella, il che rende le formule leggibili e resistenti allo spostamento delle righe.
 
 `annunci.py` tiene il registro CSV, verifica il `robots.txt`, limita la frequenza delle richieste, riduce l'HTML a testo e riversa nel workbook preservando le colonne di formula.
 
 `omi.py` scarica e interroga le quotazioni dell'Osservatorio, riconoscendo da solo il formato del file fra quello del mirror open data e quello della fornitura ufficiale.
 
 `tassi.py` interroga il portale dati della Banca centrale europea per le statistiche armonizzate sui tassi bancari, serie MIR per le nuove erogazioni in Italia e serie FM per l'Euribor. Non ha chiave ne' registrazione, e traduce lo scarto fra il tasso di un preventivo e la media della sua tipologia in euro di interessi sull'intera durata, che e' l'unica forma in cui un decimo di punto diventa una cifra su cui trattare.
+
+`indicatori.py` legge le due grandezze di contesto che il modello usa come assunzione e che nessuno verifica: l'euro short-term rate, pubblicato dalla BCE ogni giorno lavorativo, e i prezzi al consumo NIC dal servizio SDMX di ISTAT, con l'indice armonizzato della BCE come riscontro incrociato. Ogni valore esce con il suo periodo, perche' su queste serie la data e' meta' dell'informazione: l'euro short-term rate e' di ieri, le serie mensili hanno settimane di ritardo, e il flusso NIC si ferma quando ISTAT ribasa l'indice.
 
 `llm_locale.py` e' un cliente minimale per Ollama, con le due sole chiamate che servono, generazione vincolata a JSON ed embedding. La dipendenza e' opzionale in senso stretto: se l'host non risponde, tutto il resto funziona.
 
@@ -44,6 +46,6 @@ Il foglio degli scenari non usa le tabelle di simulazione di Excel, che la libre
 
 ## Interfaccia a riga di comando
 
-`tools/valuta.py` espone i sottocomandi `excel`, `riepilogo`, `annunci`, `omi`, `tassi`, `llm`. Il file non puo' chiamarsi come il pacchetto, perche' altrimenti l'importazione ricadrebbe su se stesso.
+`tools/valuta.py` espone i sottocomandi `excel`, `riepilogo`, `annunci`, `omi`, `tassi`, `indicatori`, `llm`. Il file non puo' chiamarsi come il pacchetto, perche' altrimenti l'importazione ricadrebbe su se stesso.
 
 Il sottocomando `riepilogo` riproduce a video il calcolo del workbook, e la coincidenza dei due risultati e' il test di regressione principale del progetto. L'unica divergenza voluta riguarda il tasso interno di rendimento, perche' la riga di comando assume un flusso costante mentre il workbook indicizza i costi all'inflazione.

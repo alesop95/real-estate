@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from immobiliare import calcoli as C  # noqa: E402
+from immobiliare import omi as O  # noqa: E402
 from immobiliare import parametri as P  # noqa: E402
 
 
@@ -275,6 +276,101 @@ def test_confronto_reagisce_al_rendimento_del_portafoglio():
     assert alto.patrimonio_affittando > basso.patrimonio_affittando
     assert alto.differenza < basso.differenza
 
+
+def test_omi_legge_la_fornitura_in_codifica_ansi():
+    """La fornitura ufficiale non e' UTF-8, e leggerla male non solleva errori.
+
+    Il mirror open data pubblica file gia' in UTF-8; la fornitura scaricata
+    dall'area riservata arriva nella codifica ANSI di Windows. Decodificarla come
+    UTF-8 sostituendo i caratteri illeciti non fallisce: mette il segnaposto di
+    rimpiazzo al posto di ogni accento, il file si carica, le quotazioni si
+    calcolano, e un Comune accentato diventa irreperibile alla ricerca per nome.
+    E' il modello di difetto che produce un risultato plausibile invece di un
+    errore, cioe' quello contro cui vale la pena scrivere un test.
+    """
+    import tempfile
+
+    accentato = "FORL" + chr(0x00CC)
+    righe = [
+        "QUOTAZIONI IMMOBILIARI - Anno 2026 Semestre 1;;;;;;;;;",
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;Cod_tip;Descr_Tipologia;Stato;"
+        "Compr_min;Compr_max;Loc_min;Loc_max",
+        "NORD-EST;EMILIA ROMAGNA;FC;040012;D704;0;" + accentato + ";B;B1;20;"
+        "Abitazioni civili;NORMALE;1.400;1.900;4,5;6,5",
+    ]
+    percorso = Path(tempfile.gettempdir()) / "omi-fornitura-ansi.csv"
+    percorso.write_bytes(chr(10).join(righe).encode("cp1252"))
+
+    quotazioni = O.carica(percorso)
+    assert len(quotazioni) == 1
+    assert quotazioni[0].comune == accentato, "il nome del Comune e' stato corrotto in lettura"
+    assert chr(0xFFFD) not in quotazioni[0].comune
+
+    # Il separatore decimale italiano e il punto delle migliaia vanno interpretati.
+    assert quotazioni[0].compravendita_min == 1_400
+    assert quotazioni[0].locazione_max == 6.5
+
+    # E il Comune deve restare raggiungibile dalla ricerca per nome.
+    assert len(O.cerca(quotazioni, comune=accentato)) == 1
+
+def test_indicatori_degradano_senza_rete():
+    """Il contratto del modulo e' che una fonte irraggiungibile non propaghi.
+
+    Tutte le funzioni di rete del progetto devono fallire con l'eccezione di
+    dominio, mai con quella del socket, altrimenti il comando cade invece di
+    degradare. Il caso insidioso e' `TimeoutError`, che non discende da
+    `URLError`: una cattura scritta sulla sola `URLError` sembra corretta e
+    lascia passare proprio il fallimento piu' frequente.
+    """
+    import urllib.error
+    import urllib.request
+
+    from immobiliare import indicatori as N
+
+    originale = urllib.request.urlopen
+    for eccezione in (TimeoutError("read timed out"),
+                      urllib.error.URLError("nessuna rete"),
+                      OSError("connessione rifiutata")):
+        def esplode(*a, **k):
+            raise eccezione
+        urllib.request.urlopen = esplode
+        try:
+            for chiamata in (N.estr, N.hicp, N.nic_istat, N.quadro):
+                if chiamata is N.quadro:
+                    # `quadro` assorbe tutto e restituisce cio' che ha raccolto.
+                    assert chiamata() == []
+                else:
+                    try:
+                        chiamata()
+                        raise AssertionError(f"{chiamata.__name__} non ha sollevato nulla")
+                    except N.IndicatoriNonDisponibili:
+                        pass
+        finally:
+            urllib.request.urlopen = originale
+
+
+def test_misure_nic_coprono_indice_e_variazioni():
+    """La mappa delle misure e' il punto in cui il flusso ISTAT diventa leggibile.
+
+    I codici della dimensione MEASURE sono numeri senza significato finche' non
+    li si traduce, e la traduzione e' stata verificata sui valori: a dicembre
+    2025 la misura 7 vale 1,2 per cento e coincide con l'indice armonizzato
+    Italia dello stesso mese letto dalla BCE. Se la mappa perde una voce, il
+    comando stampa un'etichetta generica invece di dire quale sia l'inflazione.
+    """
+    from immobiliare import indicatori as N
+
+    assert set(N.MISURE_NIC) >= {"4", "6", "7"}
+    assert N.MISURE_NIC["7"][0] == "tendenziale"
+    assert N.MISURE_NIC["6"][0] == "congiunturale"
+
+    # La chiave del flusso deve avere tante posizioni quante le dimensioni del
+    # data structure definition: FREQ, REF_AREA, DATA_TYPE, MEASURE, COICOP.
+    assert N.CHIAVE_NIC.count(".") == 4
+
+    campione = N.Osservazione("nic_tendenziale", "prova", "2025-12", 1.2, "fonte")
+    assert abs(campione.frazione - 0.012) < 1e-12
 
 if __name__ == "__main__":
     superati = 0

@@ -1,20 +1,20 @@
 ---
-generated-from-commit: ba9397c
+generated-from-commit: 7307fdc
 generated-from-branch: main
 generated-date: 2026-08-31
 covers-paths:
   - src/**
   - tools/**
   - docs/**
-last-verified-commit: ba9397c
-stato: strumento completo e verificato; lavoro dell'ultima sessione su disco, non committato
+last-verified-commit: 7307fdc
+stato: strumento completo e verificato; resta da committare il solo allineamento della memoria
 ---
 
 # Lavoro in corso
 
 ## Feature: strumento di valutazione completo
 
-Cosa fa. Genera un workbook Excel interattivo di diciannove fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
+Cosa fa. Genera un workbook Excel interattivo di venti fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
 
 ## Definizione di completamento
 
@@ -40,7 +40,9 @@ Cosa fa. Genera un workbook Excel interattivo di diciannove fogli che valuta l'a
 - [x] Guida di avvio da zero
 - [x] Registro delle fonti con l'uso tecnico di ciascuna e le lacune dichiarate
 - [x] Strato didattico: master a sette voci e sette approfondimenti
-- [ ] Commit del lavoro dell'ultima sessione, che spetta all'utente
+- [x] Foglio Dossier tecnico: sessantasei documenti pre-acquisto con norma, peso e costo, inclusa la famiglia delle garanzie legali e delle dichiarazioni in atto
+- [x] Modulo `indicatori.py`: euro short-term rate e prezzi al consumo ISTAT
+- [ ] Commit del lavoro di questa sessione, che spetta all'utente, in entrambi i repository
 
 ## Da fare dopo il commit
 

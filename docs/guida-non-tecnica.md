@@ -154,11 +154,11 @@ Le due verifiche tecniche che vanno fatte da un professionista e che sono spesso
 
 ### Nono, la scheda Dossier tecnico
 
-La Checklist dice che cosa verificare. Questa dice **quali carte ti servono per poterlo verificare**, ed è la lista che un ingegnere o un geometra incaricato manderebbe all'agenzia. Sono cinquantaquattro documenti divisi in otto famiglie: identificazione e titolarità, legittimità urbanistica, struttura e sismica, vincoli, impianti ed energia, condominio, nuova costruzione, occupazione e tributi.
+La Checklist dice che cosa verificare. Questa dice **quali carte ti servono per poterlo verificare**, ed è la lista che un ingegnere e un avvocato incaricati manderebbero all'agenzia. Sono sessantasei documenti divisi in nove famiglie: identificazione e titolarità, legittimità urbanistica, struttura e sismica, vincoli, impianti ed energia, condominio, nuova costruzione, occupazione e tributi, e garanzie legali e dichiarazioni in atto.
 
 Per ciascuno trovi chi lo rilascia, la norma che lo rende dovuto, che cosa prova e che cosa rischi se manca, un costo indicativo, e le colonne gialle per segnare stato, data della richiesta e data di ricezione.
 
-La colonna **Peso** dice quanto pesa l'assenza. *Bloccante* significa che senza quel documento l'atto è nullo, la banca non delibera oppure non si può sapere quanto costa sistemare le cose: ce ne sono ventuno. *Importante* significa che incide sul prezzo o sul rischio. *Se ricorre* significa che dipende dal caso, per esempio la fideiussione del costruttore, che su un usato non c'entra: quelle voci si marcano come non applicabili e spariscono dal conteggio.
+La colonna **Peso** dice quanto pesa l'assenza. *Bloccante* significa che senza quel documento l'atto è nullo, la banca non delibera oppure non si può sapere quanto costa sistemare le cose: ce ne sono ventisette. *Importante* significa che incide sul prezzo o sul rischio. *Se ricorre* significa che dipende dal caso, per esempio la fideiussione del costruttore, che su un usato non c'entra: quelle voci si marcano come non applicabili e spariscono dal conteggio.
 
 Come si usa in pratica. Prima si marcano non applicabili le voci che non c'entrano con l'immobile in questione, poi si manda **una sola mail** con l'elenco di quello che resta, poi si segnano le date man mano che arrivano. In fondo al foglio c'è il completamento del fascicolo e il numero di documenti bloccanti ancora da avere, che compare anche sul Cruscotto.
 

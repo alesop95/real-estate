@@ -182,7 +182,7 @@ Sono gli articoli che governano il passaggio da proposta a rogito, e sono la rag
 
 ### Documentazione tecnica pre-acquisto
 
-Il foglio Dossier tecnico elenca cinquantaquattro documenti in otto famiglie, con peso, chi li rilascia, la norma e il costo indicativo. È costruito da `foglio_dossier()` a partire da una lista di tuple, e i due nomi definiti `documenti_bloccanti_aperti` e `documenti_completamento` alimentano il Cruscotto. La scheda estesa è `docs/perizia-pre-acquisto.md`; qui stanno le sole norme che governano il fascicolo.
+Il foglio Dossier tecnico elenca sessantasei documenti in nove famiglie, con peso, chi li rilascia, la norma e il costo indicativo. È costruito da `foglio_dossier()` a partire da una lista di tuple, e i due nomi definiti `documenti_bloccanti_aperti` e `documenti_completamento` alimentano il Cruscotto. La scheda estesa è `docs/perizia-pre-acquisto.md`; qui stanno le sole norme che governano il fascicolo.
 
 | Voce | Norma | Perché è nel modello |
 |---|---|---|
@@ -200,6 +200,16 @@ Il foglio Dossier tecnico elenca cinquantaquattro documenti in otto famiglie, co
 | Prestazione energetica | D.lgs. 192/2005 | APE in corso di validità, da allegare all'atto e indicare nell'annuncio |
 | Locazione opponibile | Art. 1599 c.c., legge 431/1998 | La locazione con data certa anteriore all'alienazione è opponibile all'acquirente, che subentra nel contratto fino alla scadenza |
 | Provenienza donativa | Artt. 561 e 563 c.c. | Azione di restituzione contro i terzi acquirenti nel termine ventennale dalla trascrizione della donazione; si neutralizza con rinuncia degli aventi diritto o polizza dedicata |
+| Cosa gravata da garanzie reali o vincoli | Art. 1482 c.c. | Il compratore può sospendere il prezzo, far fissare un termine per la liberazione e ottenere la risoluzione con il danno, ma solo se i gravami non erano dichiarati dal venditore ed erano da lui ignorati; se li conosceva resta la sola garanzia per evizione. È la norma che rende la dichiarazione di libertà da gravami un presidio e non una formalità |
+| Oneri e diritti di terzi non apparenti | Art. 1489 c.c. | Servitù non apparenti, comodati, diritti personali di godimento e oneri reali non si trascrivono e non compaiono in ispezione: se non dichiarati nel contratto e ignorati dal compratore, danno risoluzione o riduzione del prezzo |
+| Cancellazione dell'ipoteca | Art. 2882 c.c., art. 40-bis d.lgs. 385/1993 | La cancellazione richiede l'atto di assenso del creditore; nella procedura semplificata la banca rilascia quietanza e comunica al conservatore entro trenta giorni senza oneri, ma l'estinzione non si verifica se comunica entro lo stesso termine che l'ipoteca permane per giustificato motivo ostativo. Si verifica la cancellazione nei registri, non la quietanza |
+| Prelazione dei coeredi | Art. 732 c.c. | Il coerede che aliena la quota a un estraneo deve notificare la proposta agli altri, che hanno due mesi; in mancanza di notificazione possono riscattare la quota dall'acquirente e da ogni successivo avente causa finché dura la comunione ereditaria |
+| Esenzione da revocatoria del preliminare trascritto | Art. 166 c. 3 d.lgs. 14/2019 | Non sono soggetti a revocatoria le vendite e i preliminari trascritti ex art. 2645-bis, i cui effetti non siano cessati, conclusi a giusto prezzo e aventi ad oggetto immobili ad uso abitativo destinati ad abitazione principale dell'acquirente o di parenti e affini entro il terzo grado. Tre condizioni congiunte |
+| Revocatoria ordinaria | Art. 2901 c.c. | Il creditore può far dichiarare inefficace nei suoi confronti l'atto di disposizione pregiudizievole, nel termine di cinque anni. Rileva comprando da un venditore esposto |
+| Vincoli di destinazione trascritti | Artt. 167 e 2645-ter c.c. | Fondo patrimoniale, trust e atti di destinazione limitano la disponibilità del bene e possono richiedere consensi o autorizzazione del giudice, con effetti sui tempi del rogito |
+| Dichiarazione sostitutiva di atto di notorietà | Artt. 47 e 76 DPR 445/2000 | Riguarda stati, qualità e fatti a diretta conoscenza del dichiarante; chi rende dichiarazioni mendaci o forma atti falsi è punito ai sensi del codice penale. È la forma che dà peso a una dichiarazione privata |
+| Dichiarazione su mediazione e mezzi di pagamento | Art. 35 c. 22 DL 223/2006 | Le parti dichiarano in atto le analitiche modalità di pagamento, se si sono avvalse di un mediatore, e importi e mezzi di pagamento della provvigione |
+| Capacità e legittimazione delle parti | Artt. 320, 374 e 2384 c.c. | Minori, interdetti e beneficiari di amministrazione di sostegno richiedono l'autorizzazione del giudice; per una società vanno verificati i poteri del firmatario |
 | Continuità delle trascrizioni | Artt. 2648 e 2650 c.c. | Senza accettazione dell'eredità trascritta la continuità si interrompe e l'atto successivo non produce effetto verso i terzi |
 
 ### Diritti del cliente nel rapporto con la banca
@@ -220,7 +230,7 @@ Per aggiungere una colonna al registro annunci si tocca la dataclass `Annuncio`,
 
 ## Come si verifica
 
-Quattro livelli. La verifica formale del workbook con `tools/verifica-excel.ps1`, che lo apre con Excel, forza il ricalcolo e segnala ogni cella in errore. La bisezione sui fogli quando il file non si apre, generando workbook progressivi. I test automatici, trentanove in due file. E il confronto fra motore Python e workbook sullo stesso caso.
+Quattro livelli. La verifica formale del workbook con `tools/verifica-excel.ps1`, che lo apre con Excel, forza il ricalcolo e segnala ogni cella in errore. La bisezione sui fogli quando il file non si apre, generando workbook progressivi. I test automatici, quaranta in due file. E il confronto fra motore Python e workbook sullo stesso caso.
 
 Due trappole dell'ambiente che fanno perdere tempo. L'automazione COM di Excel espone i metodi nella lingua di installazione, quindi con una console italiana il late binding non risolve `Open` e la chiamata va fatta con `InvokeMember` passando la cultura `en-US`; lo stesso vale per assegnare un valore a una cella. E `openpyxl` ignora l'assegnazione quando si passa `value=None` a `cell()`, per cui azzerare un campo richiede di assegnare sull'attributo.
 

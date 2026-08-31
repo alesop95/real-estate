@@ -127,7 +127,7 @@ python -m pytest tests
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```
 
-Il primo esegue trentanove test sul motore di calcolo e sulla struttura del workbook. Il secondo apre il file con Excel, forza il ricalcolo e segnala ogni cella in errore: serve perché la libreria che genera il file scrive le formule ma non le valuta.
+Il primo esegue quaranta test sul motore di calcolo e sulla struttura del workbook. Il secondo apre il file con Excel, forza il ricalcolo e segnala ogni cella in errore: serve perché la libreria che genera il file scrive le formule ma non le valuta.
 
 Se la rigenerazione fallisce con un errore di permesso, è Excel rimasto aperto da una verifica precedente: va chiuso il processo.
 

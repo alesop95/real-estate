@@ -228,6 +228,13 @@ class Locazione:
     riduzione_base_registro_concordato: float = 0.30
     bollo_per_copia: float = 16.0
 
+    # Sconto tipico del canone concordato rispetto al libero. Non e' un valore di
+    # legge: il canone concordato deriva dall'accordo territoriale del Comune, e la
+    # forbice osservata sta fra il dieci e il venti per cento. Serve come default
+    # dichiarato, perche' confrontare i due regimi allo stesso canone attribuisce al
+    # concordato il vantaggio fiscale senza il costo che lo giustifica.
+    sconto_canone_concordato: float = 0.15
+
     # Durate legali.
     durata_libero: str = "4 + 4"
     durata_concordato: str = "3 + 2"

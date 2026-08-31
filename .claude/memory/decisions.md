@@ -97,3 +97,27 @@ Decisione. Adottato il pacchetto `studio-didattico` del template: `.claude/conte
 Motivazione. Un registro ADR dice cosa si e' deciso; non insegna a riconoscere la classe di difetto. Il caso del moltiplicatore catastale lo dimostra: era identico in Python e in Excel, quindi la doppia implementazione non l'ha intercettato, e il valore sta nel capire perche' un presidio che funziona sugli errori di trascrizione non funziona su un errore concettuale replicato fedelmente.
 
 Conseguenze. Ogni evoluzione strutturale futura aggiunge una voce al master e il suo approfondimento. Il pacchetto e' indicizzato in `CLAUDE.md` e va letto prima di rifare diversamente una scelta che ha gia' un numero.
+
+## ADR-009, il fascicolo dei documenti sta in un foglio separato dalla checklist
+
+Data: 2026-08-31. Stato: accettata.
+
+Contesto. Serviva l'elenco della documentazione tecnica da farsi consegnare in fase di trattativa, al livello di dettaglio con cui la chiederebbe un tecnico incaricato. La Checklist esisteva gia' e conteneva alcune di quelle voci in forma di verifica.
+
+Decisione. Due fogli distinti. La Checklist elenca verifiche e clausole, con il loro perche' e chi le fa. Il Dossier tecnico elenca documenti, con chi li rilascia, la norma che li rende dovuti, il costo indicativo e lo stato della raccolta, e ha una tassonomia propria a tre valori: bloccante, importante, se ricorre.
+
+Motivazione. Le due cose rispondono a domande diverse in due momenti diversi. Le verifiche si chiudono prima di firmare; i documenti si chiedono prima ancora, quando si ha potere negoziale, e senza di essi le verifiche non si possono fare. Unirle avrebbe prodotto una tabella con meta' delle colonne vuote su meta' delle righe, e avrebbe nascosto il contatore che serve davvero, cioe' quanti documenti bloccanti mancano ancora.
+
+Conseguenze. Il Cruscotto porta due contatori invece di uno, le verifiche aperte e i documenti bloccanti mancanti. La tassonomia del peso e' una stringa confrontata da `COUNTIFS`, quindi fragile per costruzione: un test verifica che ogni riga usi uno dei tre valori esatti, perche' un valore scritto diversamente sparirebbe dal conteggio senza errore e il cruscotto direbbe che non manca nulla.
+
+## ADR-010, dai progetti senza licenza si prende l'informazione, non il codice
+
+Data: 2026-08-31. Stato: accettata.
+
+Contesto. Il bot Telegram open source `finanza-che-conta` pubblica l'euro short-term rate ogni lunedi' e l'inflazione ISTAT a ogni comunicato, ed e' la fonte da cui e' stato individuato l'identificativo del flusso SDMX dei prezzi al consumo, che la documentazione di ISTAT non rende facile trovare. Il repository, pero', non dichiara alcuna licenza.
+
+Decisione. Nessun codice ripreso. Il modulo `indicatori.py` e' scritto da zero sullo stesso endpoint pubblico, e il credito e' dato nella docstring e nel registro delle fonti per la scoperta della fonte, non per il codice.
+
+Motivazione. L'assenza di licenza non significa dominio pubblico ma il contrario: ogni diritto e' riservato all'autore, e la pubblicazione su una piattaforma non concede alcun permesso di riuso. Un endpoint pubblico, invece, e' un fatto: sapere che ISTAT espone i prezzi al consumo al flusso `167_744_DF_DCSP_NIC1B2015_1` non e' materiale protetto, e' un'informazione.
+
+Conseguenze. La regola vale in generale per questo progetto: prima di riprendere codice da una fonte esterna si guarda la licenza, e in sua assenza si riscrive. Vale anche il contrario, cioe' che i progetti da cui si e' preso solo il perimetro funzionale restano citati come tali nel registro delle fonti, senza attribuire loro un contributo che non hanno dato.

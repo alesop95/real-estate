@@ -36,6 +36,7 @@ python tools/valuta.py riepilogo --prezzo ...      calcolo rapido a video, senza
 python tools/valuta.py annunci elenca              registro degli immobili in valutazione
 python tools/valuta.py annunci importa --file ...  struttura un annuncio col modello locale
 python tools/valuta.py tassi --tasso 0.032        tassi correnti di mercato e confronto
+python tools/valuta.py indicatori                  euro short-term rate e inflazione ISTAT
 python tools/valuta.py omi cerca --comune ...      quotazioni OMI della zona
 python tools/valuta.py llm stato                   raggiungibilita' del modello locale
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
@@ -95,7 +96,8 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 ```
 .claude/context/STACK.md                stack, moduli, flussi di codice
 .claude/context/design-and-security.md  paradigmi di design e limiti legali dell'acquisizione
-.claude/context/deployment.md           ambiente, esecuzione, aggiornamento fiscale annuale
+.claude/context/deployment.md           ambiente, esecuzione, e le due scadenze ricorrenti:
+                                        fiscale annuale, quotazioni OMI semestrali
 .claude/context/dev-testing.md          come si verifica il modello, doppia implementazione
 .claude/context/current-work.md         feature attiva, definition of done, domande aperte
 .claude/context/roadmap.md              direzione e priorita'

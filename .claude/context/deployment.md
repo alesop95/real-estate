@@ -52,3 +52,26 @@ Se nessuna delle tre risponde, il generatore, il motore di calcolo, il registro 
 L'unica manutenzione prevista e' fiscale, e ha una procedura fissa. Si aggiornano i valori in `src/immobiliare/parametri.py` verificandoli sulle fonti di `docs/fonti.md`, si sposta la costante `REVISIONE` in testa al file, si aggiornano le schede di dominio sotto `docs/` nelle parti impattate, si eseguono i test e la verifica del workbook, e si rigenera.
 
 I test sono la rete di sicurezza di questo passaggio: congelano il caso di riferimento e verificano gli scaglioni IRPEF, il minimo di legge del registro e i moltiplicatori catastali, che sono le tre cose che cambiano piu' spesso e che passerebbero inosservate.
+
+## Manutenzione ricorrente, il promemoria
+
+Le scadenze di questo progetto sono due, e nessuna delle due e' automatizzabile perche' entrambe passano da una fonte che richiede una persona.
+
+**Una volta l'anno, dopo la legge di bilancio: aggiornamento fiscale.** E' la procedura della sezione precedente. Va fatta a gennaio o febbraio, quando la legge di bilancio e' in vigore e le circolari dell'Agenzia sono uscite.
+
+**Due volte l'anno, a semestre chiuso: quotazioni OMI.** Cinque minuti, e vanno messi in calendario perche' altrimenti non si fanno. Il mirror open data che il modulo scarica da solo si ferma al secondo semestre 2018 ed e' utile solo per la serie storica; il dato corrente sta nella fornitura ufficiale, che e' gratuita ma vive dietro un'autenticazione personale con SPID, CIE, Entratel o Fisconline, che uno script non puo' e non deve simulare.
+
+La procedura e' questa, e vale identica ogni volta.
+
+```
+1. https://telematici.agenziaentrate.gov.it, accesso con SPID o CIE
+2. area riservata, Servizi ipotecari e catastali e Osservatorio del mercato immobiliare
+3. Forniture dati OMI, Quotazioni immobiliari
+4. scelta del semestre e dell'ambito territoriale, poi scarico del prodotto
+5. python tools/valuta.py omi importa --file "<percorso dello zip scaricato>"
+6. python tools/valuta.py omi cerca --comune "<Comune>"    per verificare che sia entrato
+```
+
+Il passo cinque normalizza l'archivio nella cartella di cache e riconosce da solo formato e codifica, quindi da li' in avanti tutto si comporta come col mirror. La cartella `data/omi/` non e' versionata: i file scaricati restano locali.
+
+Le date utili sono la primavera per il secondo semestre dell'anno precedente e l'autunno per il primo semestre dell'anno in corso, perche' la pubblicazione arriva qualche mese dopo la chiusura del semestre. Chi tiene un registro di annunci attivo ha una ragione in piu' per non saltare il giro: la colonna dello scarto su OMI del foglio Annunci resta vuota finche' le quotazioni non sono in cache, e senza quella colonna il confronto fra immobili perde il suo unico riferimento indipendente dal prezzo richiesto.

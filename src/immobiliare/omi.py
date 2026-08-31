@@ -87,6 +87,29 @@ def _numero(valore: str) -> float:
         return 0.0
 
 
+def _leggi_testo(percorso: Path) -> str:
+    """Legge un CSV OMI riconoscendo la codifica invece di darla per scontata.
+
+    Il mirror pubblica file gia' in UTF-8 e lo dichiara nel nome. La fornitura
+    ufficiale dell'area riservata arriva invece nella codifica ANSI di Windows, e
+    decodificarla come UTF-8 non solleva alcun errore: sostituisce ogni carattere
+    accentato con il segnaposto di rimpiazzo. Il file si carica, le quotazioni si
+    calcolano, e un Comune come FORLI' o una zona con l'apostrofo diventano
+    irriconoscibili alla ricerca per nome. E' un difetto che non si vede finche'
+    non si cerca proprio quel Comune, quindi si presidia qui.
+    """
+    grezzo = percorso.read_bytes()
+    for codifica in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            testo = grezzo.decode(codifica)
+        except UnicodeDecodeError:
+            continue
+        if "�" not in testo:
+            return testo
+    # Ultima spiaggia: si decodifica comunque, segnalando la perdita.
+    return grezzo.decode("utf-8", errors="replace")
+
+
 def _apri_csv(percorso: Path):
     """Apre un CSV OMI riconoscendo delimitatore e riga di intestazione.
 
@@ -94,7 +117,7 @@ def _apri_csv(percorso: Path):
     la fornitura ufficiale usa il punto e virgola e antepone una riga di metadati.
     Riconoscere entrambi evita di dover spiegare all'utente quale dei due ha in mano.
     """
-    grezzo = percorso.read_text(encoding="utf-8-sig", errors="replace")
+    grezzo = _leggi_testo(percorso)
     righe = grezzo.splitlines()
     indice = 0
     for i, riga in enumerate(righe[:5]):

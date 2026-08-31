@@ -6,12 +6,12 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: ba9397c, foglio Comproprieta' e scenari settabili
+Commit di riferimento: 7307fdc, foglio Dossier tecnico
 Ultimo aggiornamento:  2026-08-31
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 ```
 
-Il lavoro successivo a `ba9397c`, cioe' cruscotto, foglio Rischio, guida da zero, riscrittura del registro delle fonti e strato didattico, e' su disco e non ancora committato: il commit spetta all'utente.
+Non committato: la famiglia delle garanzie legali nel Dossier tecnico, il modulo `indicatori.py` con il comando omonimo, il riconoscimento della codifica nella lettura OMI, il promemoria di manutenzione semestrale, l'allineamento di memoria e schede, ADR-009 e ADR-010. In `E:\legal-consultant` e' pronto e non committato il secondo passaggio di audit sul dominio della compravendita. Il commit spetta all'utente, in entrambi i repository.
 
 ## Stato delle schede
 
@@ -28,22 +28,23 @@ Il lavoro successivo a `ba9397c`, cioe' cruscotto, foglio Rischio, guida da zero
 | `docs/fiscalita-acquisto.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
 | `docs/fiscalita-locazione.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
 | `docs/due-diligence.md` | foglio Checklist | allineata |
+| `docs/perizia-pre-acquisto.md` | foglio Dossier tecnico | allineata, norme lette sui testi primari |
 | `docs/metodo-e-metriche.md` | `src/immobiliare/calcoli.py` | allineata |
 | `docs/raccolta-annunci.md` | `src/immobiliare/annunci.py`, `src/immobiliare/omi.py` | allineata |
 | `docs/comprare-in-piu-persone.md` | foglio Comproprieta' | allineata |
-| `docs/guida-non-tecnica.md` | workbook, tutti i fogli | allineata a diciannove fogli |
-| `docs/guida-tecnica.md` | workbook e `src/**` | allineata a diciannove fogli |
+| `docs/guida-non-tecnica.md` | workbook, tutti i fogli | allineata a venti fogli |
+| `docs/guida-tecnica.md` | workbook e `src/**` | allineata a venti fogli |
 | `docs/fonti.md` | tutte | riscritta con l'uso tecnico di ogni fonte |
 
 ## Che cosa esiste e funziona
 
 Il motore di calcolo in `src/immobiliare/calcoli.py` copre imposte di trasferimento nei quattro casi, prezzo-valore, costo totale dell'operazione, ammortamento alla francese, detrazione degli interessi, conto economico della locazione nei quattro regimi, IMU, plusvalenza, metriche di rendimento, tasso interno di rendimento e confronto fra comprare e affittare.
 
-Il generatore in `src/immobiliare/excel_builder.py` produce un workbook di diciannove fogli, diciotto visibili piu' `_Estrazioni` nascosto, con formule vive e nomi definiti. Si apre sul Cruscotto, che raccoglie i cinque numeri di decisione leggendo solo nomi gia' esistenti e non puo' quindi divergere dal dettaglio. Il foglio Rischio porta una simulazione su mille scenari con estrazioni fisse a seme dichiarato e calcolo vivo, piu' un blocco a tornado. Il foglio Confronto immobili applica il modello a ogni riga del registro annunci. Il file e' stato aperto con Excel, ricalcolato integralmente e verificato: nessuna cella in errore, ricalcolo in sei decimi di secondo. I risultati di sintesi coincidono con quelli del motore Python sullo stesso caso.
+Il generatore in `src/immobiliare/excel_builder.py` produce un workbook di venti fogli, diciannove visibili piu' `_Estrazioni` nascosto, con formule vive e nomi definiti. Si apre sul Cruscotto, che raccoglie i cinque numeri di decisione leggendo solo nomi gia' esistenti e non puo' quindi divergere dal dettaglio. Il foglio Rischio porta una simulazione su mille scenari con estrazioni fisse a seme dichiarato e calcolo vivo, piu' un blocco a tornado. Il foglio Dossier tecnico elenca sessantasei documenti da farsi consegnare in trattativa, ventisette dei quali bloccanti, e riporta sul Cruscotto quanti ne mancano. Il foglio Confronto immobili applica il modello a ogni riga del registro annunci. Il file e' stato aperto con Excel, ricalcolato integralmente e verificato: nessuna cella in errore, ricalcolo in sei decimi di secondo. I risultati di sintesi coincidono con quelli del motore Python sullo stesso caso.
 
-Il registro annunci in `src/immobiliare/annunci.py` legge e scrive un CSV di ventotto campi, riconosce i duplicati per link normalizzato, riversa nel workbook preservando le colonne di formula, e verifica il `robots.txt` prima di ogni prelievo. Il modulo `omi.py` scarica dal mirror open data, importa la fornitura ufficiale e interroga le quotazioni dell'Osservatorio. Il modulo `tassi.py` legge dal portale dati della Banca centrale europea i tassi correnti sulle nuove erogazioni e confronta un preventivo con il mercato. Il modulo `llm_locale.py` parla con Ollama.
+Il registro annunci in `src/immobiliare/annunci.py` legge e scrive un CSV di ventotto campi, riconosce i duplicati per link normalizzato, riversa nel workbook preservando le colonne di formula, e verifica il `robots.txt` prima di ogni prelievo. Il modulo `omi.py` scarica dal mirror open data, importa la fornitura ufficiale e interroga le quotazioni dell'Osservatorio. Il modulo `tassi.py` legge dal portale dati della Banca centrale europea i tassi correnti sulle nuove erogazioni e confronta un preventivo con il mercato. Il modulo `indicatori.py` legge l'euro short-term rate dalla BCE e i prezzi al consumo NIC dal servizio SDMX di ISTAT, per tarare l'inflazione assunta dal modello. Il modulo `llm_locale.py` parla con Ollama.
 
-I test automatici sono trentanove, in due file: trentatre' sul motore di calcolo e sei sulla struttura del workbook. Passano tutti, e la verifica con Excel non trova celle in errore.
+I test automatici sono quarantatre', in due file: trentasei sul motore e sui moduli di dominio e sette sulla struttura del workbook. Passano tutti, e la verifica con Excel non trova celle in errore.
 
 Il materiale personale sta sotto `_notes/`, ignorato da git, con la mappa in `_notes/INDICE-MATERIALE.md`. Nulla di personale e' tracciato.
 

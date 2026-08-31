@@ -34,6 +34,7 @@ sys.path.insert(0, str(RADICE / "src"))
 from immobiliare import annunci as A  # noqa: E402
 from immobiliare import calcoli as C  # noqa: E402
 from immobiliare import excel_builder as E  # noqa: E402
+from immobiliare import indicatori as N  # noqa: E402
 from immobiliare import omi as O  # noqa: E402
 from immobiliare import parametri as P  # noqa: E402
 from immobiliare import tassi as T  # noqa: E402
@@ -139,7 +140,14 @@ def cmd_riepilogo(args) -> int:
             ("cedolare_concordato", "Cedolare concordato 10%"),
             ("irpef_ordinario", "IRPEF ordinaria"),
         ]:
-            canone = args.canone_concordato if regime.endswith("concordato") and args.canone_concordato else args.canone
+            # Senza un canone concordato esplicito si applica lo sconto tipico
+            # dichiarato in `parametri`. Usare lo stesso canone del libero darebbe al
+            # concordato l'aliquota ridotta senza il minor canone che la giustifica,
+            # e lo farebbe vincere sempre: un confronto cosi' non e' un confronto.
+            if regime.endswith("concordato"):
+                canone = args.canone_concordato or args.canone * (1 - P.LOCAZIONE.sconto_canone_concordato)
+            else:
+                canone = args.canone
             gestione = C.Gestione(
                 canone_mensile=canone,
                 regime=regime,
@@ -152,6 +160,12 @@ def cmd_riepilogo(args) -> int:
             # di fine ciclo, che pesa uguale su ogni regime ma va sottratto: ignorarlo
             # gonfia tutti i rendimenti. Vedi ADR-005.
             print(f"  {etichetta:<24}{conto.noi:>12,.0f} EUR{conto.utile_netto:>12,.0f} EUR{conto.utile_netto / costo.costo_totale:>15.2%}".replace(",", "."))
+
+        if not args.canone_concordato:
+            sconto = P.LOCAZIONE.sconto_canone_concordato
+            print(f"  Il canone concordato e' stimato con lo sconto tipico del {sconto:.0%} sul libero,")
+            print(f"  cioe' {args.canone * (1 - sconto):,.0f} EUR al mese. Il valore vero viene dall'accordo".replace(",", "."))
+            print("  territoriale del Comune: si passa con --canone-concordato.")
 
         gestione = C.Gestione(
             canone_mensile=args.canone, regime=args.regime, mesi_sfitto_annui=args.sfitto,
@@ -411,6 +425,60 @@ def cmd_tassi(args) -> int:
     return 0
 
 
+def cmd_indicatori(args) -> int:
+    """Indicatori di contesto: tasso a breve dell'area euro e inflazione italiana.
+
+    Serve a decidere se le due assunzioni piu' pesanti del modello, cioe'
+    l'inflazione attesa e il tasso, siano ancora ragionevoli. Ogni valore esce
+    con il suo periodo, perche' un dato senza data non dice se lo si sta usando
+    come corrente o come reperto.
+    """
+    print("Indicatori di contesto")
+    print()
+
+    righe = []
+    try:
+        e = N.estr()
+        righe.append((e.descrizione, e.periodo, f"{e.valore:.3f}%", "BCE, giornaliero"))
+    except N.IndicatoriNonDisponibili as errore:
+        print(f"  euro short-term rate non disponibile: {errore}")
+
+    for chiave in ("hicp_italia", "hicp_area_euro", "hicp_italia_core"):
+        try:
+            o = N.hicp(chiave)
+            righe.append((o.descrizione, o.periodo, f"{o.valore:.1f}%", "BCE, mensile"))
+        except N.IndicatoriNonDisponibili:
+            pass
+
+    try:
+        for o in N.nic_istat():
+            unita = "" if o.chiave == "nic_indice" else "%"
+            righe.append((o.descrizione, o.periodo, f"{o.valore:.1f}{unita}", "ISTAT, mensile"))
+    except N.IndicatoriNonDisponibili as errore:
+        print(f"  prezzi al consumo ISTAT non disponibili: {errore}")
+
+    if not righe:
+        print("  Nessuna fonte raggiungibile. I valori restano quelli di parametri.py.")
+        return 1
+
+    larghezza = max(len(r[0]) for r in righe)
+    print(f"  {'Indicatore':<{larghezza}}  {'Periodo':<12}{'Valore':>10}   Fonte")
+    print("  " + "-" * (larghezza + 40))
+    for descrizione, periodo, valore, fonte in righe:
+        print(f"  {descrizione:<{larghezza}}  {periodo:<12}{valore:>10}   {fonte}")
+
+    print()
+    print(f"  Inflazione assunta nel modello: {P.FINANZA.inflazione_attesa:.1%}")
+    print("  Si cambia in parametri.py, oppure nella cella gialla del foglio Parametri.")
+    print()
+    print("  Il periodo va guardato. L'euro short-term rate e' del giorno lavorativo")
+    print("  precedente; le serie mensili escono con qualche settimana di ritardo e")
+    print("  ISTAT ribasa il NIC ogni cinque anni, quindi una serie ferma a un dicembre")
+    print("  significa che il dato corrente sta in un flusso diverso, non che l'inflazione")
+    print("  si sia fermata. Il comunicato di riferimento e' su www.istat.it.")
+    return 0
+
+
 def cmd_llm(args) -> int:
     from immobiliare.llm_locale import ClienteLocale, LlmNonDisponibile
 
@@ -509,6 +577,9 @@ def principale(argomenti=None) -> int:
     p.add_argument("--durata", type=int, default=25)
     p.add_argument("--serie", default="fisso_lungo", choices=sorted(T.SERIE_MUTUI), help="tipologia di riferimento")
     p.set_defaults(funzione=cmd_tassi)
+
+    p = sub.add_parser("indicatori", help="tasso a breve e inflazione, per tarare le assunzioni")
+    p.set_defaults(funzione=cmd_indicatori)
 
     p = sub.add_parser("llm", help="stato del modello linguistico locale")
     p.add_argument("azione", choices=["stato"], nargs="?", default="stato")

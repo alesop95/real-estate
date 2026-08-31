@@ -22,7 +22,7 @@ Il foglio Rischio non chiede quanto rende l'immobile ma quanto puo' andare stort
 
 Il foglio Metriche da' rendimento lordo e netto, cap rate, cash on cash, debt service coverage ratio, tasso interno di rendimento e valore attuale netto, tutti calcolati sul costo totale e non sul prezzo. Il foglio Confronto affitto risponde alla domanda su quanto valga comprare rispetto a restare in affitto investendo la differenza. Il foglio Scenari mostra quanto l'esito dipenda dalle assunzioni, che e' la cosa piu' utile che un modello del genere possa fare.
 
-Il foglio Dossier tecnico elenca i cinquantaquattro documenti che un tecnico incaricato chiede all'agenzia o al venditore prima della proposta, divisi in otto famiglie e ciascuno con chi lo rilascia, la norma che lo rende dovuto, che cosa prova, che cosa si rischia se manca e un costo indicativo. Ventuno sono marcati bloccanti, nel senso preciso che senza di essi l'atto e' nullo, il mutuo non si delibera o il costo di regolarizzazione resta ignoto. Il foglio tiene lo stato della raccolta e riporta sul Cruscotto quanti bloccanti mancano ancora.
+Il foglio Dossier tecnico elenca i sessantasei documenti che un tecnico e un legale incaricati chiedono all'agenzia o al venditore prima della proposta, divisi in nove famiglie e ciascuno con chi lo rilascia, la norma che lo rende dovuto, che cosa prova, che cosa si rischia se manca e un costo indicativo. Ventisette sono marcati bloccanti, nel senso preciso che senza di essi l'atto e' nullo, il mutuo non si delibera o il costo di regolarizzazione resta ignoto. Il foglio tiene lo stato della raccolta e riporta sul Cruscotto quanti bloccanti mancano ancora.
 
 ## Come si usa
 
