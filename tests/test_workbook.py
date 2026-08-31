@@ -221,6 +221,32 @@ def test_dossier_tecnico_ha_peso_e_contatori_coerenti():
     formula = ws[cella].value
     assert formula.startswith("=COUNTIFS(") and '"bloccante"' in formula
 
+def test_registro_riletto_non_duplica_gli_annunci():
+    """Rileggere il file da disco deve sostituire, non accodare.
+
+    Il costruttore chiama gia' `carica`, quindi chiamarlo di nuovo per rileggere
+    il file, cosa che viene naturale dopo averlo modificato, raddoppiava
+    l'elenco. Nessun errore: un registro che conta il doppio, un foglio di
+    confronto con le righe ripetute e una graduatoria che sembra piu' ricca di
+    quello che e'. E' il difetto che produce un risultato plausibile.
+    """
+    import tempfile
+
+    from immobiliare import annunci as A
+
+    percorso = Path(tempfile.mkdtemp()) / "annunci.csv"
+    registro = A.Registro(percorso)
+    registro.aggiungi(A.Annuncio(id="x_1", comune="Comune di esempio", mq=50, prezzo_richiesto=100_000))
+    registro.aggiungi(A.Annuncio(id="x_2", comune="Comune di esempio", mq=60, prezzo_richiesto=120_000))
+    registro.salva()
+
+    riletto = A.Registro(percorso)
+    assert len(riletto.annunci) == 2
+    riletto.carica()
+    riletto.carica()
+    assert len(riletto.annunci) == 2, f"il registro si e' duplicato: {len(riletto.annunci)} righe"
+    assert [a.id for a in riletto.annunci] == ["x_1", "x_2"]
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

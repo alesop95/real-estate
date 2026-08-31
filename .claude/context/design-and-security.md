@@ -19,6 +19,18 @@ Il prelievo diretto e' vincolato in tre modi che il codice impone da se'. Il `ro
 
 Non esiste, e non va aggiunto, alcun meccanismo di aggiramento delle protezioni anti bot: nessuna rotazione di identita', nessun browser headless per superare un blocco, nessun servizio di risoluzione di sfide. Se un sito risponde con un blocco, la risposta corretta e' fermarsi. Il valore dello strumento non dipende dal prelievo automatico, e le due vie alternative restano sempre praticabili.
 
+## I servizi autenticati dell'area riservata, e i loro vincoli
+
+Il progetto usa quattro servizi dell'area riservata dell'Agenzia delle Entrate, sempre a mano e mai da programma: le forniture dei dati OMI, le visure e le ispezioni ipotecarie, la consultazione dei valori immobiliari dichiarati e la consultazione dei fogli di mappa. Accedendovi si accettano le condizioni generali per l'accesso diretto ai servizi telematici di consultazione della banca dati catastale, emanate con decreto del direttore dell'Agenzia del Territorio del 4 maggio 2007 e da ultimo integrate con provvedimento del 28 giugno 2017. Da quelle condizioni discendono tre vincoli operativi che vale enunciare, perche' due riguardano il codice e uno riguarda l'uso.
+
+Il primo e' che l'accesso avviene previa autenticazione personale nell'area riservata, e questo chiude la questione dell'automazione: simulare quell'autenticazione significherebbe usare le credenziali di una persona per far interrogare la banca dati a un programma, che e' esattamente il contrario di cio' che l'articolo 2 prevede. E' la stessa conclusione di ADR-004, raggiunta per una via diversa: li' era il `robots.txt` a mancare, qui e' l'autenticazione a esserci.
+
+Il secondo e' l'articolo 5, per cui l'Agenzia si riserva di introdurre limiti al numero di interrogazioni giornaliere per singolo utente. Anche prescindendo dall'autenticazione, un uso automatizzato e ripetuto ricadrebbe nell'uso eccessivo di cui l'articolo 3 rende responsabile l'utente, e l'articolo 4 sanziona la violazione con l'inibizione del servizio. Il rischio, quindi, non e' teorico: e' la perdita dell'accesso.
+
+Il terzo riguarda cosa si fa dei dati una volta ottenuti. L'articolo 3 impegna a usare informazioni e documenti esclusivamente per i fini consentiti dalla legge e nel rispetto della normativa sulla protezione dei dati personali. Valutare l'acquisto di un immobile su cui si sta trattando e' un fine consentito e proporzionato; costruire un archivio, ridistribuire i documenti o consultare immobili estranei alla trattativa non lo sono. Le visure e le ispezioni sul venditore contengono dati personali di terzi, e restano quindi sotto `_notes/`, che non e' versionato, insieme a tutto il materiale della trattativa.
+
+A queste si aggiunge un obbligo specifico della fornitura OMI, che e' gratuita ma richiede di citare la fonte quando i dati vengono usati. La stringa dovuta e' `Agenzia Entrate - OMI`, sta nella costante `omi.ATTRIBUZIONE`, ed e' stampata in coda a ogni interrogazione e dichiarata nel foglio Fonti del workbook accanto alle colonne che ne derivano.
+
 ## I dati che non si raccolgono
 
 Recapiti telefonici, indirizzi email e nomi di venditori privati e di agenti sono dati personali. Non vengono estratti dal prelievo, e il prompt del modello locale contiene l'istruzione esplicita di non riportarli. Il registro raccoglie i soli attributi economici e tecnici dell'immobile, piu' il link alla fonte, che e' il modo corretto di riferirsi al contenuto altrui senza appropriarsene.

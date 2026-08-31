@@ -2,6 +2,28 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-08-31, fornitura OMI 2025/2 acquisita, e tre difetti trovati dal giro reale
+
+File toccati: `src/immobiliare/omi.py`, `src/immobiliare/annunci.py`, `tools/valuta.py`, `tests/test_calcoli.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, `.claude/context/deployment.md`, `.claude/context/design-and-security.md`, `.claude/memory/decisions.md` con ADR-011.
+
+Acquisita la fornitura ufficiale. Richiesta dall'area riservata per la regione Marche, semestre 2025/2, e importata: 22.347 quotazioni su 1.405 Comuni. La cartella `data/omi` contiene ora sia il mirror 2018-2 sia la fornitura 2025/2, e il programma legge la seconda ignorando la prima, che e' esattamente il caso per cui la selezione per semestre e' stata scritta. Il salto di prezzo fra i due semestri e' considerevole: a Civitanova la zona B1 in stato normale passa da 1.300-1.900 a 1.650-3.000 euro al metro quadro, mentre il rendimento lordo implicito resta intorno al cinque per cento, cioe' i canoni hanno seguito i prezzi.
+
+Tre difetti trovati facendo il giro per davvero, tutti della stessa famiglia, quella che produce un risultato plausibile invece di un errore.
+
+Il primo. La lettura della cartella prendeva il solo ultimo file in ordine alfabetico. Chi scarica per provincia si ritrova un file per provincia, e cercare un Comune di un'altra provincia avrebbe risposto "nessuna quotazione", che si legge come "Comune non coperto". Ora vengono letti tutti i file del semestre piu' recente e i periodi superati restano fuori.
+
+Il secondo. Il riconoscimento del semestre leggeva un token di cinque cifre dal nome del file, convenzione del mirror. Se la fornitura ufficiale avesse usato un nome diverso il semestre sarebbe risultato ignoto, si sarebbe ordinato sotto qualunque valore noto, e il programma avrebbe continuato a rispondere con i dati del 2018 senza dire nulla. Aggiunte due vie di ripiego, la riga di metadati e la data di modifica, e la seconda sbaglia al massimo attribuendo il file al semestre corrente, cioe' facendolo vincere invece che perdere. Nel caso concreto il token c'era, ma la difesa resta.
+
+Il terzo. Nella fornitura i nomi dei Comuni non sono scritti come li scrive una persona: convivono SANT con accento grave ELPIDIO A MARE e S BENEDETTO DEL TRONTO abbreviato. Il confronto era letterale, quindi digitando il nome corretto si otteneva zero righe. Ora la normalizzazione collassa apostrofi e prefissi agiografici, e quando comunque non si trova nulla il comando suggerisce i nomi vicini.
+
+Quarto difetto, scoperto interrogando il registro: `Registro.carica` accodava invece di sostituire, e poiche' il costruttore lo chiama gia', rileggere il file da disco raddoppiava l'elenco. Il confronto fra immobili mostrava ogni annuncio due volte. Corretto azzerando la lista in testa al metodo.
+
+Conformita' dell'accesso ai servizi telematici. Verificate le condizioni generali di consultazione della banca dati catastale, decreto 4 maggio 2007 e successive integrazioni. Nessuna violazione: l'accesso e' manuale, il fine e' la valutazione di un acquisto in corso, i documenti restano locali. Era pero' scoperto un obbligo assunto e non assolto, cioe' la citazione della fonte imposta dalla fornitura OMI: aggiunta la costante `omi.ATTRIBUZIONE` con la stringa dovuta, stampata in coda a ogni interrogazione e dichiarata nel foglio Fonti. La decisione e' ADR-011.
+
+Nota di riservatezza. L'archivio scaricato dall'area riservata porta nel nome il codice fiscale del richiedente. Sta in `data/omi`, che e' ignorato da git, e i CSV che ne escono hanno nomi propri privi di dati personali: verificato che nessun file tracciato lo nomini.
+
+Verifica: quarantasette test verdi, workbook rigenerato e riaperto con Excel senza celle in errore.
+
 ## 2026-08-31, garanzie legali nel dossier, indicatori di contesto, promemoria OMI
 
 File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/indicatori.py` nuovo, `src/immobiliare/omi.py`, `tools/valuta.py`, `tests/test_calcoli.py`, `docs/perizia-pre-acquisto.md`, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/raccolta-annunci.md`, `docs/fonti.md`, `README.md`, `CLAUDE.md`, `.claude/context/STACK.md`, `.claude/context/deployment.md`, `.claude/memory/decisions.md` con ADR-010. Fuori progetto, preparato e non committato: `E:\legal-consultant\docs\dominio-compravendita-immobiliare.md`.

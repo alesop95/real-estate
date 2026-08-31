@@ -67,7 +67,8 @@ La procedura e' questa, e vale identica ogni volta.
 1. https://telematici.agenziaentrate.gov.it, accesso con SPID o CIE
 2. area riservata, Servizi ipotecari e catastali e Osservatorio del mercato immobiliare
 3. Forniture dati OMI, Quotazioni immobiliari
-4. scelta del semestre e dell'ambito territoriale, poi scarico del prodotto
+4. semestre, e come ambito territoriale la regione: un raggio di ricerca
+   realistico attraversa piu' province, e la regione costa un giro solo
 5. python tools/valuta.py omi importa --file "<percorso dello zip scaricato>"
 6. python tools/valuta.py omi cerca --comune "<Comune>"    per verificare che sia entrato
 ```

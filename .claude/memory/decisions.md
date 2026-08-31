@@ -121,3 +121,15 @@ Decisione. Nessun codice ripreso. Il modulo `indicatori.py` e' scritto da zero s
 Motivazione. L'assenza di licenza non significa dominio pubblico ma il contrario: ogni diritto e' riservato all'autore, e la pubblicazione su una piattaforma non concede alcun permesso di riuso. Un endpoint pubblico, invece, e' un fatto: sapere che ISTAT espone i prezzi al consumo al flusso `167_744_DF_DCSP_NIC1B2015_1` non e' materiale protetto, e' un'informazione.
 
 Conseguenze. La regola vale in generale per questo progetto: prima di riprendere codice da una fonte esterna si guarda la licenza, e in sua assenza si riscrive. Vale anche il contrario, cioe' che i progetti da cui si e' preso solo il perimetro funzionale restano citati come tali nel registro delle fonti, senza attribuire loro un contributo che non hanno dato.
+
+## ADR-011, i servizi autenticati dell'area riservata restano manuali, e la fonte OMI si cita
+
+Data: 2026-08-31. Stato: accettata. Estende ADR-004.
+
+Contesto. Il progetto usa quattro servizi dell'area riservata dell'Agenzia delle Entrate: forniture OMI, visure e ispezioni ipotecarie, valori immobiliari dichiarati, fogli di mappa catastale. Accedendovi si accettano le condizioni generali di consultazione della banca dati catastale, decreto 4 maggio 2007 e successive integrazioni.
+
+Decisione. Nessuno dei quattro viene automatizzato. Il file lo scarica la persona, il programma lo ingerisce da disco. Inoltre la stringa `Agenzia Entrate - OMI`, obbligatoria per la fornitura, e' esposta come `omi.ATTRIBUZIONE`, stampata in coda a ogni interrogazione e dichiarata nel foglio Fonti.
+
+Motivazione. L'articolo 2 impone l'autenticazione personale, e simularla significherebbe far interrogare la banca dati a un programma con le credenziali di una persona. L'articolo 5 riserva all'Agenzia la facolta' di limitare le interrogazioni giornaliere, l'articolo 3 rende l'utente responsabile dell'uso improprio o eccessivo, e l'articolo 4 sanziona la violazione con l'inibizione del servizio: il costo di sbagliare non e' una discussione, e' la perdita dell'accesso. Sulla citazione della fonte, l'obbligo era assunto e non assolto: e' stato un difetto di conformita' reale, non un dettaglio.
+
+Conseguenze. `omi.importa_fornitura` resta la sola via per i dati correnti e accetta l'archivio cosi' come arriva. Visure e ispezioni sul venditore contengono dati personali di terzi e restano sotto `_notes/`, non versionato. La regola generale che ne discende: quando una fonte richiede autenticazione personale, il confine fra automatizzabile e no non lo decide la comodita' ma il testo che si e' accettato.

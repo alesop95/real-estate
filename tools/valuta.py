@@ -318,11 +318,16 @@ def cmd_omi(args) -> int:
             print(f"Percorso a video: {O.FORNITURA_UFFICIALE}")
             return 2
         try:
-            estratti = O.importa_fornitura(args.file)
+            # Il percorso di destinazione va ancorato alla radice del progetto:
+            # il valore predefinito del modulo e' relativo, e lanciando il comando
+            # da un'altra cartella l'archivio finirebbe in un `data/omi` diverso da
+            # quello che gli altri sottocomandi leggono, con l'effetto di
+            # un'importazione riuscita e una ricerca che non trova nulla.
+            estratti = O.importa_fornitura(args.file, RADICE / "data" / "omi")
         except (FileNotFoundError, ValueError) as e:
             print(f"Importazione fallita: {e}")
             return 1
-        print(f"Importati {len(estratti)} file in data/omi:")
+        print(f"Importati {len(estratti)} file in {RADICE / 'data' / 'omi'}:")
         for f in estratti:
             print(f"  {f.name}")
         print()
@@ -331,35 +336,44 @@ def cmd_omi(args) -> int:
 
     if args.azione == "zone":
         cartella = RADICE / "data" / "omi"
-        valori = sorted(cartella.glob("*VALORI*.csv")) or sorted(cartella.glob("*.csv"))
-        if not valori:
+        quotazioni, letti = O.carica_cartella(cartella)
+        if not quotazioni:
             print("Nessun file OMI in data/omi.")
             return 1
-        zone_file = sorted(cartella.glob("*ZONE*.csv"))
-        quotazioni = O.carica(valori[-1], zone_file[-1] if zone_file else "")
         elenco = O.elenca_zone(quotazioni, args.comune)
         if not elenco:
             print(f"Nessuna zona per {args.comune}.")
+            simili = O.comuni_simili(quotazioni, args.comune)
+            if simili:
+                print("Forse cerchi uno di questi:")
+                for nome in simili:
+                    print(f"  {nome}")
             return 1
         print(f"Zone omogenee di {args.comune}")
         for codice, descrizione in elenco:
             print(f"  {codice:<8} {descrizione}")
+        print()
+        print(f"Fonte: {O.ATTRIBUZIONE}")
         return 0
 
     if args.azione == "cerca":
         cartella = RADICE / "data" / "omi"
-        valori = sorted(cartella.glob("*VALORI*.csv"))
-        if not valori:
+        quotazioni, letti = O.carica_cartella(cartella)
+        if not quotazioni:
             print("Nessun file OMI in data/omi. Scaricare prima un semestre, oppure")
             print(f"richiedere la fornitura aggiornata dall'area riservata: {O.FORNITURA_UFFICIALE}")
             return 1
-        zone = sorted(cartella.glob("*ZONE*.csv"))
-        quotazioni = O.carica(valori[-1], zone[-1] if zone else "")
         righe = O.cerca(quotazioni, args.comune, args.tipologia, args.zona or "")
         if not righe:
             print(f"Nessuna quotazione per {args.comune}, tipologia {args.tipologia}.")
+            simili = O.comuni_simili(quotazioni, args.comune)
+            if simili:
+                print("Nella fornitura i nomi sono abbreviati: forse cerchi uno di questi.")
+                for nome in simili:
+                    print(f"  {nome}")
             return 1
-        print(f"{args.comune} - {args.tipologia} - file {valori[-1].name}")
+        etichetta = letti[0] if len(letti) == 1 else f"{len(letti)} file del semestre in cache"
+        print(f"{args.comune} - {args.tipologia} - {etichetta}")
         print(f"{'Zona':<8}{'Descrizione':<44}{'Stato':<12}{'Vendita EUR/mq':>18}{'Affitto EUR/mq mese':>22}{'Rend.':>8}")
         print("-" * 116)
         for q in righe:
@@ -377,6 +391,7 @@ def cmd_omi(args) -> int:
         print()
         print("Attenzione alla data del semestre: il mirror open data si ferma al 2018.")
         print(f"Per il dato corrente: {O.CONSULTAZIONE_A_VIDEO}")
+        print(f"Fonte: {O.ATTRIBUZIONE}")
         return 0
 
     return 2

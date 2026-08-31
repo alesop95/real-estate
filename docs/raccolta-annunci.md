@@ -46,14 +46,14 @@ Il modulo riconosce da solo il formato del file, perche' il mirror usa la virgol
 
 ### Il giro semestrale, cinque minuti
 
-La fornitura si scarica due volte l'anno e la procedura e' sempre la stessa. Si accede ai servizi telematici dell'Agenzia con SPID o CIE, si entra nell'area riservata alla voce dei servizi ipotecari e catastali e dell'Osservatorio del mercato immobiliare, si sceglie Forniture dati OMI e poi Quotazioni immobiliari, si indicano semestre e ambito territoriale e si scarica il prodotto. L'archivio ottenuto si passa al programma senza estrarlo.
+La fornitura si scarica due volte l'anno e la procedura e' sempre la stessa. Si accede ai servizi telematici dell'Agenzia con SPID o CIE, si entra nell'area riservata alla voce dei servizi ipotecari e catastali e dell'Osservatorio del mercato immobiliare, si sceglie Forniture dati OMI e poi Quotazioni immobiliari, si indicano semestre e ambito territoriale e si scarica il prodotto. L'archivio ottenuto si passa al programma senza estrarlo. Sull'ambito conviene ragionare una volta sola: la fornitura si chiede per Comune, provincia, area metropolitana, regione o intero territorio nazionale, e un raggio di ricerca realistico attraversa quasi sempre piu' province, perche' quaranta chilometri da un capoluogo di costa ne toccano tre o quattro. Scaricare l'intera regione costa un solo giro e un solo file, e il programma filtra per Comune a costo nullo: il file nazionale del mirror porta centosessantunomila quotazioni su quasi ottomila Comuni e si interroga in un istante.
 
 ```
 python tools/valuta.py omi importa --file "<percorso dello zip scaricato>"
 python tools/valuta.py omi cerca --comune "<Comune>"
 ```
 
-Il primo comando normalizza i CSV nella cartella di cache, che non e' versionata; il secondo serve a verificare che siano entrati davvero, ed e' il controllo da fare subito perche' un ambito territoriale sbagliato produce un archivio valido che pero' non contiene il Comune di interesse. Le finestre utili sono la primavera per il secondo semestre dell'anno precedente e l'autunno per il primo semestre dell'anno in corso.
+Il primo comando normalizza i CSV nella cartella di cache, che non e' versionata; il secondo serve a verificare che siano entrati davvero, ed e' il controllo da fare subito perche' un ambito territoriale sbagliato produce un archivio valido che pero' non contiene il Comune di interesse. Se in cache finiscono piu' file, per esempio una provincia per volta, vengono letti tutti quelli del semestre piu' recente e i periodi superati restano fuori: mescolarli falserebbe il confronto, e leggerne uno solo, come faceva la prima versione, faceva concludere che un Comune non fosse coperto quando semplicemente stava nell'altro file. Le finestre utili sono la primavera per il secondo semestre dell'anno precedente e l'autunno per il primo semestre dell'anno in corso.
 
 Oltre agli intervalli di prezzo, il modulo espone per ogni zona il rendimento lordo implicito, cioe' il canone annuo di zona rapportato al prezzo di zona. E' il metro di paragone piu' onesto per un singolo annuncio: se un immobile promette molto piu' della sua zona, o e' un affare o c'e' qualcosa che non si e' capito, e la seconda ipotesi va esclusa prima di credere alla prima.
 

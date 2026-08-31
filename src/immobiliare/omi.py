@@ -22,8 +22,10 @@ from __future__ import annotations
 
 import csv
 import io
+import re
 import urllib.request
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 MIRROR = "https://raw.githubusercontent.com/ondata/quotazioni-immobiliari-agenzia-entrate/master/data"
@@ -36,6 +38,12 @@ SEMESTRI_MIRROR = {
     "2018-1": "QI_294585_1_20181",
     "2018-2": "QI_294577_1_20182",
 }
+
+# Le condizioni della fornitura impongono di citare la fonte quando i dati
+# vengono usati. Non e' una cortesia bibliografica: e' un obbligo assunto
+# accettando le condizioni generali di accesso, e va assolto ovunque i valori
+# compaiano, cioe' nell'uscita a video e nel foglio delle fonti del workbook.
+ATTRIBUZIONE = "Agenzia Entrate - OMI"
 
 CONSULTAZIONE_A_VIDEO = "https://www1.agenziaentrate.gov.it/servizi/geopoi_omi/index.php"
 FORNITURA_UFFICIALE = "https://www.agenziaentrate.gov.it/portale/schede/fabbricatiterreni/omi/forniture-dati-omi-cittadini"
@@ -160,6 +168,90 @@ def carica(percorso_valori: str | Path, percorso_zone: str | Path = "") -> list[
     return quotazioni
 
 
+def semestre_del_file(percorso: Path) -> str:
+    """Semestre di un file della fornitura, nella forma AAAAS, per esempio 20252.
+
+    Si prova nell'ordine il nome del file, che nella fornitura porta un token di
+    cinque cifre, poi la riga di metadati che alcune forniture antepongono al
+    tracciato, e infine la data di modifica del file.
+
+    L'ordine e' scelto perche' l'errore da evitare ha una direzione. Se il
+    semestre restasse ignoto, il confronto lo ordinerebbe sotto qualunque valore
+    noto, e una fornitura nuova con un nome inatteso perderebbe contro i file
+    vecchi gia' in cache: il programma continuerebbe a rispondere con dati di
+    anni prima senza dire nulla. Il ripiego sulla data di modifica sbaglia al
+    massimo attribuendo il file al semestre corrente, che e' l'errore innocuo,
+    perche' lo fa vincere e non perdere.
+    """
+    for pezzo in percorso.stem.split("_"):
+        if len(pezzo) == 5 and pezzo.isdigit() and pezzo[-1] in "12":
+            return pezzo
+
+    try:
+        with percorso.open(encoding="utf-8", errors="replace") as f:
+            for _ in range(2):
+                riga = f.readline()
+                if not riga:
+                    break
+                trovato = re.search(r"anno\s*(\d{4}).*?semestre\s*([12])", riga, re.IGNORECASE)
+                if trovato:
+                    return f"{trovato.group(1)}{trovato.group(2)}"
+                trovato = re.search(r"\b(\d{4})\s*/\s*([12])\b", riga)
+                if trovato:
+                    return f"{trovato.group(1)}{trovato.group(2)}"
+    except OSError:
+        pass
+
+    modificato = datetime.fromtimestamp(percorso.stat().st_mtime)
+    return f"{modificato.year}{1 if modificato.month <= 6 else 2}"
+
+
+def file_correnti(cartella: str | Path) -> list[tuple[Path, Path | None]]:
+    """Coppie valori e zone del semestre piu' recente presente in cache.
+
+    Restituisce tutte le coppie di quel semestre, non una sola: chi scarica per
+    provincia si ritrova un file per provincia, e leggerne uno solo significava
+    cercare un Comune in una provincia diversa e concludere che non esistesse.
+    L'accoppiamento fra un file di valori e il suo file di zone passa per il
+    prefisso comune, perche' nella fornitura i due condividono l'identificativo.
+    """
+    cartella = Path(cartella)
+    valori = sorted(cartella.glob("*VALORI*.csv"))
+    if not valori:
+        # Cache popolata a mano, senza la convenzione di nome della fornitura.
+        soli = sorted(cartella.glob("*.csv"))
+        return [(f, None) for f in soli]
+
+    semestri = {semestre_del_file(f) for f in valori}
+    piu_recente = max(semestri) if semestri != {""} else ""
+    scelti = [f for f in valori if semestre_del_file(f) == piu_recente]
+
+    zone = sorted(cartella.glob("*ZONE*.csv"))
+    coppie: list[tuple[Path, Path | None]] = []
+    for f in scelti:
+        prefisso = f.name.replace("VALORI", "ZONE")
+        gemello = next((z for z in zone if z.name == prefisso), None)
+        if gemello is None:
+            # Ripiego: una sola zona dello stesso semestre, se c'e'.
+            gemello = next((z for z in zone if semestre_del_file(z) == semestre_del_file(f)), None)
+        coppie.append((f, gemello))
+    return coppie
+
+
+def carica_cartella(cartella: str | Path) -> tuple[list[Quotazione], list[str]]:
+    """Carica tutte le quotazioni del semestre piu' recente in cache.
+
+    Restituisce anche i nomi dei file letti, perche' su questi dati sapere da
+    quale fornitura viene un numero fa parte del numero.
+    """
+    quotazioni: list[Quotazione] = []
+    letti: list[str] = []
+    for valori, zone in file_correnti(cartella):
+        quotazioni.extend(carica(valori, zone or ""))
+        letti.append(valori.name)
+    return quotazioni, letti
+
+
 def scarica_dal_mirror(semestre: str, cartella: str | Path = "data/omi") -> tuple[Path, Path]:
     """Scarica dal mirror open data la coppia di file di un semestre storico.
 
@@ -239,12 +331,61 @@ def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi") -
 
 def elenca_zone(quotazioni: list[Quotazione], comune: str) -> list[tuple[str, str]]:
     """Zone omogenee di un Comune, per scegliere quella dell'immobile."""
-    comune_norm = comune.strip().upper()
+    comune_norm = normalizza_comune(comune)
     viste: dict[str, str] = {}
     for q in quotazioni:
-        if q.comune.strip().upper() == comune_norm and q.zona not in viste:
+        if normalizza_comune(q.comune) == comune_norm and q.zona not in viste:
             viste[q.zona] = q.zona_descrizione
     return sorted(viste.items())
+
+
+def normalizza_comune(nome: str) -> str:
+    """Riduce un nome di Comune alla forma con cui si puo' confrontare.
+
+    Nella fornitura i nomi non sono scritti come li scrive una persona. Gli
+    apostrofi possono essere accento grave o apostrofo tipografico invece di
+    quello dritto, e i prefissi agiografici sono abbreviati in modi diversi:
+    nella stessa provincia convivono SANT`ELPIDIO A MARE e S BENEDETTO DEL
+    TRONTO. Un confronto letterale su questi nomi risponde "nessuna quotazione"
+    a chi digita il nome corretto, e quel silenzio si legge come "Comune non
+    coperto", che e' una conclusione sbagliata presa su una risposta plausibile.
+    """
+    testo = (nome or "").strip().upper()
+    for apostrofo in ("`", "’", "´", "'"):
+        testo = testo.replace(apostrofo, " ")
+    testo = testo.replace(".", " ").replace("-", " ")
+    parole = []
+    for parola in testo.split():
+        # SAN, SANT, SANTA, SANTO e le loro abbreviazioni collassano su S.
+        if parola in ("SAN", "SANT", "SANTA", "SANTO", "SS", "S"):
+            parola = "S"
+        parole.append(parola)
+    return " ".join(parole)
+
+
+def comuni_simili(quotazioni: list[Quotazione], comune: str, massimo: int = 8) -> list[str]:
+    """Nomi presenti nei dati che somigliano a quello cercato.
+
+    Serve a trasformare un risultato vuoto in un suggerimento. Confronta prima
+    la forma normalizzata, poi l'inclusione di una parola significativa, cosi'
+    che chi cerca Porto Sant'Elpidio trovi PORTO SANT`ELPIDIO anche digitando
+    l'apostrofo giusto, e chi cerca San Benedetto del Tronto arrivi comunque a
+    S BENEDETTO DEL TRONTO.
+    """
+    cercato = normalizza_comune(comune)
+    if not cercato:
+        return []
+    parole = [p for p in cercato.split() if len(p) > 2]
+    candidati: list[str] = []
+    for nome in sorted({q.comune for q in quotazioni}):
+        normalizzato = normalizza_comune(nome)
+        if normalizzato == cercato:
+            return [nome]
+        if cercato in normalizzato or (parole and all(p in normalizzato for p in parole)):
+            candidati.append(nome)
+        if len(candidati) >= massimo:
+            break
+    return candidati
 
 
 def cerca(
@@ -254,12 +395,12 @@ def cerca(
     zona: str = "",
 ) -> list[Quotazione]:
     """Filtra le quotazioni per Comune, tipologia e, se indicata, zona."""
-    comune_norm = comune.strip().upper()
+    comune_norm = normalizza_comune(comune)
     tip_norm = tipologia.strip().lower()
     risultati = [
         q
         for q in quotazioni
-        if q.comune.strip().upper() == comune_norm and tip_norm in q.tipologia.lower()
+        if normalizza_comune(q.comune) == comune_norm and tip_norm in q.tipologia.lower()
     ]
     if zona:
         zona_norm = zona.strip().upper()

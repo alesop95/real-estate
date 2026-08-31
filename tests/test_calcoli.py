@@ -372,6 +372,147 @@ def test_misure_nic_coprono_indice_e_variazioni():
     campione = N.Osservazione("nic_tendenziale", "prova", "2025-12", 1.2, "fonte")
     assert abs(campione.frazione - 0.012) < 1e-12
 
+def test_omi_legge_tutte_le_province_dello_stesso_semestre():
+    """Chi scarica per provincia si ritrova un file per provincia.
+
+    La versione precedente leggeva il solo ultimo file in ordine alfabetico, e
+    l'effetto era che cercare un Comune di una provincia diversa da quella
+    sorteggiata dall'ordinamento restituiva "nessuna quotazione". Non un errore:
+    una risposta sbagliata, che si sarebbe letta come "quel Comune non e'
+    coperto". Il test costruisce due province e un semestre vecchio, e verifica
+    che entrambe le province correnti si vedano e che il semestre superato resti
+    fuori, perche' mescolare periodi diversi falserebbe il confronto.
+    """
+    import tempfile
+
+    from immobiliare import omi as O
+
+    cartella = Path(tempfile.mkdtemp())
+    intestazione = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;Cod_tip;Descr_Tipologia;Stato;"
+        "Compr_min;Compr_max;Loc_min;Loc_max"
+    )
+
+    def scrivi(nome, comune, prezzo):
+        riga = (
+            "CENTRO;MARCHE;MC;043013;C770;0;" + comune + ";B;B1;20;"
+            "Abitazioni civili;NORMALE;" + prezzo + ";2.000;5,0;7,0"
+        )
+        (cartella / nome).write_text(
+            "QUOTAZIONI IMMOBILIARI" + chr(10) + intestazione + chr(10) + riga,
+            encoding="utf-8",
+        )
+
+    scrivi("QI_1_1_20261_VALORI.csv", "CIVITANOVA MARCHE", "1.500")
+    scrivi("QI_2_1_20261_VALORI.csv", "MACERATA", "1.200")
+    scrivi("QI_3_1_20182_VALORI.csv", "CIVITANOVA MARCHE", "900")
+
+    assert O.semestre_del_file(cartella / "QI_1_1_20261_VALORI.csv") == "20261"
+
+    quotazioni, letti = O.carica_cartella(cartella)
+    comuni = {q.comune for q in quotazioni}
+    assert comuni == {"CIVITANOVA MARCHE", "MACERATA"}, f"trovati {comuni}"
+    assert len(letti) == 2, f"letti {letti}"
+
+    # Il semestre superato non deve entrare: il vecchio valore di Civitanova
+    # era 900, quello corrente 1.500.
+    civitanova = [q for q in quotazioni if q.comune == "CIVITANOVA MARCHE"]
+    assert len(civitanova) == 1
+    assert civitanova[0].compravendita_min == 1_500
+
+def test_omi_trova_i_comuni_scritti_come_li_scrive_la_fornitura():
+    """I nomi nella fornitura non sono quelli che digita una persona.
+
+    Nella stessa provincia convivono SANT`ELPIDIO A MARE, con l'accento grave al
+    posto dell'apostrofo, e S BENEDETTO DEL TRONTO, con il prefisso abbreviato.
+    Un confronto letterale risponde "nessuna quotazione" a chi scrive il nome
+    corretto, e quel silenzio si legge come "Comune non coperto": una
+    conclusione sbagliata tratta da una risposta plausibile, che e' il modo in
+    cui questo genere di difetto fa danno.
+    """
+    import tempfile
+
+    from immobiliare import omi as O
+
+    cartella = Path(tempfile.mkdtemp())
+    intestazione = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;Cod_tip;Descr_Tipologia;Stato;"
+        "Compr_min;Compr_max;Loc_min;Loc_max"
+    )
+    righe = [
+        "QUOTAZIONI IMMOBILIARI",
+        intestazione,
+        "CENTRO;MARCHE;AP;044007;D542;0;SANT" + chr(96) + "ELPIDIO A MARE;B;B1;20;"
+        "Abitazioni civili;NORMALE;810;1.050;2,3;3,0",
+        "CENTRO;MARCHE;AP;044066;H769;0;S BENEDETTO DEL TRONTO;B;B1;20;"
+        "Abitazioni civili;NORMALE;1.900;2.700;6,0;8,0",
+    ]
+    percorso = cartella / "QI_9_1_20261_VALORI.csv"
+    percorso.write_text(chr(10).join(righe), encoding="utf-8")
+
+    quotazioni, _ = O.carica_cartella(cartella)
+
+    # Entrambi si trovano digitando il nome come lo scriverebbe una persona.
+    assert len(O.cerca(quotazioni, "Sant'Elpidio a Mare")) == 1
+    assert len(O.cerca(quotazioni, "San Benedetto del Tronto")) == 1
+    # E anche nella forma della fornitura, che deve restare valida.
+    assert len(O.cerca(quotazioni, "S BENEDETTO DEL TRONTO")) == 1
+
+    # Un nome inesistente non deve produrre falsi positivi.
+    assert O.cerca(quotazioni, "Civitanuova") == []
+
+    # La normalizzazione collassa i prefissi agiografici e gli apostrofi.
+    assert O.normalizza_comune("Sant'Elpidio") == O.normalizza_comune("SANT" + chr(96) + "ELPIDIO")
+    assert O.normalizza_comune("San Benedetto") == O.normalizza_comune("S BENEDETTO")
+
+def test_omi_riconosce_il_semestre_anche_senza_token_nel_nome():
+    """Un nome di file inatteso non deve far vincere la fornitura vecchia.
+
+    Il rischio ha una direzione precisa. Se il semestre di una fornitura nuova
+    restasse ignoto, il confronto lo ordinerebbe sotto qualunque valore noto, e
+    i file del 2018 gia' in cache continuerebbero a essere quelli letti: il
+    programma risponderebbe con dati di anni prima senza segnalare nulla. Per
+    questo il riconoscimento ha tre vie in cascata, e l'ultima sbaglia al
+    massimo attribuendo il file al semestre corrente, cioe' facendolo vincere.
+    """
+    import tempfile
+
+    from immobiliare import omi as O
+
+    cartella = Path(tempfile.mkdtemp())
+    intestazione = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;Cod_tip;Descr_Tipologia;Stato;"
+        "Compr_min;Compr_max;Loc_min;Loc_max"
+    )
+    riga = (
+        "CENTRO;MARCHE;MC;043013;C770;0;CIVITANOVA MARCHE;B;B1;20;"
+        "Abitazioni civili;NORMALE;1.500;2.000;5,0;7,0"
+    )
+
+    # Prima via: il token di cinque cifre nel nome.
+    dal_nome = cartella / "QI_1_1_20252_VALORI.csv"
+    dal_nome.write_text(intestazione + chr(10) + riga, encoding="utf-8")
+    assert O.semestre_del_file(dal_nome) == "20252"
+
+    # Seconda via: la riga di metadati anteposta al tracciato.
+    dai_metadati = cartella / "quotazioni_regione_VALORI.csv"
+    dai_metadati.write_text(
+        "QUOTAZIONI IMMOBILIARI - Anno 2025 Semestre 2" + chr(10) + intestazione + chr(10) + riga,
+        encoding="utf-8",
+    )
+    assert O.semestre_del_file(dai_metadati) == "20252"
+
+    # Terza via: la data di modifica. Non conosciamo il valore, ma deve essere
+    # una forma valida e, soprattutto, deve battere una fornitura del 2018.
+    senza_indizi = cartella / "sconosciuto_VALORI.csv"
+    senza_indizi.write_text(intestazione + chr(10) + riga, encoding="utf-8")
+    ripiego = O.semestre_del_file(senza_indizi)
+    assert len(ripiego) == 5 and ripiego.isdigit() and ripiego[-1] in "12"
+    assert ripiego > "20182", "il ripiego non deve perdere contro una fornitura vecchia"
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

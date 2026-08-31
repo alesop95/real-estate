@@ -131,6 +131,12 @@ class Registro:
         return [f.name for f in fields(Annuncio)]
 
     def carica(self) -> None:
+        # La lista si azzera prima di leggere. Il costruttore chiama gia' questo
+        # metodo, quindi chi lo richiama per rileggere il file da disco, cosa
+        # legittima e naturale, si ritroverebbe ogni annuncio due volte: nessun
+        # errore, solo un registro che conta il doppio e un confronto fra immobili
+        # con le righe duplicate.
+        self.annunci = []
         # Il punto e virgola e' il separatore che Excel italiano apre senza chiedere
         # nulla, ed e' quindi quello con cui il file viene scritto. In lettura si
         # riconosce comunque anche la virgola, per i file arrivati da altrove.
