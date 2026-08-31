@@ -41,9 +41,9 @@ def workbook() -> Path:
 def test_il_workbook_si_genera_con_tutti_i_fogli():
     wb = load_workbook(workbook())
     attesi = [
-        "Guida", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Simulatore mutuo", "Locazione",
-        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Comproprieta", "Checklist",
-        "Annunci", "Confronto immobili", "Fonti",
+        "Guida", "Cruscotto", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Simulatore mutuo", "Locazione",
+        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Rischio", "Comproprieta", "Checklist",
+        "Annunci", "Confronto immobili", "Fonti", "_Estrazioni",
     ]
     assert wb.sheetnames == attesi
 
@@ -63,7 +63,8 @@ def test_nomi_definiti_essenziali_presenti():
         "cash_flow_primo_anno", "orizzonte", "data_erogazione", "rend_obiettivo",
         "ltv_conf", "aliquota_conf", "irpef_marginale", "sim_capitale",
         "sim_rata_iniziale", "sim_flussi", "sim_pagato",
-        "accantonamento_ristrutturazione",
+        "accantonamento_ristrutturazione", "verdetto", "verifiche_aperte",
+        "prob_cash_negativo", "prob_batte_alternativa", "sim_cash_flow", "vol_canone",
     }
     mancanti = essenziali - definiti
     assert not mancanti, f"nomi definiti mancanti: {sorted(mancanti)}"

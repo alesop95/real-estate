@@ -25,6 +25,8 @@ from . import parametri as P
 from . import stile as S
 
 MAX_RATE = 480          # 40 anni di rate mensili
+ESTRAZIONI = 1000       # scenari della simulazione probabilistica
+SEME_SIMULAZIONE = 20260831   # dichiarato, cosi' la simulazione e' riproducibile
 MAX_ANNI = 40
 ORIZZONTE_MAX = 40
 
@@ -58,6 +60,7 @@ class Costruttore:
 
     def costruisci(self) -> None:
         self.foglio_guida()
+        self.foglio_cruscotto()
         self.foglio_parametri()
         self.foglio_immobile()
         self.foglio_mutuo()
@@ -68,6 +71,7 @@ class Costruttore:
         self.foglio_metriche()
         self.foglio_confronto()
         self.foglio_scenari()
+        self.foglio_rischio()
         self.foglio_comproprieta()
         self.foglio_checklist()
         # Il foglio Annunci va costruito prima del confronto, che ne legge le righe
@@ -75,6 +79,7 @@ class Costruttore:
         self.foglio_annunci()
         self.foglio_confronto_immobili()
         self.foglio_fonti()
+        self.foglio_estrazioni()
 
     # ------------------------------------------------------------------ guida
     def foglio_guida(self) -> None:
@@ -129,6 +134,138 @@ class Costruttore:
             "L'aliquota IMU e le spese condominiali sono le due voci che cambiano di piu' da un immobile all'altro: l'aliquota va letta nella delibera del Comune dell'anno in corso, le spese nel consuntivo condominiale degli ultimi due esercizi.",
         ]:
             r = S.nota_riga(ws, r, testo)
+
+    # -------------------------------------------------------------- cruscotto
+    def foglio_cruscotto(self) -> None:
+        """Pagina di sintesi: gli otto numeri che decidono, e cosa manca.
+
+        Un workbook di diciotto fogli e' potente e insieme scoraggiante: chi lo apre
+        la prima volta non sa dove guardare, e chi lo riapre dopo un mese non ricorda
+        dove aveva lasciato. Il cruscotto risolve entrambe le cose senza aggiungere
+        modello: non calcola nulla di nuovo, raccoglie con nomi definiti cio' che gli
+        altri fogli hanno gia' calcolato e lo mette in una schermata sola.
+
+        La disciplina che lo rende utile e' la rinuncia: qui non entra tutto, entra
+        solo cio' che cambia una decisione. Ogni riga porta accanto la soglia oltre la
+        quale il numero e' un problema, perche' un indicatore senza soglia si guarda
+        e non si usa.
+        """
+        ws = self.wb.create_sheet("Cruscotto")
+        ws.sheet_view.showGridLines = False
+        S.larghezze_colonne(ws, {"A": 42, "B": 20, "C": 26, "D": 52})
+        r = S.titolo(
+            ws,
+            1,
+            "Cruscotto",
+            "Tutto quello che sta qui e' calcolato altrove: questa pagina non aggiunge ipotesi, le riassume. Si legge in un minuto e dice se vale la pena aprire il resto.",
+            4,
+        )
+
+        def riga_kpi(etichetta, formula, formato, soglia="", commento=""):
+            nonlocal r
+            e = ws.cell(row=r, column=1, value=etichetta)
+            e.font = S.ETICHETTA
+            e.alignment = S.SINISTRA
+            v = ws.cell(row=r, column=2, value=formula)
+            if formato:
+                v.number_format = formato
+            v.font = S.KPI
+            v.fill = S.FILL_RISULTATO
+            v.border = S.BORDO
+            v.alignment = S.DESTRA
+            if soglia:
+                sc = ws.cell(row=r, column=3, value=soglia)
+                sc.font = S.NOTA
+                sc.alignment = S.SINISTRA
+            if commento:
+                cc = ws.cell(row=r, column=4, value=commento)
+                cc.font = S.NOTA
+                cc.alignment = S.SINISTRA
+            ws.row_dimensions[r].height = 20
+            r += 1
+            return r - 1
+
+        r = S.sezione(ws, r, "L'operazione", 4)
+        riga_kpi("Immobile", '=IF(riferimento_immobile="","da compilare nel foglio Immobile",riferimento_immobile&IF(comune_immobile="",""," - "&comune_immobile))', None,
+                 "", "Riferimento interno e Comune, dal foglio Immobile.")
+        riga_kpi("Prezzo trattato", "=prezzo", S.EURO, "", "")
+        riga_kpi("Costo totale dell'operazione", "=costo_totale", S.EURO,
+                 "prezzo piu' imposte e costi", "E' il numero da avere in testa quando si fa la proposta, non il prezzo.")
+        riga_cassa = riga_kpi("Cassa necessaria al rogito", "=esborso", S.EURO,
+                              "", "Costo totale meno la parte finanziata dalla banca.")
+        riga_inc = riga_kpi("Incidenza dei costi sul prezzo", "=incidenza_costi", S.PERC,
+                            "attenzione sopra il 10%", "Sopra la soglia conviene capire quale voce pesa: di solito e' la provvigione o l'imposta sostitutiva.")
+        r += 1
+
+        r = S.sezione(ws, r, "I numeri che decidono", 4, secondaria=True)
+        riga_rn = riga_kpi("Rendimento netto", "=utile_locazione/costo_totale", S.PERC,
+                           "confronta con l'obiettivo", "Utile dopo tutti i costi e le imposte, sul costo totale. Fra lordo e netto si perdono di norma due punti e mezzo.")
+        riga_cfm = riga_kpi("Cash flow mensile", "=cash_flow_primo_anno/12", S.EURO_DEC,
+                            "negativo significa che ci metti", "Se negativo, e' quanto esce dalla tua tasca ogni mese. La domanda non e' se e' bello, ma se e' sostenibile per anni.")
+        riga_dscr = riga_kpi("Debt service coverage ratio", '=IF(rata_annua>0,noi_annuo/rata_annua,"nessun mutuo")', S.NUMERO_DEC,
+                             "sotto 1 il reddito non copre la rata", "E' l'indicatore che smaschera prima le operazioni troppo tirate.")
+        riga_tir = riga_kpi("Tasso interno di rendimento", '=IFERROR(IRR(flussi_tir),"non calcolabile")', S.PERC,
+                            "confronta con il portafoglio", "Include l'uscita. E' l'unico numero commensurabile con un investimento finanziario.")
+        riga_rr = riga_kpi("Rapporto rata reddito", "=IF(reddito_mensile>0,rata_mensile/reddito_mensile,0)", S.PERC,
+                           "le banche si fermano a un terzo", "Sopra il trentacinque per cento la pratica difficilmente passa.")
+        r += 1
+
+        r = S.sezione(ws, r, "Il rischio, non solo il caso centrale", 4, secondaria=True)
+        riga_kpi("Probabilita' di cash flow negativo", "=prob_cash_negativo", S.PERC_1,
+                 "", "Su mille scenari simulati. Con la leva e' quasi sempre alta.")
+        riga_kpi("Probabilita' di battere il portafoglio alternativo", "=prob_batte_alternativa", S.PERC_1,
+                 "", "Confronto con l'esborso investito al rendimento atteso per lo stesso orizzonte.")
+        riga_kpi("Probabilita' di perdere capitale proprio", "=prob_perdita_capitale", S.PERC_1,
+                 "", "Patrimonio finale sotto quanto messo all'inizio.")
+        riga_kpi("Cash flow annuo nello scenario peggiore su venti", "=PERCENTILE(sim_cash_flow,0.05)", S.EURO,
+                 "", "Il numero da poter sostenere, diviso dodici, prima di firmare.")
+        r += 1
+
+        r = S.sezione(ws, r, "Il verdetto e cosa manca", 4, secondaria=True)
+        riga_ver = riga_kpi("Sintesi automatica", "=verdetto", None, "", "Confronta il tasso interno con il costo opportunita' e con il portafoglio alternativo.")
+        ws.cell(row=riga_ver, column=2).alignment = S.SINISTRA
+        ws.cell(row=riga_ver, column=2).font = S.ETICHETTA_BOLD
+        riga_conf = riga_kpi("Comprare oppure restare in affitto", '=IF(Immobile!$B$21="SI",IF(\'Confronto affitto\'!$B$52>0,"conviene comprare","conviene restare in affitto e investire"),"non pertinente: non e\' abitazione principale")', None,
+                             "", "Il confronto ha senso solo se l'immobile e' destinato ad abitazione propria.")
+        ws.cell(row=riga_conf, column=2).alignment = S.SINISTRA
+        ws.cell(row=riga_conf, column=2).font = S.ETICHETTA_BOLD
+        riga_ap = riga_kpi("Verifiche ancora aperte", "=verifiche_aperte", S.NUMERO,
+                           "vanno a zero prima di firmare", "Nel foglio Checklist. Una proposta accettata e' gia' un contratto: le verifiche si chiudono prima, o diventano condizioni scritte.")
+        r += 1
+
+        for cella, regola in (
+            (f"B{riga_inc}", CellIsRule(operator="greaterThan", formula=["0.10"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_cfm}", CellIsRule(operator="lessThan", formula=["0"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_dscr}", CellIsRule(operator="lessThan", formula=["1"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_rr}", CellIsRule(operator="greaterThan", formula=["0.35"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_ap}", CellIsRule(operator="greaterThan", formula=["0"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_rn}", CellIsRule(operator="lessThan", formula=["rend_obiettivo"], fill=S.FILL_ATTENZIONE)),
+        ):
+            ws.conditional_formatting.add(cella, regola)
+
+        r = S.sezione(ws, r, "Dove andare, in ordine", 4, secondaria=True)
+        percorso = [
+            ("Annunci", "Butta dentro gli immobili che stai guardando: link, Comune, metri quadri, prezzo."),
+            ("Confronto immobili", "Si popola da solo e dice quale merita tempo. Guarda cash flow e DSCR, non il rendimento lordo."),
+            ("Immobile", "Per il candidato scelto: prezzo, rendita catastale, chi vende, prima casa. Ne escono imposte e costo reale."),
+            ("Mutuo e Simulatore mutuo", "Importo, tasso, durata. Il simulatore prova rimborsi volontari e rialzi di tasso."),
+            ("Locazione", "Canone, spese condominiali dal consuntivo, aliquota IMU dalla delibera. Quattro regimi a confronto."),
+            ("Metriche, Scenari, Rischio", "Si leggono. Scenari da' tre ipotesi impostabili, Rischio la distribuzione su mille."),
+            ("Comproprieta'", "Solo se comprate in piu' di uno: ripartisce per quote e calcola l'imposta di ciascuno."),
+            ("Checklist", "Quando si passa dalla valutazione alla proposta. Filtra per fase e non firmare con righe rosse."),
+        ]
+        for foglio, cosa in percorso:
+            a = ws.cell(row=r, column=1, value=foglio)
+            a.font = S.ETICHETTA_BOLD
+            a.alignment = S.SINISTRA
+            b = ws.cell(row=r, column=2, value=cosa)
+            b.font = S.ETICHETTA
+            b.alignment = S.SINISTRA
+            ws.merge_cells(start_row=r, start_column=2, end_row=r, end_column=4)
+            ws.row_dimensions[r].height = 26
+            r += 1
+        r += 1
+        r = S.nota_riga(ws, r, "Le celle di questa pagina sono tutte calcolate: non si scrive qui. Gli input stanno nei fogli gialli, e ogni numero del cruscotto risale a uno di quelli attraverso un nome definito.", 4)
 
     # -------------------------------------------------------------- parametri
     def foglio_parametri(self) -> None:
@@ -264,8 +401,12 @@ class Costruttore:
         ws.add_data_validation(categorie)
 
         r = S.sezione(ws, r, "Identificazione")
+        riga_rif = r
         r = S.campo(ws, r, "Riferimento interno", "house_1", input_utente=True, nota="Lo stesso identificativo usato nel foglio Annunci.")
+        self.nome("riferimento_immobile", ws, f"B{riga_rif}")
+        riga_com = r
         r = S.campo(ws, r, "Comune", "", input_utente=True, nota="Serve a ritrovare la delibera IMU e la zona OMI di riferimento.")
+        self.nome("comune_immobile", ws, f"B{riga_com}")
         r = S.campo(ws, r, "Indirizzo", "", input_utente=True)
         r = S.campo(ws, r, "Link annuncio", "", input_utente=True)
         riga_mq = r
@@ -1109,6 +1250,7 @@ class Costruttore:
 
         r = S.sezione(ws, r, "Lettura", secondaria=True)
         riga_verdetto = r
+        self.nome("verdetto", ws, f"B{riga_verdetto}")
         r = S.campo(
             ws, r, "Sintesi automatica",
             '=IF(IFERROR(IRR(flussi_tir),-1)<0,"Operazione in perdita sull\'orizzonte scelto",'
@@ -1360,6 +1502,236 @@ class Costruttore:
         r = S.campo(ws, r, "Prezzo massimo corrispondente", f"=B{riga_costo_sost}/(1+incidenza_costi)", S.EURO, risultato=True, nota="Approssimazione: assume che l'incidenza percentuale dei costi accessori resti quella dello scenario base.")
         r = S.campo(ws, r, "Scarto rispetto al prezzo trattato", f"=B{riga_costo_sost}/(1+incidenza_costi)-prezzo", S.EURO, nota="Se negativo, il prezzo trattato e' sopra quello che l'immobile puo' giustificare a quel rendimento.")
         r = S.campo(ws, r, "Canone minimo per un cash flow non negativo", "=(rata_annua+condominio*quota_condominio+prezzo*manut_pct+assicurazione+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione)/((12-mesi_sfitto)*(1-morosita_pct)*(1-ced_libero))", S.EURO_DEC, risultato=True, nota="Canone mensile sotto il quale l'immobile assorbe cassa invece di generarla.")
+
+    # ------------------------------------------------------------- estrazioni
+    def foglio_estrazioni(self) -> None:
+        """Foglio tecnico nascosto: le estrazioni casuali della simulazione.
+
+        La simulazione probabilistica ha un problema pratico in Excel. Usare la
+        funzione casuale nativa la renderebbe volatile, cioe' ogni ricalcolo
+        cambierebbe tutti i numeri e due letture consecutive dello stesso file
+        darebbero risultati diversi: inutilizzabile per decidere e impossibile da
+        verificare.
+
+        La soluzione adottata separa le due cose. Le estrazioni sono numeri fissi,
+        generati una volta sola alla creazione del file con un seme dichiarato,
+        quindi identiche a ogni riapertura e riproducibili. Il calcolo che sta sopra,
+        invece, e' formula viva: cambiando un input tutti i mille scenari si
+        ricalcolano davanti agli occhi, ma sulla stessa estrazione. Si ottiene cosi'
+        una simulazione stabile e insieme interattiva.
+
+        Il foglio e' nascosto perche' non c'e' nulla da leggerci: si scopre solo se
+        si vuole ispezionare il motore.
+        """
+        import random
+
+        ws = self.wb.create_sheet("_Estrazioni")
+        ws.sheet_state = "hidden"
+        generatore = random.Random(SEME_SIMULAZIONE)
+
+        intest = ["n", "z canone", "z sfitto", "z tasso", "z rivalutazione", "u evento",
+                  "Canone annuo", "Mesi sfitto", "Tasso", "Rivalutazione", "Ricavo effettivo",
+                  "NOI", "Utile netto", "Rata annua", "Cash flow", "Valore finale",
+                  "Debito residuo", "Patrimonio finale", "Montante", "Rendimento netto"]
+        for i, t in enumerate(intest, start=1):
+            ws.cell(row=1, column=i, value=t).font = S.ETICHETTA_BOLD
+        prima = 2
+
+        for k in range(ESTRAZIONI):
+            r = prima + k
+            ws.cell(row=r, column=1, value=k + 1)
+            # Quattro normali standard e una uniforme, fisse.
+            for col in range(2, 6):
+                ws.cell(row=r, column=col, value=round(generatore.gauss(0, 1), 6))
+            ws.cell(row=r, column=6, value=round(generatore.random(), 6))
+
+            ws.cell(row=r, column=7, value=f"=MAX(0,canone_mese*(1+$B{r}*vol_canone))*12")
+            ws.cell(row=r, column=8, value=f"=MEDIAN(0,mesi_sfitto+$C{r}*vol_sfitto,12)")
+            ws.cell(row=r, column=9, value=f"=MAX(0,tasso+$D{r}*vol_tasso)")
+            # La rivalutazione si compone su tutto l'orizzonte, quindi l'estrazione
+            # non e' la variazione di un anno ma la media dell'intero periodo, e la
+            # sua dispersione scende con la radice del numero di anni. Senza questa
+            # correzione un'estrazione verrebbe trattata come un regime permanente e
+            # la coda alta produrrebbe patrimoni finali fuori scala.
+            ws.cell(row=r, column=10, value=f"=riv_immobile+$E{r}*vol_rivalutazione/SQRT(MAX(orizzonte,1))")
+            # L'evento di morosita' grave toglie i mesi di canone impostati.
+            ws.cell(
+                row=r, column=11,
+                value=(
+                    f"=MAX(0,($G{r}-$G{r}/12*$H{r})*(1-morosita_pct)"
+                    f"-IF($F{r}<prob_morosita_grave,$G{r}/12*mesi_persi_morosita,0))"
+                ),
+            )
+            ws.cell(row=r, column=12, value=f"=$K{r}-(ricavo_effettivo-noi_annuo)")
+            ws.cell(row=r, column=13, value=f"=$L{r}-$K{r}*ced_libero")
+            ws.cell(row=r, column=14, value=f"=IF(mutuo_importo>0,PMT($I{r}/12,durata*12,-mutuo_importo)*12,0)")
+            ws.cell(row=r, column=15, value=f"=$M{r}-$N{r}")
+            ws.cell(row=r, column=16, value=f"=prezzo*(1+$J{r})^orizzonte")
+            ws.cell(
+                row=r, column=17,
+                value=(
+                    f"=IF(mutuo_importo>0,mutuo_importo*((1+$I{r}/12)^(durata*12)"
+                    f"-(1+$I{r}/12)^(MIN(orizzonte,durata)*12))/((1+$I{r}/12)^(durata*12)-1),0)"
+                ),
+            )
+            ws.cell(row=r, column=18, value=f"=$P{r}*(1-costi_vendita)-$Q{r}")
+            # Il montante confronta due strade che partono dallo stesso esborso. Chi
+            # compra, se il flusso di cassa e' negativo, deve versare quella somma ogni
+            # anno prendendola da altrove, e quel denaro ha un costo opportunita': i
+            # flussi vanno quindi capitalizzati al rendimento del portafoglio
+            # alternativo, non sommati a valore nominale. Con flusso positivo vale il
+            # simmetrico, cioe' la cassa incassata si reinveste.
+            ws.cell(
+                row=r, column=19,
+                value=f"=$R{r}+IF(rend_port=0,$O{r}*orizzonte,$O{r}*((1+rend_port)^orizzonte-1)/rend_port)",
+            )
+            ws.cell(row=r, column=20, value=f"=IF(costo_totale>0,$M{r}/costo_totale,0)")
+
+        ultima = prima + ESTRAZIONI - 1
+        for nome, colonna in (("sim_cash_flow", "O"), ("sim_patrimonio", "R"),
+                              ("sim_montante", "S"), ("sim_rendimento", "T"),
+                              ("sim_utile", "M")):
+            self.nome_intervallo(nome, ws, f"${colonna}${prima}:${colonna}${ultima}")
+
+    # ---------------------------------------------------------------- rischio
+    def foglio_rischio(self) -> None:
+        """Distribuzione degli esiti e classifica delle variabili che pesano.
+
+        Il foglio Scenari risponde alla domanda su cosa succede in tre casi scelti a
+        mano. Questo risponde a due domande diverse e piu' difficili: quanto e'
+        probabile ciascun esito, e quale delle ipotesi conta davvero.
+
+        La prima e' una simulazione su mille estrazioni, che restituisce percentili e
+        probabilita' invece di un numero solo. La seconda e' un'analisi a tornado, che
+        muove una variabile per volta di una percentuale uguale per tutte e ordina le
+        variabili per quanto spostano il risultato: serve a sapere su cosa vale la
+        pena raccogliere informazione migliore, e su cosa invece non cambia nulla.
+        """
+        ws = self.wb.create_sheet("Rischio")
+        ws.sheet_view.showGridLines = False
+        S.larghezze_colonne(ws, {"A": 46, "B": 18, "C": 18, "D": 18, "E": 44})
+        r = S.titolo(
+            ws,
+            1,
+            "Rischio: distribuzione degli esiti e peso delle ipotesi",
+            f"Simulazione su {ESTRAZIONI} estrazioni con seme fisso, quindi riproducibile: gli stessi input danno sempre gli stessi risultati, ma cambiando un input tutto si ricalcola.",
+            5,
+        )
+
+        r = S.sezione(ws, r, "Quanto sono incerte le ipotesi", 5)
+        r = S.nota_riga(ws, r, "Non si dichiara quanto valgono le variabili, che sta negli altri fogli, ma quanto ci si sbaglia nel prevederle. Sono le uniche cose da impostare qui.", 5)
+        for chiave, etichetta, valore, formato, nota in [
+            ("vol_canone", "Incertezza sul canone", 0.10, S.PERC,
+             "Scarto tipico rispetto al canone atteso. Il dieci per cento significa che due volte su tre il canone vero sta fra il novanta e il centodieci per cento di quello ipotizzato."),
+            ("vol_sfitto", "Incertezza sui mesi di sfitto", 1.5, S.NUMERO_DEC,
+             "In mesi. Uno e mezzo copre l'anno con un cambio di inquilino andato lungo."),
+            ("vol_tasso", "Incertezza sul tasso", 0.0, S.PERC,
+             "Zero per un tasso fisso, che e' certo per definizione. Su un variabile un punto percentuale e' un'ipotesi ordinaria."),
+            ("vol_rivalutazione", "Incertezza sulla rivalutazione annua", 0.04, S.PERC,
+             "Riferita al singolo anno. Poiche' la rivalutazione si compone, la simulazione la scala per la radice dell'orizzonte: su venticinque anni l'incertezza sulla media annua e' un quinto di quella su un anno solo."),
+            ("prob_morosita_grave", "Probabilita' annua di morosita' grave", 0.05, S.PERC,
+             "Non il piccolo ritardo, che sta gia' nell'accantonamento ordinario, ma l'inquilino che smette di pagare e va sfrattato."),
+            ("mesi_persi_morosita", "Mesi di canone persi in caso di morosita' grave", 12, S.NUMERO_DEC,
+             "Fra convalida di sfratto ed esecuzione passa in genere piu' di un anno, e nel frattempo le imposte e le spese si pagano lo stesso."),
+        ]:
+            riga = r
+            r = S.campo(ws, r, etichetta, valore, formato, input_utente=True, nota=nota)
+            self.nome(chiave, ws, f"B{riga}")
+        r += 1
+
+        r = S.sezione(ws, r, "Come vanno a finire i mille scenari", 5, secondaria=True)
+        r = S.intestazioni(ws, r, ["Grandezza", "Peggiore 5%", "Mediana", "Migliore 5%"], [46, 18, 18, 18])
+        for etichetta, intervallo, formato, nota in [
+            ("Cash flow annuo", "sim_cash_flow", S.EURO, "Diviso dodici e' l'impegno mensile. La colonna di sinistra e' lo scenario che va messo in conto, non quello da escludere."),
+            ("Utile netto annuo", "sim_utile", S.EURO, ""),
+            ("Rendimento netto", "sim_rendimento", S.PERC, ""),
+            ("Patrimonio a fine orizzonte", "sim_patrimonio", S.EURO, "Valore dell'immobile al netto dei costi di vendita e del debito residuo."),
+            ("Montante complessivo", "sim_montante", S.EURO, "Patrimonio piu' i flussi di cassa capitalizzati al rendimento del portafoglio alternativo. E' la grandezza confrontabile con il non comprare, perche' tratta allo stesso modo il denaro impiegato nelle due strade."),
+        ]:
+            e = ws.cell(row=r, column=1, value=etichetta)
+            e.font = S.ETICHETTA
+            e.alignment = S.SINISTRA
+            for col, formula in ((2, f"=PERCENTILE({intervallo},0.05)"),
+                                 (3, f"=MEDIAN({intervallo})"),
+                                 (4, f"=PERCENTILE({intervallo},0.95)")):
+                c = ws.cell(row=r, column=col, value=formula)
+                c.number_format = formato
+                c.border = S.BORDO
+                c.fill = S.FILL_CALCOLO
+            if nota:
+                n_ = ws.cell(row=r, column=5, value=nota)
+                n_.font = S.NOTA
+                n_.alignment = S.SINISTRA
+            r += 1
+        r += 1
+
+        r = S.sezione(ws, r, "Le probabilita' che contano", 5, secondaria=True)
+        nomi_prob = ["prob_cash_negativo", "prob_sotto_obiettivo", "prob_perdita_capitale", "prob_batte_alternativa"]
+        for indice, (etichetta, formula, nota) in enumerate([
+            ("Probabilita' di cash flow negativo",
+             '=COUNTIF(sim_cash_flow,"<0")/COUNT(sim_cash_flow)',
+             "Quanto spesso l'immobile assorbe cassa invece di darne. Con la leva e' quasi sempre alta: la domanda non e' se accade ma se e' sostenibile."),
+            ("Probabilita' di rendimento sotto l'obiettivo",
+             '=COUNTIF(sim_rendimento,"<"&rend_obiettivo)/COUNT(sim_rendimento)',
+             "Rispetto alla soglia impostata nel foglio Scenari."),
+            ("Probabilita' di perdere capitale proprio",
+             '=COUNTIF(sim_patrimonio,"<"&esborso)/COUNT(sim_patrimonio)',
+             "Patrimonio finale inferiore a quanto messo all'inizio, senza contare l'inflazione."),
+            ("Probabilita' di battere il portafoglio alternativo",
+             '=COUNTIF(sim_montante,">"&(esborso*(1+rend_port)^orizzonte))/COUNT(sim_montante)',
+             "Entrambe le strade partono dallo stesso esborso; chi compra versa anche i flussi negativi, che nel montante sono capitalizzati allo stesso rendimento. Per l'abitazione principale il confronto corretto resta quello del foglio Confronto affitto, che tiene conto del canone risparmiato."),
+        ]):
+            riga = r
+            r = S.campo(ws, r, etichetta, formula, S.PERC_1, risultato=True, nota=nota)
+            self.nome(nomi_prob[indice], ws, f"B{riga}")
+        r += 1
+
+        r = S.sezione(ws, r, "Quale ipotesi pesa di piu'", 5, secondaria=True)
+        r = S.nota_riga(ws, r, "Ogni variabile viene mossa da sola del dieci per cento in meno e in piu', tenendo ferme le altre, e si misura di quanto si sposta il cash flow annuo. L'ordine dice dove conviene spendere tempo a raccogliere un dato migliore: sulla variabile in cima si',  su quella in fondo no.", 5)
+        r = S.intestazioni(ws, r, ["Variabile", "Meno 10%", "Piu' 10%", "Ampiezza"], [46, 18, 18, 18])
+        prima_t = r
+        costi_fissi = "(ricavo_effettivo-noi_annuo)"
+        base_cf = f"(ricavo_effettivo-{costi_fissi}-ricavo_effettivo*ced_libero-rata_annua)"
+        variabili = [
+            ("Canone", "((ricavo_effettivo*{f})-{cf}-(ricavo_effettivo*{f})*ced_libero-rata_annua)"),
+            ("Costi operativi", "(ricavo_effettivo-{cf}*{f}-ricavo_effettivo*ced_libero-rata_annua)"),
+            ("Tasso del mutuo", "(ricavo_effettivo-{cf}-ricavo_effettivo*ced_libero-IF(mutuo_importo>0,PMT(tasso*{f}/12,durata*12,-mutuo_importo)*12,0))"),
+            ("Importo del mutuo", "(ricavo_effettivo-{cf}-ricavo_effettivo*ced_libero-IF(mutuo_importo>0,PMT(tasso/12,durata*12,-mutuo_importo*{f})*12,0))"),
+            ("Durata del mutuo", "(ricavo_effettivo-{cf}-ricavo_effettivo*ced_libero-IF(mutuo_importo>0,PMT(tasso/12,ROUND(durata*{f},0)*12,-mutuo_importo)*12,0))"),
+            ("Prezzo", "(ricavo_effettivo-({cf}+prezzo*manut_pct*({f}-1)+prezzo*ristrutt_pct/ristrutt_anni*({f}-1))-ricavo_effettivo*ced_libero-rata_annua)"),
+            ("Aliquota sul canone", "(ricavo_effettivo-{cf}-ricavo_effettivo*ced_libero*{f}-rata_annua)"),
+            ("Spese condominiali", "(ricavo_effettivo-({cf}+condominio*quota_condominio*({f}-1))-ricavo_effettivo*ced_libero-rata_annua)"),
+        ]
+        for nome, schema in variabili:
+            e = ws.cell(row=r, column=1, value=nome)
+            e.font = S.ETICHETTA
+            e.alignment = S.SINISTRA
+            giu = "=" + schema.format(f="0.9", cf=costi_fissi)
+            su = "=" + schema.format(f="1.1", cf=costi_fissi)
+            for col, formula in ((2, giu), (3, su)):
+                c = ws.cell(row=r, column=col, value=formula)
+                c.number_format = S.EURO
+                c.border = S.BORDO
+                c.fill = S.FILL_CALCOLO
+            amp = ws.cell(row=r, column=4, value=f"=ABS($C{r}-$B{r})")
+            amp.number_format = S.EURO
+            amp.border = S.BORDO
+            amp.fill = S.FILL_RISULTATO
+            amp.font = S.ETICHETTA_BOLD
+            r += 1
+        ultima_t = r - 1
+        ws.conditional_formatting.add(
+            f"D{prima_t}:D{ultima_t}",
+            ColorScaleRule(start_type="min", start_color="FFFFFF", end_type="max", end_color="F8CBAD"),
+        )
+        r += 1
+        r = S.campo(ws, r, "Cash flow di riferimento", "=" + base_cf, S.EURO, nota="Il valore centrale rispetto a cui si misurano gli scostamenti.")
+        r += 1
+        for testo in [
+            "Una precisazione sulla simulazione, per non farle dire piu' di quello che sa. Le estrazioni assumono che le variabili siano indipendenti fra loro, e nella realta' non lo sono: quando i tassi salgono i prezzi tendono a scendere, e quando il mercato del lavoro peggiora aumentano insieme sfitto e morosita'. La distribuzione va quindi letta come una misura della dispersione degli esiti, non come una probabilita' oggettiva.",
+            "L'incertezza dichiarata in cima al foglio e' l'unica cosa che si sceglie, ed e' anche l'unica che non si puo' verificare: nessuno conosce la volatilita' vera del proprio canone. Il modo onesto di usarla e' provare valori diversi e guardare se la decisione cambia. Se cambia, la decisione non era solida.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 5)
 
     # ------------------------------------------------------------ comproprieta
     def foglio_comproprieta(self) -> None:
@@ -1642,7 +2014,9 @@ class Costruttore:
             CellIsRule(operator="equal", formula=['"da fare"'], fill=S.FILL_ATTENZIONE),
         )
         r += 1
+        riga_aperte = r
         r = S.campo(ws, r, "Verifiche ancora aperte", f'=COUNTIF(F{prima}:F{ultima},"da fare")+COUNTIF(F{prima}:F{ultima},"in corso")', S.NUMERO, risultato=True)
+        self.nome("verifiche_aperte", ws, f"B{riga_aperte}")
 
     # ----------------------------------------------------------------- annunci
     def foglio_annunci(self) -> None:

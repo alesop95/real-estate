@@ -8,7 +8,7 @@ I parametri fiscali sono quelli in vigore al 28 agosto 2026, con le novita' dell
 
 ## Che cosa produce
 
-Il workbook ha sedici fogli. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto e Scenari. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
+Il workbook ha diciannove fogli e si apre sul Cruscotto, che raccoglie i cinque numeri su cui si decide. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto, Scenari e Rischio. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
 
 Il foglio Immobile calcola le imposte di trasferimento nei quattro casi rilevanti, applica la regola prezzo-valore quando spetta, quantifica il valore economico del bonus prima casa mostrando quanto si pagherebbe senza, e arriva al costo totale dell'operazione e alla cassa che serve davvero.
 
@@ -17,6 +17,8 @@ Il foglio Locazione mette a confronto sullo stesso immobile la cedolare secca a 
 Il foglio Comproprieta' risponde alla domanda su cosa cambia comprando in due, in tre o in N: ripartisce l'operazione per quote, calcola l'imposta di ciascuno secondo il regime che ciascuno sceglie, e riporta le regole di governo della comunione, a partire dal fatto che non serve costituire una societa'.
 
 Il foglio Confronto immobili applica lo stesso modello a ogni annuncio del registro, una riga per immobile, e risponde alla domanda che viene prima di ogni altra, cioe' quale dei candidati meriti una valutazione approfondita.
+
+Il foglio Rischio non chiede quanto rende l'immobile ma quanto puo' andare storto: mille scenari con canone, sfitto, tasso e rivalutazione che variano insieme, piu' l'evento raro di una morosita' grave, e in uscita la distribuzione del cash flow e del patrimonio finale. Il numero che conta e' la coda bassa, cioe' quanto si mette di tasca propria ogni mese nello scenario peggiore su venti. Accanto, un'analisi a tornado dice quale ipotesi muove di piu' il risultato, quindi dove convenga spendere tempo a stimare meglio.
 
 Il foglio Metriche da' rendimento lordo e netto, cap rate, cash on cash, debt service coverage ratio, tasso interno di rendimento e valore attuale netto, tutti calcolati sul costo totale e non sul prezzo. Il foglio Confronto affitto risponde alla domanda su quanto valga comprare rispetto a restare in affitto investendo la differenza. Il foglio Scenari mostra quanto l'esito dipenda dalle assunzioni, che e' la cosa piu' utile che un modello del genere possa fare.
 
@@ -59,7 +61,7 @@ python tools/valuta.py omi cerca --comune "NOME DEL COMUNE"
 
 Sull'acquisto in piu' persone c'e' una scheda dedicata, `docs/comprare-in-piu-persone.md`, che spiega perche' la comunione basta e quando invece una societa' serve.
 
-Chi vuole solo usare il file legge `docs/guida-non-tecnica.md`, che accompagna foglio per foglio spiegando ogni voce in linguaggio comune. Chi interviene sul modello legge `docs/guida-tecnica.md`, che riporta architettura, catena di calcolo e il riferimento di ogni voce con formula, nome definito e norma di riferimento.
+Chi parte da zero, senza Python installato e senza sapere quali documenti servano, legge `docs/da-zero.md`: sette passi dall'ambiente vuoto alla prima valutazione completa. Chi vuole solo usare il file legge `docs/guida-non-tecnica.md`, che accompagna foglio per foglio spiegando ogni voce in linguaggio comune. Chi interviene sul modello legge `docs/guida-tecnica.md`, che riporta architettura, catena di calcolo e il riferimento di ogni voce con formula, nome definito e norma di riferimento.
 
 ## Requisiti
 
@@ -89,7 +91,7 @@ Le stesse regole sono poi implementate due volte, in Python e in formule Excel. 
 
 ## Sull'attendibilita' dei numeri
 
-Ogni parametro fiscale porta la fonte accanto, nel foglio Parametri del workbook e in `src/immobiliare/parametri.py`. Il registro completo, con lo stato di verifica di ciascuna fonte, e' in `docs/fonti.md`: le fonti lette direttamente sono distinte da quelle solo segnalate, e nessun parametro del modello poggia su una fonte non verificata.
+Ogni parametro fiscale porta la fonte accanto, nel foglio Parametri del workbook e in `src/immobiliare/parametri.py`. Il registro completo e' in `docs/fonti.md`, e per ogni fonte dichiara tre cose: cosa fornisce, dove atterra nel progetto fra campo di parametro, funzione, cella del workbook e voce di checklist, e con quale grado di verifica. Le fonti lette direttamente sono distinte da quelle solo segnalate, nessun parametro del modello poggia su una fonte non verificata, e le lacune note sono elencate in fondo invece di essere taciute.
 
 Due voci vanno sempre sostituite con il dato reale prima di prendere sul serio un risultato: l'aliquota IMU, che va letta nella delibera del Comune dell'anno in corso e non nel valore base di legge, e le spese condominiali, che vanno lette nel consuntivo degli ultimi due esercizi e non nella stima dell'agenzia.
 

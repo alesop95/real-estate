@@ -73,3 +73,27 @@ Decisione. Tutti i parametri normativi stanno in `src/immobiliare/parametri.py`,
 Motivazione. L'aggiornamento annuale deve essere un intervento in un punto solo, e chi legge un numero deve poter risalire alla fonte senza cercare.
 
 Conseguenze. Il foglio Parametri e' modificabile dall'utente: se una aliquota cambia in corso d'anno si aggiorna li' senza rigenerare, e il codice si allinea alla revisione successiva.
+
+## ADR-007, la simulazione probabilistica separa le estrazioni fisse dal calcolo vivo
+
+Data: 2026-08-31. Stato: accettata.
+
+Contesto. Passare dai tre scenari scelti a mano a una distribuzione di esiti richiede molte estrazioni casuali dentro un foglio di calcolo senza macro. La funzione casuale nativa e' volatile e cambierebbe tutti i mille scenari a ogni tocco di cella; pre-calcolare tutto in Python e scrivere valori tradirebbe ADR-001.
+
+Decisione. I due strati vivono separati nel foglio nascosto `_Estrazioni`. Le estrazioni sono numeri fissi generati in Python con seme dichiarato nel modulo, `SEME_SIMULAZIONE`. Il calcolo che le trasforma in esiti sono formule vive che leggono gli input dell'utente.
+
+Motivazione. Riproducibilita' e interattivita' sembravano in conflitto e non lo erano: sono due strati diversi. Due persone che discutono lo stesso file devono guardare gli stessi numeri, e il file deve comunque reagire a un cambio di prezzo.
+
+Conseguenze. Il ricalcolo dell'intero workbook costa sei decimi di secondo. Le variabili sono assunte indipendenti, e il limite e' dichiarato dentro il foglio: la distribuzione va letta come misura della dispersione, non come probabilita' oggettiva. Chi aggiunge una variabile aleatoria deve decidere esplicitamente se la sua incertezza e' di livello, e allora non si scala, oppure di variazione annua di una grandezza che si compone, e allora si divide per la radice dell'orizzonte.
+
+## ADR-008, il progetto adotta il pacchetto studio-didattico del template
+
+Data: 2026-08-31. Stato: accettata.
+
+Contesto. Le decisioni erano registrate qui in forma sintetica, ma il perche' di sette scelte strutturali, e soprattutto com'era il codice prima e perche' quella forma era fragile, non era scritto da nessuna parte. Chi riprende il progetto vede lo stato finale e non i vincoli che lo hanno prodotto.
+
+Decisione. Adottato il pacchetto `studio-didattico` del template: `.claude/context/studio-didattico-master.md` con voci numerate in ordine cronologico nella struttura in quattro parti, e un approfondimento `refactor-NN-<slug>.md` per ciascuna, con il codice reale prima e dopo e la sezione su come estendere il pattern.
+
+Motivazione. Un registro ADR dice cosa si e' deciso; non insegna a riconoscere la classe di difetto. Il caso del moltiplicatore catastale lo dimostra: era identico in Python e in Excel, quindi la doppia implementazione non l'ha intercettato, e il valore sta nel capire perche' un presidio che funziona sugli errori di trascrizione non funziona su un errore concettuale replicato fedelmente.
+
+Conseguenze. Ogni evoluzione strutturale futura aggiunge una voce al master e il suo approfondimento. Il pacchetto e' indicizzato in `CLAUDE.md` e va letto prima di rifare diversamente una scelta che ha gia' un numero.

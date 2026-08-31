@@ -2,6 +2,24 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-08-31, cruscotto, simulazione probabilistica e strato didattico
+
+File toccati: `src/immobiliare/excel_builder.py` (fogli Cruscotto, Rischio, `_Estrazioni`), `tests/test_workbook.py`, `docs/da-zero.md` nuovo, `docs/fonti.md` riscritto, `.claude/context/studio-didattico-master.md` nuovo e i sette approfondimenti `refactor-01` .. `refactor-07`, `CLAUDE.md`, `.claude/memory/index.md`, `.claude/memory/decisions.md`.
+
+Cruscotto. Il workbook aveva quindici fogli e nessun punto di ingresso: chi lo apriva doveva sapere gia' dove guardare. Il nuovo primo foglio raccoglie i cinque numeri di decisione, costo totale, cassa al rogito, rendimento netto, cash flow mensile e debt service coverage ratio, con accanto la coda bassa della simulazione e il contatore delle verifiche ancora aperte. Nessun calcolo nuovo: tutte le celle leggono nomi definiti gia' esistenti, quindi il cruscotto non puo' divergere dai fogli di dettaglio.
+
+Simulazione probabilistica. Nuovo foglio Rischio su mille scenari, con quattro variabili aleatorie, canone, sfitto, tasso e rivalutazione, piu' un evento discreto di morosita' grave. Il conflitto fra riproducibilita' e interattivita' e' risolto separando i due strati: le estrazioni sono numeri fissi generati con seme dichiarato e scritti nel foglio nascosto `_Estrazioni`, il calcolo che le trasforma in esiti sono formule vive che leggono gli input dell'utente. La funzione casuale nativa e' stata scartata perche' volatile: renderebbe i percentili diversi a ogni tocco di cella. Accanto, un blocco a tornado che muove una variabile per volta del dieci per cento e ordina per ampiezza, che risponde alla domanda operativa di dove convenga spendere tempo a stimare meglio.
+
+Correzione di modello sulla rivalutazione. La prima versione applicava la volatilita' annua come se l'estrazione fosse un regime permanente per tutto l'orizzonte, e la coda alta produceva un patrimonio finale di novecentodiciottomila euro su un immobile da centoventimila. L'estrazione e' invece la media di N realizzazioni annue, quindi la sua dispersione va divisa per la radice dell'orizzonte. La correzione non si applica alle altre variabili, dove l'incertezza e' di livello e non si media via. Corretto anche il montante finale, che sommava i flussi a valore nominale e rendeva asimmetrico il confronto con l'alternativa: ora li capitalizza al rendimento del portafoglio.
+
+Documentazione da zero. Nuovo `docs/da-zero.md`: dall'ambiente vuoto alla prima valutazione in sette passi, con l'elenco dei cinque documenti da procurarsi prima di aprire il foglio, perche' senza visura, consuntivo condominiale, delibera IMU, quotazioni OMI e preventivo del mutuo si compila con valori inventati.
+
+Registro delle fonti riscritto. Ogni riga porta ora una colonna in piu' che dichiara dove quella fonte atterra: il campo della dataclass, la funzione, la cella con nome definito, la voce di checklist. Aggiunta una sezione sulle interfacce dati automatizzate con endpoint, protocollo e comportamento in caso di indisponibilita', e una sezione finale che elenca le lacune note, a partire dal testo primario dell'articolo 7 della legge 448/1998 che non e' stato recuperato.
+
+Strato didattico. Adottato il pacchetto `studio-didattico` del template: un master con sette voci numerate, ciascuna con contesto, com'era e perche' era fragile, il salto compiuto e il rimando, e sette approfondimenti che mostrano il codice reale prima e dopo e chiudono spiegando come estendere il pattern. Le voci non sono ricostruzioni a posteriori: sono i sette punti in cui il progetto ha cambiato impostazione, incluso il moltiplicatore catastale sbagliato che era identico in Python e in Excel e che la doppia implementazione non aveva intercettato.
+
+Verifica: trentanove test verdi, workbook a diciannove fogli riaperto con Excel, nessuna cella in errore, ricalcolo completo in sei decimi di secondo, scansione dei dati personali sui file tracciati pulita.
+
 ## 2026-08-31, articoli civilistici del corpus, acquisto in piu' persone e scenari settabili
 
 File toccati: `src/immobiliare/excel_builder.py` (foglio Comproprieta' e blocco dei tre scenari), `tests/test_workbook.py`, `docs/comprare-in-piu-persone.md` nuovo, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`.

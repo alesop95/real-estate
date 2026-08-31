@@ -4,11 +4,11 @@
 
 ## Cos'e' questo progetto
 
-Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel con formule vive, quindi interattivo, che copre il costo reale dell'operazione, il mutuo, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilita', la checklist delle verifiche legali e tecniche e il registro degli immobili in valutazione.
+Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel di diciannove fogli con formule vive, quindi interattivo, che copre il cruscotto di sintesi, il costo reale dell'operazione, il mutuo con simulatore e piano di ammortamento, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilita', la simulazione probabilistica su mille scenari con analisi a tornado, la ripartizione fra comproprietari, la checklist delle verifiche legali e tecniche, il registro degli immobili in valutazione e il registro delle fonti.
 
 Il perimetro e' deliberatamente definito. Sono coperti l'acquisto da privato e da impresa con IVA, la prima casa e le altre, l'acquisto in quota da parte di piu' soggetti, la nuova costruzione con le tutele del d.lgs. 122/2005. Non e' coperta la ristrutturazione come progetto a se', per scelta esplicita; resta invece modellata la ristrutturazione periodica di fine ciclo, perche' e' un costo ricorrente e ignorarlo falsa il rendimento.
 
-Il progetto adotta il sistema di progetto portabile del template `E:\template-claude-developing`, nella forma minima che serve a questo obiettivo: memoria e schede di contesto versionate, regole modulari, nessun pacchetto opzionale.
+Il progetto adotta il sistema di progetto portabile del template `E:\template-claude-developing`: memoria e schede di contesto versionate, regole modulari, e il pacchetto `studio-didattico`, cioe' il registro delle evoluzioni di progetto con i relativi approfondimenti nel codice reale.
 
 ## Contesto operativo
 
@@ -57,6 +57,8 @@ LICENSE      licenza MIT, con la nota che delimita cosa la licenza non garantisc
 Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice.
 
 ```
+docs/da-zero.md              avvio da zero: cosa installare, quali documenti procurarsi,
+                              la prima valutazione completa in sette passi
 docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
                               detrazione degli interessi, plusvalenza, IMU
 docs/fiscalita-locazione.md  i quattro regimi a confronto, novita' 2026 sulle locazioni
@@ -74,7 +76,8 @@ docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il 
                               di ogni voce spiegato in linguaggio comune
 docs/guida-tecnica.md        architettura, catena di calcolo, riferimento di ogni voce con
                               formula e norma, punti di intervento, verifica
-docs/fonti.md                registro completo delle fonti, con stato di verifica
+docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
+                              atterra nel codice o nel workbook, stato di verifica, lacune
 ```
 
 Memoria e meta-stato, sotto `.claude/memory/`, letti sempre a inizio sessione.
@@ -94,6 +97,19 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 .claude/context/dev-testing.md          come si verifica il modello, doppia implementazione
 .claude/context/current-work.md         feature attiva, definition of done, domande aperte
 .claude/context/roadmap.md              direzione e priorita'
+```
+
+Pacchetto `studio-didattico`, sotto `.claude/context/`. E' il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perche' era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perche' una scelta e' fatta cosi', prima di rifarla diversamente.
+
+```
+studio-didattico-master.md                  indice narrativo, sette voci numerate
+refactor-01-formule-vive.md                 workbook come modello, non come rapporto
+refactor-02-denominatore.md                 il denominatore dei rendimenti
+refactor-03-verifica-con-excel.md           automazione COM e locale italiano
+refactor-04-agevolazione-unica.md           una sola fonte di verita' per l'agevolazione
+refactor-05-doppio-conteggio.md             un costo ricorrente sta in un posto solo
+refactor-06-contratto-posizionale.md        il contratto fra registro annunci e foglio
+refactor-07-simulazione-riproducibile.md    simulazione riproducibile e interattiva
 ```
 
 Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.
