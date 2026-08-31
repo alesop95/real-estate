@@ -130,6 +130,43 @@ La soglia di un terzo viene dalla pratica della consulenza patrimoniale, dove si
 
 La plusvalenza è imponibile se fra acquisto e cessione passano meno di cinque anni, salvo che l'immobile sia stato adibito ad abitazione principale del cedente o dei suoi familiari per la maggior parte del periodo, o sia pervenuto per successione: art. 67 comma 1 lettera b TUIR, URN `urn:nir:stato:decreto.del.presidente.della.repubblica:1986-12-22;917`. In atto si può chiedere l'imposta sostitutiva del ventisei per cento in luogo dell'IRPEF. Per gli immobili con interventi agevolati da superbonus conclusi da meno di dieci anni la finestra si estende a dieci anni.
 
+### Comproprietà
+
+Il foglio `Comproprietà` ripartisce l'operazione fino a otto acquirenti e calcola per ciascuno l'imposta personale, perché in comunione il fisco non è un fatto dell'immobile ma delle persone: l'opzione per la cedolare secca si esercita disgiuntamente e vale solo per chi l'ha esercitata, e l'aliquota marginale IRPEF è individuale.
+
+| Voce | Norma | Che cosa impone |
+|---|---|---|
+| Nessuna società necessaria | Art. 2248 c.c. | La comunione costituita o mantenuta al solo scopo del godimento è regolata dalle norme sulla comunione, non dal contratto di società |
+| Confine con la società | Art. 2247 c.c. | La società presuppone il conferimento per l'esercizio in comune di un'attività economica. Scivolare nell'impresa senza atto costitutivo genera una società di fatto, con responsabilità illimitata e solidale |
+| Quote e ripartizione | Art. 1101 c.c. | Le quote si presumono uguali; vantaggi e pesi sono in proporzione. Se gli apporti sono diversi le quote vanno scritte diverse in atto |
+| Cessione della quota | Art. 1103 c.c. | Ciascuno può disporre della propria quota: senza patto di prelazione si finisce in comunione con un terzo |
+| Contribuzione alle spese | Art. 1104 c.c. | Obbligo pro quota, con facoltà di liberarsi rinunciando al diritto; il cessionario risponde in solido dei contributi non versati |
+| Amministrazione ordinaria | Art. 1105 c.c. | Maggioranza calcolata per valore delle quote, vincolante per la minoranza, con obbligo di informativa preventiva. In assenza di maggioranza provvede il giudice, che può nominare un amministratore |
+| Regolamento e delega | Art. 1106 c.c. | A maggioranza si può adottare un regolamento e delegare l'amministrazione a un partecipante o a un terzo |
+| Innovazioni e atti eccedenti | Art. 1108 c.c. | Maggioranza dei due terzi del valore. Unanimità per alienare, costituire diritti reali e locare oltre nove anni. Ipoteca ai due terzi se garantisce somme per ricostruzione o miglioramento |
+| Scioglimento | Art. 1111 c.c. | Ciascuno può sempre domandarlo. Il patto di indivisione è valido, opponibile agli aventi causa, e dura al massimo dieci anni |
+| Opposizione dei creditori | Art. 1113 c.c. | I creditori possono intervenire nella divisione e devono essere chiamati perché essa abbia effetto nei loro confronti |
+
+Sul piano fiscale la ripartizione è pro quota per reddito, IMU e detrazione degli interessi, il cui massimale è riferito all'immobile. Sull'agevolazione prima casa il requisito di non possidenza guarda anche a con chi si condivide un'eventuale altra quota nello stesso Comune: con un fratello, un genitore o un estraneo non preclude, con il coniuge sì.
+
+### Fasi contrattuali
+
+Sono gli articoli che governano il passaggio da proposta a rogito, e sono la ragione per cui la checklist è organizzata per fasi.
+
+| Voce | Norma | Che cosa impone |
+|---|---|---|
+| Conclusione del contratto | Art. 1326 c.c. | Il contratto è concluso quando il proponente ha conoscenza dell'accettazione: è il momento in cui la proposta accettata diventa vincolante |
+| Proposta irrevocabile | Art. 1329 c.c. | Se il proponente si obbliga a mantenere ferma la proposta per un tempo, la revoca è senza effetto in quel periodo |
+| Forma del preliminare | Art. 1351 c.c. | Il preliminare è nullo se non è fatto nella stessa forma prescritta per il definitivo, quindi per iscritto |
+| Condizione | Artt. 1353-1354 c.c. | Le parti possono subordinare efficacia o risoluzione a un evento futuro e incerto: è la base della clausola sul mutuo |
+| Caparra confirmatoria | Art. 1385 c.c. | Chi la riceve ed è inadempiente deve il doppio; chi la dà e è inadempiente la perde. L'acconto non ha questo effetto |
+| Contratto per persona da nominare | Artt. 1401-1403 c.c. | Consente di riservarsi di nominare il soggetto che acquista, con la dichiarazione da comunicare nel termine |
+| Trascrizione del preliminare | Art. 2645-bis c.c. | Prevale sulle trascrizioni e iscrizioni successive contro il promittente alienante; gli effetti cessano se il definitivo non si trascrive entro un anno dalla data convenuta e comunque entro tre anni |
+| Privilegio sul credito restitutorio | Art. 2775-bis c.c. | I crediti del promissario acquirente per mancata esecuzione del preliminare trascritto hanno privilegio speciale sull'immobile |
+| Ipoteca e preliminare | Art. 2825-bis c.c. | Disciplina il rapporto fra l'ipoteca iscritta sul bene e il preliminare trascritto |
+| Esecuzione in forma specifica | Art. 2932 c.c. | Se chi è obbligato a concludere il contratto non lo fa, l'altra parte può ottenere una sentenza che produce gli effetti del contratto non concluso |
+| Garanzia per vizi | Artt. 1490, 1495, 1497 c.c. | Il venditore risponde dei vizi che rendono la cosa inidonea o ne diminuiscono il valore, con termini di denuncia brevi |
+
 ### Voci contrattuali e di due diligence
 
 | Voce | Norma | Perché è nel modello |

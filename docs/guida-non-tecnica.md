@@ -26,7 +26,7 @@ Quando un numero diventa rosso, o una cella si colora di rosa, è un avviso: qua
 
 ## L'ordine in cui si lavora
 
-Il file ha quindici schede in fondo alla finestra. Non servono tutte insieme e non si leggono da sinistra a destra. L'ordine giusto è questo.
+Il file ha sedici schede in fondo alla finestra. Non servono tutte insieme e non si leggono da sinistra a destra. L'ordine giusto è questo.
 
 ### Primo, la scheda Annunci
 
@@ -126,9 +126,23 @@ Nel foglio **Metriche** c'e' anche un controllo che non riguarda questo immobile
 
 **Confronto affitto** risponde alla domanda se convenga comprare o restare in affitto investendo la differenza. Va letto sapendo che dipende quasi solo da tre ipotesi: quanto rende il portafoglio alternativo, quanto si rivaluta l'immobile e quanto pagheresti di affitto. Cambiando la prima di un punto l'esito spesso si rovescia, e questo dice che va usato come mappa, non come sentenza.
 
+Nella scheda **Scenari** trovi anche tre colonne affiancate, pessimistico, base e ottimistico, con canone, sfitto, morosità, tasso e rivalutazione impostabili uno per uno. È lì che si risponde alla domanda vera: non quanto rende se tutto va bene, ma **quanto ci rimetto ogni mese se va male**. Guarda la riga del cash flow annuo, dividila per dodici, e chiediti se quella cifra te la puoi permettere per anni.
+
 **Scenari** è forse la scheda più utile di tutte, perché non ti dà un numero ma ti dice di quanto quel numero cambia se le cose vanno diversamente. C'è anche una riga che calcola il canone minimo sotto il quale l'immobile ti toglie cassa invece di dartene.
 
-### Settimo, la scheda Checklist
+### Settimo, la scheda Comproprietà, se comprate in più di uno
+
+Serve solo se l'immobile lo comprate in due o più. Una riga per persona: nome, quota, aliquota IRPEF e regime fiscale scelto.
+
+La cosa da sapere prima di tutto: **non serve aprire una società**. Il codice civile dice che tenere insieme una cosa per goderne è comunione, non impresa. La società serve se fate impresa davvero, cioè comprate per ristrutturare e rivendere, o gestite affitti turistici in modo organizzato: in quel caso, se non la costituite, ne nasce comunque una di fatto in cui tutti rispondono con tutto.
+
+Il foglio calcola la parte di ciascuno perché **sul fisco ciascuno fa storia a sé**: la cedolare secca si sceglie individualmente, quindi in due uno può stare in cedolare e l'altro in IRPEF, e la scelta giusta dipende dall'aliquota di ciascuno.
+
+Tre regole che conviene conoscere prima di firmare. Le decisioni si contano **per quote, non per teste**: con il 51% governi la gestione, con i due terzi fai i lavori, per vendere servono tutti. Ciascuno può **vendere la sua quota a chi vuole**, e senza un patto di prelazione ti ritrovi in società con uno sconosciuto. E soprattutto: **chiunque può in ogni momento chiedere di sciogliere la comunione**, cioè costringere a vendere. L'unico antidoto è un patto di indivisione, che vale al massimo dieci anni e va rinnovato.
+
+C'è una scheda dedicata che spiega tutto questo per esteso: `docs/comprare-in-piu-persone.md`.
+
+### Ottavo, la scheda Checklist
 
 È quella che si usa davvero quando si passa dalla valutazione all'offerta. Trenta verifiche divise per fase, con lo stato da spuntare e un contatore delle verifiche ancora aperte.
 

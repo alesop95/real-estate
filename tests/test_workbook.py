@@ -42,7 +42,7 @@ def test_il_workbook_si_genera_con_tutti_i_fogli():
     wb = load_workbook(workbook())
     attesi = [
         "Guida", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Simulatore mutuo", "Locazione",
-        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Checklist",
+        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Comproprieta", "Checklist",
         "Annunci", "Confronto immobili", "Fonti",
     ]
     assert wb.sheetnames == attesi

@@ -30,7 +30,10 @@ Sui file di terzi scaricati come riferimento vale una regola aggiuntiva: la data
 | Art. 1 comma 497 legge 266/2005 | Regola prezzo-valore |
 | Nota II-bis art. 1 tariffa parte prima DPR 131/1986 | Requisiti dell'agevolazione prima casa |
 | Art. 1 comma 116 legge 207/2024 | Estensione da uno a due anni del termine per rivendere la precedente prima casa |
-| Art. 7 legge 448/1998 | Credito d'imposta per riacquisto della prima casa |
+| Art. 7 legge 448/1998 | Credito d'imposta per riacquisto della prima casa. Testo primario non recuperabile: Normattiva rende gli articoli via JavaScript, il corpus locale non ha l'atto, e la raccolta di Bosetti e Gatti riporta l'articolo in omissis. Le regole sono ricostruite da fonti professionali |
+| Artt. 1100-1116 codice civile | Comunione: quote, uso, disposizione della quota, contribuzione alle spese, amministrazione e maggioranze, innovazioni, scioglimento, opposizione dei creditori |
+| Artt. 2247 e 2248 codice civile | Confine fra contratto di societa' e comunione a scopo di godimento |
+| Artt. 1326, 1329, 1351, 1353, 1401-1403, 2775-bis, 2825-bis, 2932 codice civile | Conclusione del contratto, proposta irrevocabile, forma del preliminare, condizione, contratto per persona da nominare, privilegio sul credito restitutorio, ipoteca e preliminare, esecuzione in forma specifica |
 | Artt. 15-20 DPR 601/1973 | Imposta sostitutiva sui finanziamenti a medio e lungo termine |
 | Art. 15 comma 1 lett. b TUIR | Detrazione degli interessi passivi sul mutuo dell'abitazione principale |
 | Art. 67 comma 1 lett. b TUIR | Plusvalenza da cessione infraquinquennale |

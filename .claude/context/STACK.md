@@ -24,7 +24,7 @@ Sono state escluse tre strade che sarebbero state naturali. Un'applicazione web 
 
 `stile.py` raccoglie palette, formati numerici e funzioni di composizione delle righe del workbook, cosi' che il cambio di aspetto sia un intervento in un punto solo.
 
-`excel_builder.py` e' il generatore. La classe `Costruttore` tiene il registro dei nomi definiti e costruisce i quindici fogli in sequenza. I riferimenti fra fogli passano sempre per nomi definiti, mai per indirizzi di cella, il che rende le formule leggibili e resistenti allo spostamento delle righe.
+`excel_builder.py` e' il generatore. La classe `Costruttore` tiene il registro dei nomi definiti e costruisce i sedici fogli in sequenza. I riferimenti fra fogli passano sempre per nomi definiti, mai per indirizzi di cella, il che rende le formule leggibili e resistenti allo spostamento delle righe.
 
 `annunci.py` tiene il registro CSV, verifica il `robots.txt`, limita la frequenza delle richieste, riduce l'HTML a testo e riversa nel workbook preservando le colonne di formula.
 

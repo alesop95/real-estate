@@ -8,11 +8,13 @@ I parametri fiscali sono quelli in vigore al 28 agosto 2026, con le novita' dell
 
 ## Che cosa produce
 
-Il workbook ha quindici fogli. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto e Scenari. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
+Il workbook ha sedici fogli. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto e Scenari. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
 
 Il foglio Immobile calcola le imposte di trasferimento nei quattro casi rilevanti, applica la regola prezzo-valore quando spetta, quantifica il valore economico del bonus prima casa mostrando quanto si pagherebbe senza, e arriva al costo totale dell'operazione e alla cassa che serve davvero.
 
 Il foglio Locazione mette a confronto sullo stesso immobile la cedolare secca a canone libero, il canone concordato, l'IRPEF ordinaria e la locazione breve, riga per riga dal ricavo lordo all'utile netto, passando per sfitto, morosita', condominio, manutenzione, accantonamento per la ristrutturazione, IMU e imposta.
+
+Il foglio Comproprieta' risponde alla domanda su cosa cambia comprando in due, in tre o in N: ripartisce l'operazione per quote, calcola l'imposta di ciascuno secondo il regime che ciascuno sceglie, e riporta le regole di governo della comunione, a partire dal fatto che non serve costituire una societa'.
 
 Il foglio Confronto immobili applica lo stesso modello a ogni annuncio del registro, una riga per immobile, e risponde alla domanda che viene prima di ogni altra, cioe' quale dei candidati meriti una valutazione approfondita.
 
@@ -54,6 +56,8 @@ python tools/valuta.py omi cerca --comune "NOME DEL COMUNE"
 ```
 
 ## Le due guide
+
+Sull'acquisto in piu' persone c'e' una scheda dedicata, `docs/comprare-in-piu-persone.md`, che spiega perche' la comunione basta e quando invece una societa' serve.
 
 Chi vuole solo usare il file legge `docs/guida-non-tecnica.md`, che accompagna foglio per foglio spiegando ogni voce in linguaggio comune. Chi interviene sul modello legge `docs/guida-tecnica.md`, che riporta architettura, catena di calcolo e il riferimento di ogni voce con formula, nome definito e norma di riferimento.
 

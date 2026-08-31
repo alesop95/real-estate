@@ -2,6 +2,20 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-08-31, articoli civilistici del corpus, acquisto in piu' persone e scenari settabili
+
+File toccati: `src/immobiliare/excel_builder.py` (foglio Comproprieta' e blocco dei tre scenari), `tests/test_workbook.py`, `docs/comprare-in-piu-persone.md` nuovo, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`.
+
+Articoli civilistici. L'utente aveva enumerato a mano nel suo foglio precedente dieci articoli del codice civile, dei quali il modello ne citava due. Recuperati dal corpus locale quarantatre' articoli con testo e rubrica, tutti trovati: le fasi contrattuali dal 1326 al 1403 con il 2645-bis, il 2775-bis, il 2825-bis e il 2932, la garanzia per vizi, e l'intero titolo sulla comunione dal 1100 al 1116 piu' il 2247 e il 2248 sul confine con la societa'. Sono ora il riferimento normativo della guida tecnica.
+
+Acquisto in piu' persone. Nuovo foglio Comproprieta', fino a otto acquirenti. La risposta di merito viene dall'articolo 2248: la comunione costituita o mantenuta al solo scopo del godimento non e' un contratto di societa', quindi comprare insieme e affittare non richiede di costituire nulla. Il foglio ripartisce per quote e calcola l'imposta di ciascuno separatamente, perche' l'opzione per la cedolare secca si esercita disgiuntamente e vale solo per chi l'ha esercitata, e l'aliquota marginale e' personale: verificato che con due acquirenti in regimi diversi le imposte divergono correttamente. Una riga di controllo segnala se le quote non sommano a cento, perche' con quote incoerenti il foglio mentirebbe in silenzio, e i totali di colonna riconciliano con il resto del workbook.
+
+Scenari settabili. Aggiunto al foglio Scenari un blocco a tre colonne, pessimistico, base e ottimistico, con canone, sfitto, morosita', tasso e rivalutazione impostabili per ciascuna, e in uscita ricavo effettivo, reddito operativo netto, utile, cash flow, rendimento netto, debt service coverage ratio e patrimonio netto a fine orizzonte. Il debito residuo usa la formula chiusa dell'ammortamento alla francese, quindi resta esatto anche cambiando il tasso di scenario. La colonna base riconcilia con il resto del modello.
+
+Legge 448/1998. Provata anche la raccolta di Bosetti e Gatti indicata dall'utente: riporta l'articolo 7 in omissis. Con Normattiva che rende gli articoli via JavaScript e il corpus locale che non ha l'atto, il testo primario resta non recuperabile e la lacuna e' dichiarata in `docs/fonti.md`; le regole del credito d'imposta sono ricostruite da fonti professionali.
+
+Verifica: trentanove test verdi, workbook a sedici fogli riaperto con Excel senza celle in errore.
+
 ## 2026-08-29, fonti residue chiuse: trascrizioni, canale Telegram, legge regionale, e tre correzioni al modello
 
 File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/omi.py`, `src/immobiliare/parametri.py`, `tools/valuta.py`, `docs/fonti.md`, le due guide, `_notes/INDICE-MATERIALE.md`.

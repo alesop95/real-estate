@@ -67,6 +67,9 @@ docs/metodo-e-metriche.md    scelte metodologiche, denominatore dei rendimenti, 
                               e loro lettura, limiti dichiarati del modello
 docs/raccolta-annunci.md     registro degli annunci, vincoli dell'acquisizione automatica,
                               quotazioni OMI, riconoscimento dei duplicati
+docs/comprare-in-piu-persone.md
+                              acquisto in comproprieta': comunione o societa', maggioranze,
+                              scioglimento, fisco pro quota, quando serve una societa'
 docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il significato
                               di ogni voce spiegato in linguaggio comune
 docs/guida-tecnica.md        architettura, catena di calcolo, riferimento di ogni voce con

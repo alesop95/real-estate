@@ -68,6 +68,7 @@ class Costruttore:
         self.foglio_metriche()
         self.foglio_confronto()
         self.foglio_scenari()
+        self.foglio_comproprieta()
         self.foglio_checklist()
         # Il foglio Annunci va costruito prima del confronto, che ne legge le righe
         # a partire da `self.riga_annunci`.
@@ -1278,6 +1279,78 @@ class Costruttore:
         )
         r += 2
 
+        r = S.sezione(ws, r, "Tre scenari a confronto", secondaria=True)
+        r = S.nota_riga(ws, r, "Le celle gialle di questa sezione sono indipendenti dal resto del workbook: si impostano qui le tre ipotesi e si legge come cambia l'esito. Serve a rispondere alla domanda che conta davvero prima di comprare, cioe' non quanto rende se tutto va bene, ma quanto si perde se va male.")
+        intest_sc = ["Voce", "Pessimistico", "Base", "Ottimistico"]
+        r = S.intestazioni(ws, r, intest_sc, [46, 18, 18, 18])
+        base_sc = r
+
+        def riga_scenario(etichetta, valori, formato=S.EURO, input_utente=False, risultato=False, nota=""):
+            nonlocal r
+            e = ws.cell(row=r, column=1, value=etichetta)
+            e.font = S.ETICHETTA_BOLD if risultato else S.ETICHETTA
+            e.alignment = S.SINISTRA
+            for i, v in enumerate(valori, start=2):
+                c = ws.cell(row=r, column=i, value=v)
+                c.number_format = formato
+                c.border = S.BORDO
+                if input_utente:
+                    c.fill = S.FILL_INPUT
+                elif risultato:
+                    c.fill = S.FILL_RISULTATO
+                    c.font = S.ETICHETTA_BOLD
+                else:
+                    c.fill = S.FILL_CALCOLO
+            if nota:
+                n_ = ws.cell(row=r, column=5, value=nota)
+                n_.font = S.NOTA
+                n_.alignment = S.SINISTRA
+            r += 1
+
+        riga_scenario("Canone mensile", ["=canone_mese*0.85", "=canone_mese", "=canone_mese*1.1"], S.EURO, input_utente=True,
+                      nota="Il pessimistico sconta un mercato in cui si affitta solo abbassando.")
+        riga_canone_sc = base_sc
+        riga_scenario("Mesi di sfitto all'anno", [3, "=mesi_sfitto", 0.5], S.NUMERO_DEC, input_utente=True,
+                      nota="Tre mesi e' un anno con un cambio di inquilino andato male.")
+        riga_sfitto_sc = base_sc + 1
+        riga_scenario("Morosita'", [0.08, "=morosita_pct", 0], S.PERC, input_utente=True)
+        riga_moro_sc = base_sc + 2
+        riga_scenario("Tasso del mutuo", ["=tasso+0.015", "=tasso", "=tasso-0.005"], S.PERC, input_utente=True,
+                      nota="Sul fisso i tre valori coincidono; sul variabile il pessimistico e' lo scenario da sostenere.")
+        riga_tasso_sc = base_sc + 3
+        riga_scenario("Rivalutazione annua dell'immobile", [-0.01, "=riv_immobile", 0.03], S.PERC, input_utente=True,
+                      nota="In termini reali il mattone italiano e' rimasto fermo per vent'anni: il pessimistico non e' catastrofismo.")
+        riga_riv_sc = base_sc + 4
+
+        colonne = ("B", "C", "D")
+        for etichetta, formula, formato, risultato in [
+            ("Ricavo effettivo", "({c}{ca}*12-{c}{ca}*{c}{sf})*(1-{c}{mo})", S.EURO, False),
+            ("Costi operativi", "condominio*quota_condominio+prezzo*manut_pct+assicurazione+costo_tempo+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione", S.EURO, False),
+            ("Reddito operativo netto", "{c}{ric}-{c}{cos}", S.EURO, False),
+            ("Imposta sul canone", "{c}{ric}*ced_libero", S.EURO, False),
+            ("Utile netto", "{c}{noi}-{c}{imp}", S.EURO, True),
+            ("Rata annua", "IF(mutuo_importo>0,PMT({c}{ta}/12,durata*12,-mutuo_importo)*12,0)", S.EURO, False),
+            ("Cash flow annuo", "{c}{uti}-{c}{rat}", S.EURO, True),
+            ("Rendimento netto", "{c}{uti}/costo_totale", S.PERC, True),
+            ("Debt service coverage ratio", "IF({c}{rat}>0,{c}{noi}/{c}{rat},\"n.d.\")", S.NUMERO_DEC, False),
+            ("Valore dell'immobile a fine orizzonte", "prezzo*(1+{c}{riv})^orizzonte", S.EURO, False),
+            ("Debito residuo a fine orizzonte", "IF(mutuo_importo>0,mutuo_importo*((1+{c}{ta}/12)^(durata*12)-(1+{c}{ta}/12)^(MIN(orizzonte,durata)*12))/((1+{c}{ta}/12)^(durata*12)-1),0)", S.EURO, False),
+            ("Patrimonio netto a fine orizzonte", "{c}{val}*(1-costi_vendita)-{c}{deb}", S.EURO, True),
+        ]:
+            riferimenti = dict(ca=riga_canone_sc, sf=riga_sfitto_sc, mo=riga_moro_sc, ta=riga_tasso_sc,
+                               riv=riga_riv_sc, ric=base_sc+5, cos=base_sc+6, noi=base_sc+7, imp=base_sc+8,
+                               uti=base_sc+9, rat=base_sc+10, val=base_sc+14, deb=base_sc+15)
+            valori = ["=" + formula.format(c=c, **riferimenti) for c in colonne]
+            riga_scenario(etichetta, valori, formato, risultato=risultato)
+
+        ws.conditional_formatting.add(
+            f"B{base_sc+11}:D{base_sc+11}",
+            CellIsRule(operator="lessThan", formula=["0"], fill=S.FILL_ATTENZIONE),
+        )
+        r += 1
+        r = S.nota_riga(ws, r, "Il patrimonio netto a fine orizzonte usa la formula chiusa del debito residuo nell'ammortamento alla francese, quindi resta esatto anche cambiando il tasso di scenario. Il cash flow annuo va letto come impegno mensile: diviso dodici e' quanto si mette di tasca propria ogni mese in quello scenario, ed e' il numero che dice se lo scenario e' sostenibile o solo sfavorevole.")
+        r += 1
+
         r = S.sezione(ws, r, "Prezzo massimo sostenibile", secondaria=True)
         riga_obiettivo = r
         r = S.campo(ws, r, "Rendimento netto obiettivo", 0.04, S.PERC, input_utente=True, nota="Il rendimento sotto il quale l'operazione non ha senso rispetto alle alternative. Lo usa anche il foglio Confronto immobili per dare l'esito di ciascun annuncio.")
@@ -1287,6 +1360,144 @@ class Costruttore:
         r = S.campo(ws, r, "Prezzo massimo corrispondente", f"=B{riga_costo_sost}/(1+incidenza_costi)", S.EURO, risultato=True, nota="Approssimazione: assume che l'incidenza percentuale dei costi accessori resti quella dello scenario base.")
         r = S.campo(ws, r, "Scarto rispetto al prezzo trattato", f"=B{riga_costo_sost}/(1+incidenza_costi)-prezzo", S.EURO, nota="Se negativo, il prezzo trattato e' sopra quello che l'immobile puo' giustificare a quel rendimento.")
         r = S.campo(ws, r, "Canone minimo per un cash flow non negativo", "=(rata_annua+condominio*quota_condominio+prezzo*manut_pct+assicurazione+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione)/((12-mesi_sfitto)*(1-morosita_pct)*(1-ced_libero))", S.EURO_DEC, risultato=True, nota="Canone mensile sotto il quale l'immobile assorbe cassa invece di generarla.")
+
+    # ------------------------------------------------------------ comproprieta
+    def foglio_comproprieta(self) -> None:
+        """Ripartizione dell'operazione fra piu' acquirenti.
+
+        Comprare in due, in tre o in N non richiede di costituire una societa': la
+        comunione costituita o mantenuta al solo scopo del godimento di una o piu'
+        cose non e' un contratto di societa' ed e' regolata dalle norme sulla
+        comunione, art. 2248 del codice civile. La societa' nasce quando si conferisce
+        per esercitare in comune un'attivita' economica, art. 2247, che e' cosa diversa
+        dal possedere insieme un immobile e incassarne il canone.
+
+        Il foglio serve a due cose. La prima e' ripartire correttamente: ciascuno
+        sopporta pesi e vantaggi in proporzione alla propria quota, art. 1101, e sul
+        piano fiscale ciascuno fa storia a se', perche' l'opzione per la cedolare
+        secca si esercita disgiuntamente e produce effetti solo per chi l'ha
+        esercitata, e perche' l'aliquota marginale IRPEF e' personale. La seconda e'
+        rendere visibili le regole di governo della comunione, che sono la parte che
+        si scopre tardi e che conviene scrivere in un patto prima di firmare.
+        """
+        ws = self.wb.create_sheet("Comproprieta")
+        ws.sheet_view.showGridLines = False
+        S.larghezze_colonne(ws, {"A": 26, "B": 12, "C": 16, "D": 14, "E": 20, "F": 12})
+        r = S.titolo(
+            ws,
+            1,
+            "Acquisto in piu' persone",
+            "Una riga per acquirente. Le quote devono sommare a cento. Ciascuno sceglie il proprio regime fiscale e ha la propria aliquota marginale: in comproprieta' la cedolare secca si opta individualmente.",
+            20,
+        )
+
+        r = S.sezione(ws, r, "Chi compra e con quale quota", 20)
+        intest = [
+            "Acquirente", "Quota", "Aliquota IRPEF", "Regime fiscale", "Prima casa",
+            "Quota prezzo", "Quota imposte", "Quota costo totale", "Quota mutuo",
+            "Esborso proprio", "Quota ricavo", "Quota costi", "Quota NOI",
+            "Imposta personale", "Detrazione interessi", "Quota rata", "Utile netto",
+            "Cash flow", "Rendimento sul proprio capitale", "Peso decisionale",
+        ]
+        larghezze = [22, 9, 13, 20, 11, 14, 13, 16, 13, 15, 13, 13, 13, 15, 15, 13, 13, 13, 18, 14]
+        r = S.intestazioni(ws, r, intest, larghezze)
+        prima = r
+
+        regimi = DataValidation(
+            type="list",
+            formula1='"cedolare_libero,cedolare_concordato,irpef_ordinario,breve"',
+            allow_blank=True,
+        )
+        ws.add_data_validation(regimi)
+        si_no = DataValidation(type="list", formula1='"SI,NO"', allow_blank=True)
+        ws.add_data_validation(si_no)
+
+        esempi = [("Acquirente 1", 0.5, 0.33, "cedolare_libero", "SI"),
+                  ("Acquirente 2", 0.5, 0.23, "cedolare_libero", "NO")]
+        for indice in range(8):
+            vuoto = f'$A{r}=""'
+            if indice < len(esempi):
+                nome, quota, aliq, reg, pc = esempi[indice]
+                ws.cell(row=r, column=1, value=nome)
+                ws.cell(row=r, column=2, value=quota).number_format = S.PERC_1
+                ws.cell(row=r, column=3, value=aliq).number_format = S.PERC_1
+                ws.cell(row=r, column=4, value=reg)
+                ws.cell(row=r, column=5, value=pc)
+            else:
+                ws.cell(row=r, column=2).number_format = S.PERC_1
+                ws.cell(row=r, column=3).number_format = S.PERC_1
+            for col in range(1, 6):
+                ws.cell(row=r, column=col).fill = S.FILL_INPUT
+            regimi.add(ws.cell(row=r, column=4))
+            si_no.add(ws.cell(row=r, column=5))
+
+            ws.cell(row=r, column=6, value=f'=IF({vuoto},"",prezzo*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=7, value=f'=IF({vuoto},"",imposte_totali*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=8, value=f'=IF({vuoto},"",costo_totale*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=9, value=f'=IF({vuoto},"",mutuo_importo*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=10, value=f'=IF({vuoto},"",esborso*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=11, value=f'=IF({vuoto},"",ricavo_effettivo*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=12, value=f'=IF({vuoto},"",(ricavo_effettivo-noi_annuo)*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=13, value=f'=IF({vuoto},"",noi_annuo*$B{r})').number_format = S.EURO
+            # L'imposta e' personale: dipende dal regime scelto da ciascuno e, in
+            # regime ordinario, dalla sua aliquota marginale.
+            ws.cell(
+                row=r, column=14,
+                value=(
+                    f'=IF({vuoto},"",IF($D{r}="cedolare_libero",$K{r}*ced_libero,'
+                    f'IF($D{r}="cedolare_concordato",$K{r}*ced_conc,'
+                    f'IF($D{r}="breve",$K{r}*ced_breve1,'
+                    f'$K{r}*(1-abbatt_ord)*($C{r}+addizionali)+MAX($K{r}*reg_loc,reg_loc_min*$B{r})/2))))'
+                ),
+            ).number_format = S.EURO
+            ws.cell(
+                row=r, column=15,
+                value=f'=IF({vuoto},"",IF(abitazione_principale="SI",MIN(INDEX(interessi_anno,1)*$B{r},detr_max*$B{r})*detr_aliq,0))',
+            ).number_format = S.EURO
+            ws.cell(row=r, column=16, value=f'=IF({vuoto},"",rata_annua*$B{r})').number_format = S.EURO
+            ws.cell(row=r, column=17, value=f'=IF({vuoto},"",$M{r}-$N{r})').number_format = S.EURO
+            ws.cell(row=r, column=18, value=f'=IF({vuoto},"",$Q{r}-$P{r}+$O{r})').number_format = S.EURO
+            ws.cell(row=r, column=19, value=f'=IF(OR({vuoto},N($J{r})=0),"",$R{r}/$J{r})').number_format = S.PERC
+            ws.cell(row=r, column=20, value=f'=IF({vuoto},"",$B{r})').number_format = S.PERC_1
+            for col in range(6, 21):
+                ws.cell(row=r, column=col).fill = S.FILL_CALCOLO
+            for col in range(1, 21):
+                ws.cell(row=r, column=col).border = S.BORDO
+            r += 1
+
+        ultima = r - 1
+        # Riga di controllo: le quote devono sommare a uno, altrimenti tutto il foglio mente.
+        c = ws.cell(row=r, column=1, value="Totale quote")
+        c.font = S.ETICHETTA_BOLD
+        somma = ws.cell(row=r, column=2, value=f"=SUM($B${prima}:$B${ultima})")
+        somma.number_format = S.PERC_1
+        somma.font = S.ETICHETTA_BOLD
+        somma.border = S.BORDO
+        controllo = ws.cell(
+            row=r, column=4,
+            value=f'=IF(ABS($B{r}-1)<0.0001,"quote coerenti","ATTENZIONE: le quote non sommano a cento")',
+        )
+        controllo.font = S.ETICHETTA_BOLD
+        ws.conditional_formatting.add(
+            f"B{r}", CellIsRule(operator="notEqual", formula=["1"], fill=S.FILL_ATTENZIONE)
+        )
+        for colonna, sorgente in ((10, "J"), (17, "Q"), (18, "R")):
+            t = ws.cell(row=r, column=colonna, value=f"=SUM(${sorgente}${prima}:${sorgente}${ultima})")
+            t.number_format = S.EURO
+            t.font = S.ETICHETTA_BOLD
+        r += 2
+
+        r = S.sezione(ws, r, "Come si governa una comunione, e cosa conviene scrivere prima", 20, secondaria=True)
+        for testo in [
+            "Non serve costituire una societa'. La comunione costituita o mantenuta al solo scopo del godimento di una o piu' cose e' regolata dalle norme sulla comunione e non e' un contratto di societa', art. 2248 del codice civile. Il contratto di societa' presuppone che si conferisca per esercitare in comune un'attivita' economica, art. 2247: possedere insieme un immobile e incassarne il canone non lo e'. Se pero' l'attivita' diventa organizzata, tipicamente la locazione turistica gestita con servizi oppure il comprare per ristrutturare e rivendere, si scivola nell'impresa e, in mancanza di forma, in una societa' di fatto con responsabilita' illimitata e solidale di tutti.",
+            "Le maggioranze si contano per valore delle quote e non per teste. L'ordinaria amministrazione si decide a maggioranza, che vincola la minoranza dissenziente, ma tutti vanno informati prima, art. 1105. Le innovazioni e gli atti eccedenti l'ordinaria amministrazione richiedono una maggioranza che rappresenti almeno due terzi del valore, art. 1108. Serve invece l'unanimita' per vendere, per costituire diritti reali e per le locazioni di durata superiore a nove anni.",
+            "La regola che decide il destino dell'operazione e' l'articolo 1111: ciascun partecipante puo' sempre domandare lo scioglimento della comunione. Chiunque, in qualsiasi momento, puo' costringere gli altri a dividere e quindi, su un immobile indivisibile, a vendere. Il correttivo esiste ed e' il patto di rimanere in comunione, valido per un massimo di dieci anni e opponibile anche agli aventi causa: oltre i dieci si riduce automaticamente. Va messo per iscritto e rinnovato.",
+            "Vale la pena adottare un regolamento della comunione a maggioranza, art. 1106, che disciplini l'ordinaria amministrazione e deleghi la gestione a uno dei partecipanti o a un terzo, definendone poteri e obblighi. Accanto al regolamento conviene un patto che copra cio' che il codice non risolve: patto di indivisione, diritto di prelazione reciproco sulle quote, criterio di valorizzazione della quota in caso di uscita, ripartizione delle spese straordinarie, e cosa succede se uno smette di contribuire.",
+            "Ciascuno puo' disporre della propria quota e cederla a terzi, art. 1103: senza un patto di prelazione ci si puo' ritrovare in comunione con uno sconosciuto. Ciascuno deve contribuire alle spese in proporzione alla quota, ma puo' liberarsene rinunciando al proprio diritto, art. 1104, e il cessionario risponde in solido con il cedente dei contributi non versati.",
+            "Sul fisco ciascuno fa storia a se'. Il reddito si dichiara pro quota, l'opzione per la cedolare secca si esercita disgiuntamente e vale solo per chi l'ha esercitata, quindi in un immobile in due uno puo' stare in cedolare e l'altro in IRPEF ordinaria. Il massimale della detrazione degli interessi e' riferito all'immobile e si ripartisce fra i cointestatari del mutuo. Sull'agevolazione prima casa ciascuno verifica i requisiti per la propria quota, con una differenza che conta: possedere una quota di altra abitazione nello stesso Comune insieme a un fratello, a un genitore o a un estraneo non preclude l'agevolazione, mentre possederla insieme al coniuge la preclude.",
+            "Quando invece una struttura societaria ha senso. La societa' semplice immobiliare regge il mero godimento, evita la doppia imposizione e la disciplina delle societa' non operative, e non paga la plusvalenza oltre il quinquennio; in cambio non puo' esercitare attivita' commerciale, quindi niente compravendita speculativa e niente locazione turistica organizzata, non puo' optare per la cedolare secca perche' l'opzione e' riservata al locatore persona fisica, e i soci rispondono illimitatamente. La societa' a responsabilita' limitata separa il patrimonio ma porta reddito d'impresa, doppia imposizione sulla distribuzione, costi di contabilita' e il rischio di essere qualificata non operativa. La regola pratica: per tenere e affittare si resta in comunione, per fare impresa si costituisce una societa'.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 20)
 
     # ---------------------------------------------------------------- checklist
     def foglio_checklist(self) -> None:
