@@ -29,10 +29,12 @@ Riconoscimento semantico dei duplicati fra portali, per cui il cliente del model
 
 Serie storica delle quotazioni OMI di una zona, per distinguere una zona che si rivaluta da una che si svuota. I dati storici esistono nel mirror open data fino al 2018 e sarebbero sufficienti a mostrare una tendenza decennale.
 
+Una versione parallela per l'agente immobiliare, o per chi lavora con lui. Lo stesso motore di calcolo servirebbe un caso d'uso rovesciato: non un compratore che valuta pochi immobili a fondo, ma un professionista che ne seguono molti in superficie e deve ricordarsi di richiamare le persone. Servirebbero un'anagrafica dei clienti con le loro preferenze di ricerca, l'accoppiamento fra immobili e clienti interessati, e un promemoria con scadenze sui contatti da riprendere. La parte di calcolo, cioe' imposte, mutuo, rendimento e confronto, resterebbe identica e riusabile; cambierebbero l'unita' di lavoro, che diventa la relazione invece dell'immobile, e il vincolo sui dati, perche' un'anagrafica di clienti e' un trattamento di dati personali di terzi con basi giuridiche e obblighi che questo progetto, essendo personale, oggi non ha. Va quindi tenuta come progetto separato che condivide i moduli di dominio, non come opzione di questo.
+
 ## Deliberatamente fuori perimetro
 
 La ristrutturazione come progetto, con computo metrico, detrazioni edilizie e stato di avanzamento lavori. E' una materia a se' che raddoppierebbe la superficie del modello, ed e' stata esclusa esplicitamente in fase di definizione dell'obiettivo. Resta dentro la sola ristrutturazione periodica di fine ciclo, come costo ricorrente.
 
-Le aste giudiziarie, che seguono regole proprie su perizia, custode, decreto di trasferimento e liberazione dell'immobile, e che meriterebbero uno strumento separato.
+Le aste giudiziarie erano fuori perimetro e non lo sono piu' dal 31 agosto 2026: il perimetro e' stato ampliato su richiesta, e la decisione che lo dichiarava e' superata da ADR-012. Restano fuori le vendite nella liquidazione giudiziale, che seguono il codice della crisi d'impresa, le aste con incanto ormai residuali e i beni diversi dalle abitazioni.
 
 Qualunque forma di prelievo automatico che aggiri le protezioni dei portali. Non e' una questione di difficolta' tecnica ma di perimetro: si veda ADR-004.

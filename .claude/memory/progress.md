@@ -2,6 +2,58 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-08-31, undici annunci a registro, le aste nel perimetro, recap operativo
+
+File toccati: `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py`, `docs/aste-immobiliari.md` nuovo, `docs/raccolta-annunci.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`, `.claude/context/roadmap.md`, `.claude/memory/decisions.md` con ADR-012.
+
+Registro. Aggiunti otto link forniti dall'utente, portando il registro a undici immobili. Uno era gia' presente e il riconoscimento dei duplicati per link normalizzato lo ha rifiutato, che e' la prima volta che quella difesa serve davvero. Un link accorciato di Google e' stato risolto seguendo i reindirizzamenti e si e' rivelato un annuncio su casa.it. Due annunci sono marcati a priorita' dieci su indicazione dell'utente.
+
+Il campo del punteggio esisteva senza semantica dichiarata: ora e' documentato come priorita' da zero a dieci assegnata a mano, e non come punteggio calcolato, perche' il modello ha gia' metriche proprie e sovrapporne una sintetica servirebbe solo a nascondere il ragionamento. Nuova azione `annunci modifica`, che mancava: marcare la priorita' o correggere un campo di un annuncio gia' a registro richiedeva di rifare la riga.
+
+Le aste entrano nel perimetro, ed e' un cambio di decisione. La roadmap le dichiarava fuori, con la motivazione che seguono regole proprie e meriterebbero uno strumento separato: la motivazione era corretta sui fatti e sbagliata nella conclusione, perche' quelle regole proprie sono poche e circoscritte mentre imposte, mutuo, rendimento e confronto valgono identici. La voce di roadmap e' stata sostituita dichiarando il superamento invece di essere cancellata, e la decisione e' ADR-012.
+
+Cosa e' stato costruito: cinque campi nel registro, il foglio Asta, sette voci nel Dossier tecnico che sale a settantatre' documenti in dieci famiglie, e la scheda `docs/aste-immobiliari.md`. Le norme sono state verificate sui testi primari del corpus, non su fonti divulgative: l'articolo 2922 del codice civile che esclude la garanzia per i vizi e l'impugnazione per lesione, il 2923 sull'opponibilita' delle locazioni con data certa anteriore al pignoramento e sull'eccezione del canone inferiore di un terzo al giusto prezzo, il 560 del codice di procedura sul possesso del debitore fino al decreto, il 585 sul finanziamento con versamento diretto alla procedura e ipoteca di primo grado, il 586 sulla cancellazione dei gravami e sulla facolta' del giudice di sospendere la vendita a prezzo notevolmente inferiore al giusto, il 587 sulla decadenza con perdita della cauzione a titolo di multa.
+
+Il foglio non serve a calcolare meglio ma a impedire un errore preciso. Un'asta valutata con il modello ordinario mostra un'incidenza dei costi bassa, perche' manca la provvigione, e un prezzo apparentemente ottimo: sul caso di prova l'incidenza risulta del quattro e mezzo per cento contro il dieci del libero mercato. Il numero di sintesi non e' quindi il prezzo ma lo sconto sul valore di mercato, confrontato con una soglia impostabile che rappresenta il prezzo dei quattro rischi, e accanto c'e' il prezzo massimo a cui fermarsi in gara, che va scritto prima perche' in gara non si ragiona.
+
+L'aggiunta dei cinque campi ha rotto il contratto posizionale fra la dataclass, l'ordine di esportazione e le colonne del foglio, e i due test scritti apposta lo hanno intercettato alla prima esecuzione. E' la conferma sul campo di cio' che `refactor-06` argomentava in astratto: un commento che dice di tenere allineato non e' un presidio.
+
+Recap operativo. Aggiunta a `docs/raccolta-annunci.md` la sezione che descrive i tre percorsi dall'annuncio alla decisione, cioe' inserimento manuale, incolla del testo con strutturazione locale e prelievo diretto, con la sequenza dei comandi che li segue fino al workbook e le due varianti per l'asta e per il passaggio alla trattativa.
+
+Sviluppi futuri. Annotata in roadmap la versione parallela per l'agente immobiliare: stesso motore di calcolo, caso d'uso rovesciato, con anagrafica dei clienti, accoppiamento fra immobili e interessati e promemoria sui contatti da riprendere. Va tenuta come progetto separato che condivide i moduli di dominio, perche' un'anagrafica di clienti e' un trattamento di dati personali di terzi con basi giuridiche e obblighi che un progetto personale non ha.
+
+Verifica: cinquanta test verdi, workbook a ventun fogli rigenerato con undici annunci e riaperto con Excel senza celle in errore.
+
+## 2026-08-31, prova della catena col modello locale, e due difetti che la rendevano inutile
+
+File toccati: `src/immobiliare/annunci.py`, `tests/test_workbook.py`.
+
+La catena provata per intero. I due annunci idealista forniti dall'utente rispondono 403 sia al prelievo del progetto sia a qualunque client che non sia un browser, quindi la catena e' stata provata sul percorso documentato, cioe' testo dell'annuncio in un file, strutturazione con il modello locale, inserimento a registro, arricchimento con le quotazioni OMI e riversamento nel workbook. Con qwen3:14b la strutturazione impiega venti secondi.
+
+Primo difetto, di omissione. Alla prima passata il modello ha estratto correttamente sei campi su nove e ne ha mancati tre: rendita catastale, categoria catastale e canone, tutti e tre scritti in chiaro nel testo. Il modello non aveva sbagliato nulla: quei campi non erano nello schema `CAMPI_ESTRAIBILI` che il prompt gli passa, e cio' che non si chiede non si trova. Sono pero' i tre campi che valgono piu' di tutti gli altri messi insieme, perche' la rendita sblocca il prezzo-valore, la categoria decide moltiplicatore ed esclusione dall'agevolazione e il canone determina l'intero calcolo del rendimento. Aggiunti allo schema insieme a provincia, destinazione d'uso e data di consegna: alla seconda passata l'estrazione e' di undici campi su undici.
+
+Secondo difetto, di conversione, e piu' pericoloso. Il modello a volte restituisce i numeri come stringhe, cosi' come li trova nel testo, e la funzione di conversione trattava il punto come separatore decimale: 175.000 diventava centosettantacinque. Nessuna eccezione, nessun errore, un immobile che nel confronto risulta regalato. La discriminante corretta e' quante cifre seguono il punto, tre per le migliaia e una o due per i decimali. Coperto da un test con undici casi, incluso quello che rompeva.
+
+Un test di forma verifica anche che ogni campo dello schema esista davvero nella dataclass, perche' altrimenti il modello lo estrarrebbe e la costruzione dell'annuncio lo scarterebbe in silenzio.
+
+L'annuncio sintetico usato per la prova e' stato rimosso dal registro a fine verifica: il registro contiene solo immobili reali.
+
+Verifica: cinquanta test verdi, workbook rigenerato e riaperto con Excel senza celle in errore.
+
+## 2026-08-31, il registro si aggancia alla fornitura, e i portali rispondono 403
+
+File toccati: `src/immobiliare/omi.py`, `src/immobiliare/annunci.py`, `tools/valuta.py`, `tests/test_calcoli.py`.
+
+Aggancio del registro alle quotazioni. Nuova funzione `omi.quotazione_di_riferimento` e nuova azione `annunci omi`, che riempiono le colonne della quotazione minima e massima di ogni annuncio leggendo la fornitura in cache. E' il passo che rende viva la colonna dello scarto nel workbook, che senza quotazioni restava vuota e faceva sembrare il confronto fra immobili piu' povero di quanto sia.
+
+Due scelte dentro quella funzione meritano di essere dette. Il riferimento si prende sullo stato conservativo normale quando c'e', perche' nella fornitura ottimo descrive l'immobile ristrutturato di recente e assumerlo come termine di paragone farebbe sembrare a buon mercato qualunque cosa. E la funzione restituisce, oltre ai due numeri, la loro provenienza: con la zona indicata si usa quella zona ed e' il confronto giusto, senza si ripiega sull'intero Comune, che su un Comune di costa mette insieme lungomare e zone agricole e produce una forbice cosi' larga da non dire quasi nulla. Sui tre annunci a registro, senza zona, la forbice risulta da 900 a 3.300 euro al metro quadro: il dato e' corretto e quasi inutile, ed e' scritto nell'uscita del comando invece di essere lasciato intuire.
+
+Prova sui portali reali. Due annunci idealista forniti dall'utente: il `robots.txt` consente entrambi i percorsi, e il server risponde comunque 403. E' il caso che ADR-004 prevedeva in astratto e che ora si e' presentato: il permesso dichiarato c'era, la protezione anti bot ha negato lo stesso. Non si insiste, perche' insistere significherebbe aggirarla.
+
+Il difetto qui era nella forma dell'errore, non nella decisione. L'eccezione HTTP usciva grezza, e un 403 letto da chi usa lo strumento sembra un guasto da riprovare invece di un limite da accettare. Aggiunta l'eccezione `PrelievoBloccato`, distinta da `ProbitaRifiutata` perche' i due casi si risolvono diversamente, e il messaggio porta le due vie alternative: incollare il testo dell'annuncio in un file per `annunci importa --file`, che passa dal modello locale, oppure inserire i campi a mano. Coperti anche 401, 405, 406, 429 e 503, che sono le altre risposte con cui un portale dice la stessa cosa.
+
+Verifica: quarantotto test verdi, workbook rigenerato con le quotazioni riversate e riaperto con Excel senza celle in errore.
+
 ## 2026-08-31, fornitura OMI 2025/2 acquisita, e tre difetti trovati dal giro reale
 
 File toccati: `src/immobiliare/omi.py`, `src/immobiliare/annunci.py`, `tools/valuta.py`, `tests/test_calcoli.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, `.claude/context/deployment.md`, `.claude/context/design-and-security.md`, `.claude/memory/decisions.md` con ADR-011.

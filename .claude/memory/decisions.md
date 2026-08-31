@@ -133,3 +133,15 @@ Decisione. Nessuno dei quattro viene automatizzato. Il file lo scarica la person
 Motivazione. L'articolo 2 impone l'autenticazione personale, e simularla significherebbe far interrogare la banca dati a un programma con le credenziali di una persona. L'articolo 5 riserva all'Agenzia la facolta' di limitare le interrogazioni giornaliere, l'articolo 3 rende l'utente responsabile dell'uso improprio o eccessivo, e l'articolo 4 sanziona la violazione con l'inibizione del servizio: il costo di sbagliare non e' una discussione, e' la perdita dell'accesso. Sulla citazione della fonte, l'obbligo era assunto e non assolto: e' stato un difetto di conformita' reale, non un dettaglio.
 
 Conseguenze. `omi.importa_fornitura` resta la sola via per i dati correnti e accetta l'archivio cosi' come arriva. Visure e ispezioni sul venditore contengono dati personali di terzi e restano sotto `_notes/`, non versionato. La regola generale che ne discende: quando una fonte richiede autenticazione personale, il confine fra automatizzabile e no non lo decide la comodita' ma il testo che si e' accettato.
+
+## ADR-012, le aste giudiziarie entrano nel perimetro
+
+Data: 2026-08-31. Stato: accettata. Supera la voce di `roadmap.md` che le dichiarava fuori perimetro.
+
+Contesto. La roadmap teneva le aste giudiziarie fuori dal perimetro, con la motivazione che seguono regole proprie su perizia, custode, decreto di trasferimento e liberazione dell'immobile e che meriterebbero uno strumento separato. La motivazione era corretta sui fatti e sbagliata nella conclusione: quelle regole proprie sono poche e circoscritte, e il resto del modello, cioe' imposte, mutuo, rendimento e confronto con l'alternativa, vale identico.
+
+Decisione. Le aste entrano, con un foglio dedicato che modella cio' che differisce e riusa tutto il resto: cinque campi nel registro, il foglio Asta, sette voci nel Dossier tecnico e la scheda `docs/aste-immobiliari.md`. Restano fuori le vendite nella liquidazione giudiziale, le aste con incanto e i beni non abitativi.
+
+Motivazione. Il foglio non serve a calcolare meglio: serve a impedire un errore preciso. Un'asta valutata con il modello ordinario mostra un'incidenza dei costi bassa, perche' manca la provvigione, e un prezzo apparentemente ottimo, e fa sembrare conveniente un'operazione che porta con se' l'assenza di garanzia per i vizi ex art. 2922 c.c., il possesso del debitore fino al decreto ex art. 560 c.p.c., la locazione opponibile ex art. 2923 c.c. e la decadenza con perdita della cauzione ex art. 587 c.p.c. Il numero di sintesi non e' quindi il prezzo ma lo sconto sul valore di mercato, confrontato con una soglia che rappresenta il prezzo di quei rischi.
+
+Conseguenze. Il registro cresce di cinque campi e il foglio Annunci di cinque colonne, con il contratto posizionale riallineato e i test aggiornati: il difetto era gia' stato intercettato da quei test alla prima esecuzione, che e' la conferma che servissero. Il prezzo-valore si applica anche qui, dopo la sentenza 6 del 2014 della Corte costituzionale, e resta la singola ottimizzazione piu' redditizia dell'operazione.

@@ -412,6 +412,43 @@ def cerca(
     return risultati
 
 
+def quotazione_di_riferimento(
+    quotazioni: list[Quotazione],
+    comune: str,
+    zona: str = "",
+    tipologia: str = "Abitazioni civili",
+) -> tuple[float, float, str]:
+    """Intervallo di prezzo da usare come riferimento per un annuncio.
+
+    Restituisce minimo, massimo e una dicitura che dice da dove vengono, perche'
+    i due numeri da soli non bastano a giudicarli. Con la zona indicata si usa
+    quella zona, ed e' il confronto giusto; senza, si ripiega sull'intero Comune,
+    che su un Comune di costa mette insieme il lungomare e le zone agricole e
+    produce una forbice cosi' larga da non dire quasi nulla. La dicitura serve a
+    ricordarlo a chi legge il numero un mese dopo.
+
+    Sullo stato conservativo la scelta e' di restare su NORMALE quando c'e':
+    OTTIMO descrive un immobile ristrutturato di recente, e assumerlo come
+    riferimento farebbe sembrare a buon mercato qualunque cosa.
+    """
+    righe = cerca(quotazioni, comune, tipologia, zona)
+    if not righe:
+        return 0.0, 0.0, ""
+
+    normali = [r for r in righe if r.stato.strip().upper().startswith("NORMALE")]
+    scelte = normali or righe
+    stato = "stato normale" if normali else "tutti gli stati"
+
+    minimo = min(r.compravendita_min for r in scelte if r.compravendita_min) if scelte else 0.0
+    massimo = max(r.compravendita_max for r in scelte if r.compravendita_max) if scelte else 0.0
+
+    if zona:
+        provenienza = f"zona {zona.strip().upper()}, {stato}"
+    else:
+        provenienza = f"intero Comune, {stato}, {len(scelte)} righe: forbice larga, indicare la zona"
+    return minimo, massimo, provenienza
+
+
 def sintesi_comune(quotazioni: list[Quotazione], comune: str, tipologia: str = "Abitazioni civili") -> dict:
     """Riassume in un dizionario l'intervallo di prezzi e canoni di un Comune."""
     righe = cerca(quotazioni, comune, tipologia)

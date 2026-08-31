@@ -207,6 +207,50 @@ def cmd_riepilogo(args) -> int:
 def cmd_annunci(args) -> int:
     registro = A.Registro(ARCHIVIO)
 
+    if args.azione == "omi":
+        # Aggancia il registro alla fornitura in cache. E' il passo che rende
+        # utile la colonna dello scarto nel workbook, che senza quotazioni resta
+        # vuota e fa sembrare il confronto fra immobili piu' povero di quanto sia.
+        cartella_omi = RADICE / "data" / "omi"
+        quotazioni, letti = O.carica_cartella(cartella_omi)
+        if not quotazioni:
+            print("Nessuna fornitura OMI in data/omi. Prima: python tools/valuta.py omi importa --file ...")
+            return 1
+
+        aggiornati = 0
+        senza = []
+        for annuncio in registro.annunci:
+            if args.id and annuncio.id != args.id:
+                continue
+            if not annuncio.comune:
+                senza.append((annuncio.id, "manca il Comune"))
+                continue
+            minimo, massimo, provenienza = O.quotazione_di_riferimento(
+                quotazioni, annuncio.comune, annuncio.zona_omi, args.tipologia_omi or "Abitazioni civili"
+            )
+            if not minimo:
+                simili = O.comuni_simili(quotazioni, annuncio.comune)
+                motivo = f"Comune non trovato; forse: {', '.join(simili[:3])}" if simili else "Comune non trovato"
+                senza.append((annuncio.id, motivo))
+                continue
+            annuncio.quotazione_omi_min = minimo
+            annuncio.quotazione_omi_max = massimo
+            aggiornati += 1
+            scarto = annuncio.scarto_su_omi
+            print(f"  {annuncio.id:<10}{minimo:>8,.0f} - {massimo:<8,.0f} EUR/mq".replace(",", ".")
+                  + (f"  scarto {scarto:+.0%}" if scarto else "  scarto non calcolabile")
+                  + f"   [{provenienza}]")
+
+        for identificativo, motivo in senza:
+            print(f"  {identificativo:<10}non aggiornato: {motivo}")
+
+        if aggiornati:
+            registro.salva()
+            print()
+            print(f"Aggiornati {aggiornati} annunci in {registro.percorso}.")
+            print(f"Fornitura: {', '.join(letti)} - fonte: {O.ATTRIBUZIONE}")
+            print("Per riversarli nel workbook: python tools/valuta.py excel --con-annunci")
+        return 0 if aggiornati else 1
     if args.azione == "elenca":
         if not registro.annunci:
             print("Nessun annuncio in archivio.")
@@ -233,6 +277,7 @@ def cmd_annunci(args) -> int:
             agenzia=args.agenzia or "", contatto=args.contatto or "",
             nuova_costruzione="SI" if args.nuova else "NO",
             data_consegna=args.consegna or "", note=args.note or "",
+            punteggio=args.punteggio or 0, zona_omi=args.zona_omi or "",
         )
         try:
             registro.aggiungi(annuncio)
@@ -241,6 +286,34 @@ def cmd_annunci(args) -> int:
             return 1
         registro.salva()
         print(f"Aggiunto {annuncio.id} in {ARCHIVIO}")
+        return 0
+
+    if args.azione == "modifica":
+        if not args.id:
+            print("Serve --id.")
+            return 2
+        annuncio = registro.trova(args.id)
+        if annuncio is None:
+            print(f"Nessun annuncio con id {args.id}")
+            return 1
+        modifiche = {
+            "punteggio": args.punteggio, "zona_omi": args.zona_omi, "stato": args.stato,
+            "comune": args.comune, "provincia": args.provincia, "indirizzo": args.indirizzo,
+            "tipologia": args.tipologia, "mq": args.mq, "prezzo_richiesto": args.prezzo,
+            "prezzo_obiettivo": args.obiettivo, "canone_atteso_mese": args.canone,
+            "agenzia": args.agenzia, "contatto": args.contatto, "note": args.note,
+        }
+        applicate = []
+        for campo, valore in modifiche.items():
+            if valore is None or valore == "":
+                continue
+            setattr(annuncio, campo, valore)
+            applicate.append(f"{campo}={valore}")
+        if not applicate:
+            print("Nessun campo da modificare: indicare almeno un'opzione.")
+            return 2
+        registro.salva()
+        print(f"Aggiornato {annuncio.id}: {', '.join(applicate)}")
         return 0
 
     if args.azione == "rimuovi":
@@ -266,6 +339,12 @@ def cmd_annunci(args) -> int:
                 return 2
             try:
                 testo = A.testo_da_html(A.scarica_pagina(args.link))
+            except A.PrelievoBloccato as e:
+                # Il robots.txt consentiva il percorso e il server ha negato lo
+                # stesso: e' la protezione anti bot, non un guasto, e non si
+                # insiste. Il messaggio dell'eccezione porta gia' le alternative.
+                print(str(e))
+                return 2
             except Exception as e:
                 print(f"Prelievo fallito: {e}")
                 return 1
@@ -556,7 +635,7 @@ def principale(argomenti=None) -> int:
     p.set_defaults(funzione=cmd_riepilogo)
 
     p = sub.add_parser("annunci", help="registro degli immobili in valutazione")
-    p.add_argument("azione", choices=["elenca", "aggiungi", "importa", "esporta", "rimuovi"])
+    p.add_argument("azione", choices=["elenca", "aggiungi", "modifica", "importa", "esporta", "rimuovi", "omi"])
     p.add_argument("--id")
     p.add_argument("--link")
     p.add_argument("--file", help="file di testo con l'annuncio copiato dal browser")
@@ -575,6 +654,10 @@ def principale(argomenti=None) -> int:
     p.add_argument("--obiettivo", type=float, help="prezzo obiettivo da mettere in proposta")
     p.add_argument("--canone", type=float)
     p.add_argument("--note")
+    p.add_argument("--stato", help="da contattare, contattata, visitata, scartata, in trattativa")
+    p.add_argument("--punteggio", type=int, help="priorita' da 0 a 10, 10 e' la massima")
+    p.add_argument("--zona", dest="zona_omi", help="zona OMI, per agganciare la quotazione giusta")
+    p.add_argument("--tipologia-omi", dest="tipologia_omi", default="", help="tipologia edilizia OMI, per l'azione omi")
     p.set_defaults(funzione=cmd_annunci)
 
     p = sub.add_parser("omi", help="quotazioni dell'Osservatorio del mercato immobiliare")

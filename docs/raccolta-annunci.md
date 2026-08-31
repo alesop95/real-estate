@@ -60,3 +60,74 @@ Oltre agli intervalli di prezzo, il modulo espone per ogni zona il rendimento lo
 ## Il riconoscimento dei duplicati
 
 Lo stesso immobile ricompare spesso su portali diversi, con testo riscritto, foto diverse e prezzo leggermente diverso. Il confronto sul link non lo intercetta, perche' i link sono per costruzione diversi. Il registro fa due cose: normalizza il link togliendo i parametri di tracciamento, cosi' che lo stesso annuncio ripescato da una condivisione non entri due volte, e mette a disposizione il calcolo di un vettore semantico tramite il modello di embedding locale, con cui confrontare le descrizioni e far emergere le riproposizioni della stessa unita' sotto altra veste.
+
+## Dall'annuncio alla decisione, i tre percorsi
+
+Ci sono tre modi di far entrare un immobile nel modello, e si scelgono in base a quanto si sa e a quanto il portale collabora. Portano tutti allo stesso punto, cioè una riga del registro completa abbastanza da reggere il confronto.
+
+### Primo percorso: inserimento manuale
+
+È il più veloce quando i dati si hanno già sotto gli occhi, ed è l'unico che funziona sempre, perché non dipende da nessuno.
+
+```
+python tools/valuta.py annunci aggiungi --link "<url>" --comune "Civitanova Marche" --provincia MC --mq 75 --prezzo 89000 --canone 550 --punteggio 8
+```
+
+Nessuna opzione è obbligatoria oltre a quelle che si vogliono valorizzare, e un annuncio può entrare anche con il solo link, da completare dopo. I campi che contano davvero, in ordine, sono il prezzo, i metri quadri, il Comune, la rendita catastale e il canone: i primi tre bastano per il confronto fra immobili, la rendita sblocca il prezzo-valore e il canone accende il calcolo del rendimento.
+
+Per correggere o completare in seguito, senza rifare la riga:
+
+```
+python tools/valuta.py annunci modifica --id house_4 --prezzo 87000 --zona C3 --stato "in trattativa" --punteggio 10
+```
+
+### Secondo percorso: incolla del testo, strutturato dal modello locale
+
+È quello da usare quando l'annuncio è lungo e i dati sono sparsi nella descrizione. Si apre la pagina nel browser, si seleziona il contenuto dell'annuncio compresa la tabella delle caratteristiche, lo si incolla in un file di testo, e si lascia fare al modello.
+
+```
+$env:OLLAMA_HOST = "http://<host del modello>:<porta>"
+python tools/valuta.py annunci importa --file "C:\percorso\annuncio.txt" --link "<url>"
+```
+
+Circa venti secondi per annuncio. Va inclusa la sezione delle caratteristiche, quella tabellare, e non solo il testo descrittivo: è lì che stanno spese condominiali, classe energetica e, quando ci sono, rendita e categoria catastale. Il testo non lascia la rete locale.
+
+Va poi riletto quello che il modello ha estratto, con `annunci elenca`, prima di fidarsene. Non perché sbagli spesso, ma perché quando sbaglia lo fa in silenzio.
+
+### Terzo percorso: prelievo diretto della pagina
+
+Esiste, è subordinato al `robots.txt` e nella pratica funziona di rado, perché i portali maggiori consentono il percorso e poi rispondono comunque con un blocco a chi non è un browser. Quando succede, il programma lo dice e indica le due vie sopra invece di insistere.
+
+```
+python tools/valuta.py annunci importa --link "<url>"
+```
+
+## Una volta che gli immobili sono a registro
+
+L'ordine è questo, e ogni passo serve al successivo.
+
+```
+python tools/valuta.py annunci omi          aggancia le quotazioni della zona a ogni annuncio
+python tools/valuta.py annunci elenca       controlla che i dati siano quelli giusti
+python tools/valuta.py excel --con-annunci  genera il workbook con il registro dentro
+```
+
+Nel workbook si apre il foglio Confronto immobili, che applica il modello completo a ogni riga e mette in fila rendimento netto, cap rate, cash on cash e debt service coverage ratio. Da lì esce il candidato su cui vale la pena spendere un'ora, e per quello si compila il foglio Immobile con i dati reali.
+
+Sull'aggancio delle quotazioni vale un'avvertenza. Senza la zona OMI indicata nel registro, il riferimento è l'intero Comune, e su un Comune di costa la forbice mette insieme il lungomare e le zone agricole: il numero è corretto e quasi inutile. La zona si trova con `omi zone --comune "..."` incrociando l'indirizzo, si scrive nel registro con `annunci modifica --zona`, e da quel momento lo scarto diventa un numero su cui trattare.
+
+## Se l'immobile viene da un'asta
+
+Il percorso cambia in due punti. Nel registro si marcano i campi dedicati:
+
+```
+python tools/valuta.py annunci modifica --id house_4 --note "asta, tribunale di Macerata"
+```
+
+e si compilano a mano nel foglio Annunci le colonne dell'asta, cioè base d'asta, data, tribunale e procedura, e soprattutto lo stato di occupazione. Poi si lavora nel foglio Asta, non nel foglio Immobile: le imposte si calcolano allo stesso modo, ma il costo dell'operazione comprende il compenso del delegato, la cancellazione dei gravami e la liberazione, e non comprende la provvigione.
+
+Il numero da guardare non è il prezzo ma lo sconto effettivo sul valore di mercato, e quello da scriversi su un foglio prima della gara è il prezzo massimo a cui fermarsi. La materia sta in `aste-immobiliari.md`.
+
+## Che cosa fare quando si passa alla trattativa
+
+A quel punto il registro ha esaurito il suo compito e cominciano gli altri due fogli. Il Dossier tecnico elenca i documenti da farsi consegnare, con la norma che li rende dovuti, e va usato prima della proposta, quando si ha ancora potere negoziale. La Checklist elenca le verifiche e le clausole, e il suo contatore va a zero prima di firmare, oppure le verifiche aperte diventano condizioni scritte dentro la proposta.

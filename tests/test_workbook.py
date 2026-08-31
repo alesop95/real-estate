@@ -42,7 +42,7 @@ def test_il_workbook_si_genera_con_tutti_i_fogli():
     wb = load_workbook(workbook())
     attesi = [
         "Guida", "Cruscotto", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Simulatore mutuo", "Locazione",
-        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Rischio", "Comproprieta", "Checklist", "Dossier tecnico",
+        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Rischio", "Comproprieta", "Checklist", "Asta", "Dossier tecnico",
         "Annunci", "Confronto immobili", "Fonti", "_Estrazioni",
     ]
     assert wb.sheetnames == attesi
@@ -122,7 +122,10 @@ def test_esportazione_scrive_nelle_colonne_giuste(tmp_path=None):
             provincia="XX", indirizzo="via Prova 1", tipologia="bilocale",
             destinazione_uso="abitazione", nuova_costruzione="SI", data_consegna="2027-06",
             mq=60, prezzo_richiesto=100_000, prezzo_obiettivo=93_000,
-            rendita_catastale=500, categoria="A/3", canone_atteso_mese=520, note="prova",
+            rendita_catastale=500, categoria="A/3", canone_atteso_mese=520,
+            asta="SI", base_asta=72_000, data_asta="2026-11-14",
+            tribunale_procedura="Macerata RGE 55/2025",
+            stato_occupazione="occupato dal debitore", note="prova",
         )
     )
     scritti = A.esporta_in_excel(registro, str(destinazione))
@@ -140,7 +143,10 @@ def test_esportazione_scrive_nelle_colonne_giuste(tmp_path=None):
         1: "house_9", 3: "visitata", 5: "Agenzia Prova", 6: "333 1112223",
         8: "Comune di esempio", 9: "XX", 12: "bilocale", 13: "abitazione",
         14: "SI", 15: "2027-06", 16: 60, 17: 100_000, 18: 93_000,
-        21: None, 23: 500, 24: "A/3", 28: 520, 31: "prova",
+        21: None, 23: 500, 24: "A/3", 28: 520,
+        # Le cinque colonne dell'asta stanno fra il rendimento lordo e il punteggio.
+        30: "SI", 31: 72_000, 32: "2026-11-14", 33: "Macerata RGE 55/2025",
+        34: "occupato dal debitore", 36: "prova",
     }
     for colonna, valore in atteso.items():
         effettivo = ws.cell(row=riga, column=colonna).value
@@ -246,6 +252,63 @@ def test_registro_riletto_non_duplica_gli_annunci():
     riletto.carica()
     assert len(riletto.annunci) == 2, f"il registro si e' duplicato: {len(riletto.annunci)} righe"
     assert [a.id for a in riletto.annunci] == ["x_1", "x_2"]
+
+def test_numero_riconosce_il_separatore_delle_migliaia_italiano():
+    """Un punto in un annuncio italiano quasi sempre separa le migliaia.
+
+    Il modello locale restituisce a volte i numeri come stringhe, cosi' come li
+    trova nel testo. Trattare 175.000 come decimale produce un prezzo di
+    centosettantacinque euro: nessun errore, nessuna eccezione, un immobile che
+    nel confronto risulta regalato. La discriminante e' quante cifre seguono il
+    punto, tre per le migliaia e una o due per i decimali, ed e' l'unica euristica
+    che regge sui valori che questo dominio incontra davvero, cioe' prezzi,
+    superfici, canoni e rendite.
+    """
+    from immobiliare import annunci as A
+
+    casi = [
+        ("175.000", 175_000.0),      # migliaia: il caso che rompeva
+        ("1.500.000", 1_500_000.0),  # due separatori
+        ("89.000 EUR", 89_000.0),    # con valuta appesa
+        ("612,45", 612.45),          # decimale all'italiana
+        ("1.234,56", 1_234.56),      # migliaia e decimale insieme
+        ("612.45", 612.45),          # due cifre dopo il punto: decimale
+        ("620 al mese", 620.0),
+        ("95", 95.0),
+        ("2,5", 2.5),
+        ("", 0.0),
+        ("nessun dato", 0.0),
+    ]
+    for testo, atteso in casi:
+        ottenuto = A._numero(testo)
+        assert abs(ottenuto - atteso) < 1e-9, f"{testo!r}: atteso {atteso}, ottenuto {ottenuto}"
+
+    # I numeri veri passano intatti.
+    assert A._numero(175_000) == 175_000.0
+    assert A._numero(612.45) == 612.45
+
+
+def test_schema_di_estrazione_copre_i_campi_che_decidono():
+    """Lo schema passato al modello e' cio' che il modello puo' trovare.
+
+    Rendita catastale, categoria e canone compaiono di rado in un annuncio, ma
+    quando ci sono valgono piu' di tutto il resto: la prima sblocca il
+    prezzo-valore, la seconda decide moltiplicatore ed esclusione
+    dall'agevolazione, il terzo determina l'intero calcolo del rendimento.
+    Ometterli dallo schema significa non trovarli mai anche quando sono scritti
+    in chiaro, e il modello non sbaglia nulla: non gli e' stato chiesto.
+    """
+    from immobiliare import annunci as A
+
+    for campo in ("rendita_catastale", "categoria", "canone_atteso_mese",
+                  "comune", "mq", "prezzo_richiesto", "spese_condominio_anno"):
+        assert campo in A.CAMPI_ESTRAIBILI, f"{campo} non e' nello schema di estrazione"
+
+    # Ogni campo dello schema deve esistere davvero nella dataclass, altrimenti
+    # il modello lo estrae e la costruzione dell'annuncio lo scarta in silenzio.
+    nomi = {f.name for f in __import__("dataclasses").fields(A.Annuncio)}
+    for campo in A.CAMPI_ESTRAIBILI:
+        assert campo in nomi, f"lo schema chiede {campo}, che non e' un campo di Annuncio"
 
 if __name__ == "__main__":
     superati = 0

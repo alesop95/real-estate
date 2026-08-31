@@ -88,7 +88,39 @@ class Annuncio:
     classe_energetica: str = ""
     spese_condominio_anno: float = 0.0
     canone_atteso_mese: float = 0.0
+    asta: str = "NO"
+    """SI se l'immobile viene da una vendita giudiziaria.
+
+    Cambia tutto cio' che sta a valle: non c'e' garanzia per i vizi, non c'e'
+    provvigione di agenzia, il prezzo non e' trattabile ma si costruisce per
+    rilanci, i gravami si cancellano per decreto e i tempi sono dettati dal
+    tribunale. Un'asta valutata con il modello del libero mercato da' un numero
+    che sembra ottimo e non lo e'.
+    """
+    base_asta: float = 0.0
+    """Prezzo base d'asta. Non e' il prezzo che si paghera': e' il punto di partenza."""
+    data_asta: str = ""
+    tribunale_procedura: str = ""
+    """Tribunale e numero di procedura, per esempio Macerata RGE 123/2024."""
+    stato_occupazione: str = ""
+    """Libero, occupato dal debitore, locato con contratto opponibile, occupato senza titolo.
+
+    E' la variabile che separa un'asta conveniente da un contenzioso: l'articolo
+    2923 del codice civile rende opponibile all'acquirente la locazione con data
+    certa anteriore al pignoramento, e l'articolo 560 del codice di procedura
+    lascia il debitore e i familiari conviventi nel possesso fino al decreto di
+    trasferimento.
+    """
     punteggio: int = 0
+    """Priorita' da 0 a 10, assegnata a mano da chi valuta.
+
+    Non e' un punteggio calcolato: il modello ha gia' metriche per quello, e
+    sovrapporne una sintetica servirebbe solo a nascondere il ragionamento. E'
+    l'ordine in cui si vogliono guardare gli immobili, che dipende anche da cose
+    che il modello non sa, come la vicinanza a chi ci deve abitare o il fatto che
+    il venditore abbia fretta. Dieci e' massima priorita', zero e' il valore di
+    chi entra a registro senza averlo ancora deciso.
+    """
     note: str = ""
 
     def __post_init__(self) -> None:
@@ -255,12 +287,30 @@ def _attendi_il_turno(dominio: str) -> None:
     _ultima_richiesta[dominio] = time.monotonic()
 
 
+class PrelievoBloccato(RuntimeError):
+    """Il sito ha risposto con un blocco, e la risposta corretta e' fermarsi.
+
+    E' distinta da `ProbitaRifiutata`, che riguarda il permesso dichiarato nel
+    `robots.txt`, perche' i due casi si risolvono diversamente. Qui il permesso
+    c'era e il server ha comunque negato, tipicamente con una protezione anti
+    bot: non c'e' nulla da correggere nella richiesta, e insistere significherebbe
+    aggirare la protezione, che il progetto non fa.
+    """
+
+
 def scarica_pagina(url: str, forza: bool = False) -> str:
     """Preleva una pagina solo se il robots.txt lo consente.
 
     Il parametro `forza` non aggira il robots.txt: serve soltanto a saltare il
     controllo quando l'URL e' di un sito proprio o di un'agenzia che ha dato
     autorizzazione esplicita, e resta responsabilita' di chi lo usa.
+
+    Un blocco del server non e' un errore da riprovare. I portali maggiori
+    dichiarano nel `robots.txt` percorsi consentiti e poi rispondono comunque
+    403 alle richieste che non arrivano da un browser: il permesso c'era, il
+    server ha negato lo stesso. L'eccezione dedicata serve a far arrivare a chi
+    usa lo strumento la sola informazione utile, cioe' quali sono le due vie
+    alternative, invece di un errore HTTP grezzo che sembra un guasto.
     """
     if not forza:
         consentito, motivo = robots_consente(url)
@@ -276,9 +326,22 @@ def scarica_pagina(url: str, forza: bool = False) -> str:
             "Accept-Language": "it-IT,it;q=0.9",
         },
     )
-    with urllib.request.urlopen(richiesta, timeout=TIMEOUT_SECONDI) as risposta:
-        grezzo = risposta.read()
-        codifica = risposta.headers.get_content_charset() or "utf-8"
+    try:
+        with urllib.request.urlopen(richiesta, timeout=TIMEOUT_SECONDI) as risposta:
+            grezzo = risposta.read()
+            codifica = risposta.headers.get_content_charset() or "utf-8"
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403, 405, 406, 429, 503):
+            raise PrelievoBloccato(
+                f"{dominio} ha risposto {e.code}: il prelievo automatico e' bloccato "
+                "dalla protezione anti bot del sito, anche se il robots.txt consente "
+                "il percorso. Non si insiste: si incolla il testo dell'annuncio in un "
+                "file e si usa `annunci importa --file`, oppure si inseriscono i campi "
+                "a mano con `annunci aggiungi`."
+            ) from e
+        raise PrelievoBloccato(f"{dominio} ha risposto {e.code}: {e.reason}") from e
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        raise PrelievoBloccato(f"{dominio} non raggiungibile: {e}") from e
     return grezzo.decode(codifica, errors="replace")
 
 
@@ -311,6 +374,19 @@ CAMPI_ESTRAIBILI = {
     "classe_energetica": "la classe energetica, una lettera fra A4 e G",
     "spese_condominio_anno": "spese condominiali annue in euro, solo il numero",
     "nuova_costruzione": "SI se e' di nuova costruzione o in costruzione, altrimenti NO",
+    # I tre campi seguenti compaiono raramente in un annuncio, ma quando ci sono
+    # valgono piu' di tutti gli altri messi insieme: la rendita catastale sblocca
+    # il prezzo-valore, che e' la leva fiscale piu' grossa dell'operazione; la
+    # categoria decide il moltiplicatore e l'esclusione dall'agevolazione; il
+    # canone gia' in essere determina l'intero calcolo del rendimento. Ometterli
+    # dallo schema significa non trovarli mai, anche quando sono scritti in
+    # chiaro nel testo, ed e' un'omissione che non produce alcun errore.
+    "rendita_catastale": "rendita catastale in euro, solo il numero, se indicata",
+    "categoria": "categoria catastale, per esempio A/2 o A/3, se indicata",
+    "canone_atteso_mese": "canone di locazione mensile in euro se l'immobile e' gia' locato o se l'annuncio ne indica uno, solo il numero",
+    "provincia": "sigla della provincia, due lettere",
+    "destinazione_uso": "abitazione, ufficio, negozio, box",
+    "data_consegna": "data prevista di consegna se in costruzione, altrimenti vuoto",
     "note": "una sintesi in una riga delle caratteristiche rilevanti",
 }
 
@@ -336,7 +412,8 @@ def struttura_con_modello_locale(testo: str, url: str = "", modello: str = "") -
     cliente = ClienteLocale(modello=modello) if modello else ClienteLocale()
     risposta = cliente.completa(prompt, formato_json=True)
     dati = _json_dal_testo(risposta)
-    for chiave in ("mq", "prezzo_richiesto", "spese_condominio_anno"):
+    for chiave in ("mq", "prezzo_richiesto", "spese_condominio_anno",
+                   "rendita_catastale", "canone_atteso_mese"):
         if chiave in dati:
             dati[chiave] = _numero(dati[chiave])
     if url:
@@ -369,6 +446,17 @@ def _numero(valore) -> float:
         tenuto = tenuto.replace(",", ".")
     elif tenuto.count(".") > 1:
         tenuto = tenuto.replace(".", "")
+    elif "." in tenuto:
+        # Un solo punto e nessuna virgola: in un annuncio italiano quasi sempre
+        # e' il separatore delle migliaia, non il decimale. La discriminante e'
+        # quante cifre lo seguono: tre sono migliaia, 175.000 vale
+        # centosettantacinquemila; una o due sono decimali, 612.45 vale
+        # seicentododici e quarantacinque. Senza questa distinzione un prezzo
+        # letto dal modello come stringa diventa 175 euro, e il modello non
+        # sbaglia nulla: sbaglia chi lo converte.
+        intero, _, coda = tenuto.rpartition(".")
+        if len(coda) == 3 and intero:
+            tenuto = intero.replace(".", "") + coda
     try:
         return float(tenuto)
     except ValueError:
@@ -403,7 +491,9 @@ def esporta_in_excel(registro: Registro, percorso_workbook: str) -> int:
         "nuova_costruzione", "data_consegna", "mq", "prezzo_richiesto",
         "prezzo_obiettivo", None, "quotazione_omi_min", "quotazione_omi_max", None,
         "rendita_catastale", "categoria", "piano", "classe_energetica",
-        "spese_condominio_anno", "canone_atteso_mese", None, "punteggio", "note",
+        "spese_condominio_anno", "canone_atteso_mese", None,
+        "asta", "base_asta", "data_asta", "tribunale_procedura", "stato_occupazione",
+        "punteggio", "note",
     ]
     colonne_calcolate = {i for i, campo in enumerate(ordine, start=1) if campo is None}
     totale_colonne = len(ordine)

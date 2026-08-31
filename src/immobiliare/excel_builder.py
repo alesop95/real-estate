@@ -74,6 +74,7 @@ class Costruttore:
         self.foglio_rischio()
         self.foglio_comproprieta()
         self.foglio_checklist()
+        self.foglio_asta()
         self.foglio_dossier()
         # Il foglio Annunci va costruito prima del confronto, che ne legge le righe
         # a partire da `self.riga_annunci`.
@@ -105,8 +106,9 @@ class Costruttore:
             ("6. Confronto affitto", "Comprare con mutuo oppure restare in affitto investendo la differenza, a parita' di esborso."),
             ("7. Scenari", "Sensibilita' del cash flow al tasso e al canone, e del rendimento al prezzo."),
             ("8. Checklist", "Verifiche legali, urbanistiche, catastali e condominiali da chiudere prima della proposta e prima del rogito."),
-            ("9. Dossier tecnico", "I documenti da farsi consegnare dall'agenzia o dal venditore in trattativa, con chi li rilascia, la norma che li impone e il costo."),
-            ("10. Annunci", "Registro degli immobili in valutazione, con link, prezzo al metro quadro e rendimento lordo calcolati."),
+            ("9. Asta", "Solo per le vendite giudiziarie: costo reale dell'aggiudicazione, sconto effettivo sul mercato e prezzo massimo a cui fermarsi in gara."),
+            ("10. Dossier tecnico", "I documenti da farsi consegnare dall'agenzia o dal venditore in trattativa, con chi li rilascia, la norma che li impone e il costo."),
+            ("11. Annunci", "Registro degli immobili in valutazione, con link, prezzo al metro quadro e rendimento lordo calcolati."),
         ]
         for etichetta, testo in passi:
             c = ws.cell(row=r, column=1, value=etichetta)
@@ -260,6 +262,7 @@ class Costruttore:
             ("Metriche, Scenari, Rischio", "Si leggono. Scenari da' tre ipotesi impostabili, Rischio la distribuzione su mille."),
             ("Comproprieta'", "Solo se comprate in piu' di uno: ripartisce per quote e calcola l'imposta di ciascuno."),
             ("Checklist", "Quando si passa dalla valutazione alla proposta. Filtra per fase e non firmare con righe rosse."),
+            ("Asta", "Solo se l'immobile viene da una vendita giudiziaria: le regole sono altre e il foglio le mette in conto."),
             ("Dossier tecnico", "Le carte da farsi dare in trattativa, con la norma che le rende dovute. Si chiedono prima della proposta, non dopo."),
         ]
         for foglio, cosa in percorso:
@@ -2026,6 +2029,144 @@ class Costruttore:
         r = S.campo(ws, r, "Verifiche ancora aperte", f'=COUNTIF(F{prima}:F{ultima},"da fare")+COUNTIF(F{prima}:F{ultima},"in corso")', S.NUMERO, risultato=True)
         self.nome("verifiche_aperte", ws, f"B{riga_aperte}")
 
+    # ------------------------------------------------------------------- asta
+    def foglio_asta(self) -> None:
+        """Costo reale di un'aggiudicazione all'asta, e confronto con il libero.
+
+        Un'asta valutata con il modello del libero mercato da' un numero che
+        sembra ottimo e non lo e', perche' le due operazioni differiscono in
+        quattro punti che il modello ordinario non vede: non c'e' provvigione ma
+        c'e' il compenso del delegato, il prezzo non si tratta ma si costruisce
+        per rilanci, l'immobile puo' essere occupato e la liberazione ha tempi e
+        costi, e non esiste garanzia per i vizi. Questo foglio li mette in conto.
+        """
+        ws = self.wb.create_sheet("Asta")
+        ws.sheet_view.showGridLines = False
+        S.larghezze_colonne(ws, {"A": 46, "B": 18, "C": 76, "D": 18})
+        r = S.titolo(
+            ws,
+            1,
+            "Acquisto all'asta giudiziaria",
+            "Le celle gialle sono gli input, presi dall'avviso di vendita e dalla perizia del custode. "
+            "Il confronto in fondo dice quanto sconto sul valore di mercato serve perche' l'operazione "
+            "regga i suoi rischi specifici, che sono diversi da quelli di una compravendita ordinaria.",
+            4,
+        )
+
+        r = S.sezione(ws, r, "L'asta", 4)
+        riga_base = r
+        r = S.campo(ws, r, "Prezzo base d'asta", 72_000, S.EURO, input_utente=True,
+                    nota="Dall'avviso di vendita. Non e' il prezzo che pagherai: e' il punto di partenza.")
+        self.nome("asta_base", ws, f"B{riga_base}")
+        riga_off = r
+        r = S.campo(ws, r, "Offerta minima ammessa", "=asta_base*(1-asta_ribasso_max)", S.EURO,
+                    nota="L'offerta e' inefficace se inferiore di oltre un quarto al prezzo base, art. 571 c.p.c.")
+        riga_rib = r
+        r = S.campo(ws, r, "Ribasso massimo ammesso sull'offerta", 0.25, S.PERC, input_utente=True,
+                    nota="Un quarto per legge. Si tocca solo se l'avviso di vendita dice altro.")
+        self.nome("asta_ribasso_max", ws, f"B{riga_rib}")
+        riga_agg = r
+        r = S.campo(ws, r, "Prezzo di aggiudicazione ipotizzato", 84_000, S.EURO, input_utente=True,
+                    nota="Con piu' offerenti si apre la gara: qui si mette il prezzo a cui si e' disposti a fermarsi, non la base.")
+        self.nome("asta_aggiudicazione", ws, f"B{riga_agg}")
+        riga_cauz = r
+        r = S.campo(ws, r, "Cauzione da versare con l'offerta", "=asta_aggiudicazione*asta_cauzione_pct", S.EURO,
+                    nota="Si perde a titolo di multa se non si versa il saldo nel termine, art. 587 c.p.c.")
+        riga_cpct = r
+        r = S.campo(ws, r, "Cauzione, quota dell'offerta", 0.10, S.PERC, input_utente=True,
+                    nota="Di norma il dieci per cento. Lo dice l'avviso di vendita.")
+        self.nome("asta_cauzione_pct", ws, f"B{riga_cpct}")
+        riga_term = r
+        r = S.campo(ws, r, "Termine per il saldo, giorni", 120, S.NUMERO, input_utente=True,
+                    nota="Fissato dall'ordinanza di vendita, di norma centoventi giorni. E' il vincolo che decide se serve un mutuo gia' deliberato.")
+        self.nome("asta_giorni_saldo", ws, f"B{riga_term}")
+        r += 1
+
+        r = S.sezione(ws, r, "Costi dell'aggiudicazione", 4)
+        riga_imp = r
+        r = S.campo(ws, r, "Imposte di trasferimento", "=MAX(reg_min,IF(asta_agevolata=\"SI\",asta_base_imponibile*reg_prima,asta_base_imponibile*reg_ord))+ipo_priv+cat_priv", S.EURO,
+                    nota="Stessa disciplina del libero mercato: registro proporzionale piu' ipotecaria e catastale fisse. L'agevolazione prima casa si chiede nella domanda di partecipazione.")
+        self.nome("asta_imposte", ws, f"B{riga_imp}")
+        riga_agv = r
+        r = S.campo(ws, r, "Agevolazione prima casa richiesta", "SI", input_utente=True,
+                    nota="Si dichiara nell'offerta o subito dopo l'aggiudicazione: il decreto di trasferimento la recepisce.")
+        self.nome("asta_agevolata", ws, f"B{riga_agv}")
+        riga_bi = r
+        r = S.campo(ws, r, "Base imponibile delle imposte",
+                    "=IF(asta_prezzo_valore=\"SI\",rendita*riv_rendita*IF(asta_agevolata=\"SI\",molt_prima,molt_ord),asta_aggiudicazione)", S.EURO,
+                    nota="Il prezzo-valore si applica anche alle vendite giudiziarie: lo ha stabilito la Corte costituzionale con la sentenza 6 del 2014, dichiarando illegittima l'esclusione dei trasferimenti coattivi.")
+        self.nome("asta_base_imponibile", ws, f"B{riga_bi}")
+        riga_pv = r
+        r = S.campo(ws, r, "Opzione prezzo-valore", "SI", input_utente=True,
+                    nota="Richiede la rendita catastale, che sta nella perizia. Va chiesta espressamente.")
+        self.nome("asta_prezzo_valore", ws, f"B{riga_pv}")
+        riga_del = r
+        r = S.campo(ws, r, "Compenso del delegato a carico dell'aggiudicatario", 1_500, S.EURO, input_utente=True,
+                    nota="Nelle vendite delegate ai professionisti, art. 591-bis c.p.c., una quota del compenso e' posta a carico dell'aggiudicatario. Lo dice l'avviso: va letto, non stimato.")
+        self.nome("asta_delegato", ws, f"B{riga_del}")
+        riga_canc = r
+        r = S.campo(ws, r, "Spese di cancellazione dei gravami", 500, S.EURO, input_utente=True,
+                    nota="Il decreto ordina la cancellazione di pignoramenti e ipoteche, art. 586 c.p.c., ma le formalita' hanno un costo che di norma resta all'aggiudicatario.")
+        riga_lib = r
+        r = S.campo(ws, r, "Costo stimato della liberazione", 0, S.EURO, input_utente=True,
+                    nota="Zero se l'immobile e' libero. Se e' occupato, sono le spese della procedura di rilascio curata dal custode piu' l'eventuale ripristino.")
+        self.nome("asta_liberazione", ws, f"B{riga_lib}")
+        riga_tec = r
+        r = S.campo(ws, r, "Verifica tecnica e visure di parte", 600, S.EURO, input_utente=True,
+                    nota="La perizia agli atti e' del tribunale, non tua, ed e' spesso vecchia di anni. Una verifica propria costa poco rispetto a cio' che evita.")
+        riga_tot = r
+        r = S.campo(ws, r, "Costo totale dell'operazione",
+                    f"=asta_aggiudicazione+asta_imposte+B{riga_del}+B{riga_canc}+B{riga_lib}+B{riga_tec}", S.EURO,
+                    risultato=True, nota="Non c'e' provvigione di agenzia: e' il solo risparmio strutturale dell'asta rispetto al libero.")
+        self.nome("asta_costo_totale", ws, f"B{riga_tot}")
+        riga_inc = r
+        r = S.campo(ws, r, "Incidenza dei costi sull'aggiudicazione",
+                    "=IF(asta_aggiudicazione>0,asta_costo_totale/asta_aggiudicazione-1,0)", S.PERC,
+                    nota="Nel libero mercato l'incidenza sta intorno al dieci per cento. Qui dipende soprattutto dalla liberazione.")
+        r += 1
+
+        r = S.sezione(ws, r, "Il confronto con il libero mercato", 4)
+        riga_mkt = r
+        r = S.campo(ws, r, "Valore di mercato dell'immobile", 120_000, S.EURO, input_utente=True,
+                    nota="Dalla perizia, corretta con le quotazioni OMI della zona e con i comparabili reali. La perizia tende a essere prudente e a invecchiare.")
+        self.nome("asta_valore_mercato", ws, f"B{riga_mkt}")
+        riga_sc = r
+        r = S.campo(ws, r, "Sconto effettivo sul valore di mercato",
+                    "=IF(asta_valore_mercato>0,1-asta_costo_totale/asta_valore_mercato,0)", S.PERC,
+                    risultato=True, nota="E' il numero che decide. Si confronta con la soglia sotto, non con zero.")
+        self.nome("asta_sconto", ws, f"B{riga_sc}")
+        riga_soglia = r
+        r = S.campo(ws, r, "Sconto minimo che giustifica i rischi dell'asta", 0.20, S.PERC, input_utente=True,
+                    nota="Venti per cento e' l'ordine di grandezza comunemente ritenuto minimo. Non e' una regola di legge: e' il prezzo dei quattro rischi elencati sotto.")
+        self.nome("asta_soglia", ws, f"B{riga_soglia}")
+        riga_esito = r
+        r = S.campo(ws, r, "Esito",
+                    "=IF(asta_sconto>=asta_soglia,\"lo sconto copre i rischi specifici dell'asta\",\"sconto insufficiente: al libero mercato compreresti meglio\")",
+                    risultato=True)
+        ws.cell(row=riga_esito, column=2).alignment = S.SINISTRA
+        riga_max = r
+        r = S.campo(ws, r, "Prezzo massimo a cui fermarsi in gara",
+                    f"=MAX(0,asta_valore_mercato*(1-asta_soglia)-asta_imposte-B{riga_del}-B{riga_canc}-B{riga_lib}-B{riga_tec})", S.EURO,
+                    risultato=True, nota="E' il numero da scriversi su un foglio prima di entrare in gara, perche' in gara non si ragiona.")
+        r += 1
+
+        for cella, regola in (
+            (f"B{riga_sc}", CellIsRule(operator="lessThan", formula=["asta_soglia"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_inc}", CellIsRule(operator="greaterThan", formula=["0.15"], fill=S.FILL_ATTENZIONE)),
+        ):
+            ws.conditional_formatting.add(cella, regola)
+
+        r = S.sezione(ws, r, "I quattro rischi che il prezzo deve pagare", 4)
+        for testo in [
+            "Nessuna garanzia per i vizi. L'articolo 2922 del codice civile esclude la garanzia per i vizi della cosa nella vendita forzata, e aggiunge che la vendita non puo' essere impugnata per causa di lesione. Si compra nello stato di fatto e di diritto in cui il bene si trova: un impianto da rifare, una difformita' edilizia o una superficie inferiore a quella indicata restano interamente a carico di chi aggiudica.",
+            "L'occupazione. L'articolo 560 del codice di procedura civile lascia il debitore e i familiari conviventi nel possesso dell'immobile fino alla pronuncia del decreto di trasferimento. Se poi non escono, il rilascio lo cura il custode, ma servono mesi. L'articolo 2923 del codice civile rende inoltre opponibile all'acquirente la locazione con data certa anteriore al pignoramento: si eredita il contratto e il canone. Con l'eccezione, prevista dallo stesso articolo, del canone inferiore di un terzo al giusto prezzo.",
+            "Il termine per il saldo. Il prezzo va versato nel termine fissato dall'ordinanza, e chi non lo rispetta decade e perde la cauzione a titolo di multa, articolo 587 del codice di procedura civile. Il mutuo va quindi istruito prima di offrire, non dopo: l'articolo 585 prevede il finanziamento con versamento diretto alla procedura e ipoteca di primo grado, ed e' la forma che le banche conoscono.",
+            "La regolarizzazione edilizia. La perizia dice se l'immobile ha difformita' e se sono sanabili, e la sanatoria post aggiudicazione ha termini piu' larghi ma un costo che va stimato prima. Il decreto di trasferimento cancella pignoramenti e ipoteche, articolo 586, ma non sana nulla di urbanistico.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 4)
+        r += 1
+        r = S.nota_riga(ws, r, "Il perimetro di questo foglio e' l'aggiudicazione, non la partecipazione: non modella la gara fra offerenti ne' le aste con incanto, ormai residuali. E la perizia agli atti va letta per intero, in particolare i capitoli sullo stato occupativo, sulla regolarita' edilizia e sulla provenienza: e' il documento piu' informativo di tutta l'operazione, ed e' gratuito.", 4)
+
     # ------------------------------------------------------- dossier tecnico
     def foglio_dossier(self) -> None:
         """Fascicolo dei documenti da farsi consegnare prima di impegnarsi.
@@ -2331,6 +2472,34 @@ class Costruttore:
              "Acquirente e venditore, in atto", "Art. 35 c. 22 DL 223/2006",
              "Le parti devono dichiarare in atto le analitiche modalita' di pagamento, se si sono avvalse di un mediatore e con quali importi e mezzi di pagamento della provvigione. Non e' una formalita': la dichiarazione incompleta o mendace espone a sanzione e all'accertamento di valore, e la tracciabilita' e' anche la difesa dell'acquirente sul prezzo effettivamente pagato.",
              "bloccante", "gratuito"),
+            ("Asta giudiziaria", "Perizia di stima del custode, integrale",
+             "Portale delle vendite pubbliche, tribunale", "Art. 173-bis disp. att. c.p.c.",
+             "E' il documento piu' informativo dell'intera operazione ed e' gratuito. Vanno letti per intero i capitoli sullo stato occupativo, sulla regolarita' edilizia e urbanistica, sulla provenienza e sulla stima del costo di regolarizzazione. Il riassunto dell'annuncio non basta, e la perizia e' del tribunale, non di chi compra: spesso e' vecchia di anni.",
+             "bloccante", "gratuita"),
+            ("Asta giudiziaria", "Avviso e ordinanza di vendita",
+             "Delegato o cancelleria", "Artt. 570, 576 e 591-bis c.p.c.",
+             "Portano i sei numeri che governano l'offerta: prezzo base, offerta minima, cauzione, termine per il saldo, quota del compenso del delegato a carico dell'aggiudicatario e modalita' di partecipazione. La quota del delegato varia e va letta, non stimata.",
+             "bloccante", "gratuiti"),
+            ("Asta giudiziaria", "Relazione del custode sullo stato di occupazione",
+             "Custode giudiziario", "Artt. 559 e 560 c.p.c.",
+             "Debitore e familiari conviventi non perdono il possesso fino al decreto di trasferimento. Sapere se l'immobile e' libero, occupato dal debitore, locato con contratto opponibile o occupato senza titolo cambia i tempi di disponibilita' e il costo della liberazione, che e' la voce piu' variabile dell'operazione.",
+             "bloccante", "gratuita"),
+            ("Asta giudiziaria", "Contratti di locazione opponibili e loro data certa",
+             "Custode, perizia", "Art. 2923 c.c.",
+             "La locazione con data certa anteriore al pignoramento e' opponibile all'acquirente, che eredita contratto e canone. L'eccezione, prevista dalla stessa norma, e' il canone inferiore di un terzo al giusto prezzo, che e' la difesa contro il contratto di comodo stipulato per svalutare il bene.",
+             "se ricorre", "gratuiti"),
+            ("Asta giudiziaria", "Delibera del mutuo con versamento diretto alla procedura",
+             "Banca", "Art. 585 c.p.c.",
+             "Il finanziamento deve prevedere il versamento diretto alle casse della procedura e l'ipoteca di primo grado sull'immobile venduto, e il decreto lo indica: il conservatore non trascrive il decreto se non insieme all'iscrizione dell'ipoteca. Non tutte le banche lo praticano, e va verificato prima di versare la cauzione, non dopo.",
+             "bloccante", "istruttoria"),
+            ("Asta giudiziaria", "Stima del costo di regolarizzazione delle difformita'",
+             "Tecnico di parte, sulla perizia", "Art. 586 c.p.c., DPR 380/2001",
+             "Il decreto di trasferimento cancella pignoramenti e ipoteche ma non sana nulla di urbanistico. La sanatoria dopo l'aggiudicazione ha termini piu' larghi e un costo che va stimato prima di offrire, perche' entra nel prezzo massimo a cui ci si puo' spingere.",
+             "bloccante", "compresa nella verifica"),
+            ("Asta giudiziaria", "Verifica tecnica di parte sull'immobile",
+             "Tecnico incaricato dall'acquirente", "Art. 2922 c.c.",
+             "Nella vendita forzata non ha luogo la garanzia per i vizi e la vendita non si puo' impugnare per lesione: tutto cio' che si scopre dopo resta a carico di chi aggiudica. E' la ragione per cui la visita con il custode va fatta, e va fatta con un tecnico.",
+             "bloccante", "300-700 EUR"),
         ]
 
         stato = DataValidation(
@@ -2434,8 +2603,10 @@ class Costruttore:
             ("Prezzo al mq", 14), ("Quotazione OMI min", 16), ("Quotazione OMI max", 16),
             ("Scarto su OMI", 14), ("Rendita catastale", 16), ("Categoria", 12),
             ("Piano", 8), ("Classe energetica", 14), ("Spese condominio anno", 18),
-            ("Canone atteso mese", 16), ("Rendimento lordo", 14), ("Punteggio", 10),
-            ("Note", 46),
+            ("Canone atteso mese", 16), ("Rendimento lordo", 14),
+            ("Asta", 8), ("Base d'asta", 14), ("Data asta", 12),
+            ("Tribunale e procedura", 24), ("Stato occupazione", 24),
+            ("Punteggio", 10), ("Note", 46),
         ]
         CALCOLATE = (19, 22, 29)   # prezzo al mq, scarto su OMI, rendimento lordo
         TOTALE = len(colonne)

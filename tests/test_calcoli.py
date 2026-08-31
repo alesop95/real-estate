@@ -513,6 +513,57 @@ def test_omi_riconosce_il_semestre_anche_senza_token_nel_nome():
     assert len(ripiego) == 5 and ripiego.isdigit() and ripiego[-1] in "12"
     assert ripiego > "20182", "il ripiego non deve perdere contro una fornitura vecchia"
 
+def test_omi_quotazione_di_riferimento_preferisce_lo_stato_normale():
+    """Il riferimento si prende sullo stato normale, non su quello ottimo.
+
+    OTTIMO nella fornitura descrive l'immobile ristrutturato di recente.
+    Prenderlo come termine di paragone farebbe sembrare a buon mercato qualunque
+    cosa, che e' il modo piu' rapido di convincersi che un prezzo alto sia
+    giusto. La funzione restituisce anche la provenienza, perche' due numeri
+    senza l'indicazione della zona da cui vengono si rileggono un mese dopo come
+    se fossero della zona giusta.
+    """
+    import tempfile
+
+    from immobiliare import omi as O
+
+    cartella = Path(tempfile.mkdtemp())
+    intestazione = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;Cod_tip;Descr_Tipologia;Stato;"
+        "Compr_min;Compr_max;Loc_min;Loc_max"
+    )
+    def riga(zona, stato, mn, mx):
+        return (
+            "CENTRO;MARCHE;MC;043013;C770;0;CIVITANOVA MARCHE;B;" + zona + ";20;"
+            "Abitazioni civili;" + stato + ";" + mn + ";" + mx + ";5,0;7,0"
+        )
+
+    percorso = cartella / "QI_1_1_20252_VALORI.csv"
+    percorso.write_text(
+        chr(10).join([
+            intestazione,
+            riga("B1", "NORMALE", "1.650", "3.000"),
+            riga("B1", "OTTIMO", "3.500", "5.000"),
+            riga("C3", "NORMALE", "1.200", "1.850"),
+        ]),
+        encoding="utf-8",
+    )
+    quotazioni, _ = O.carica_cartella(cartella)
+
+    # Con la zona: solo quella zona, e solo lo stato normale.
+    minimo, massimo, provenienza = O.quotazione_di_riferimento(quotazioni, "Civitanova Marche", "B1")
+    assert (minimo, massimo) == (1_650, 3_000), f"ottenuto {minimo}-{massimo}"
+    assert "B1" in provenienza and "normale" in provenienza
+
+    # Senza zona: tutto il Comune, con l'avvertenza che la forbice e' larga.
+    minimo, massimo, provenienza = O.quotazione_di_riferimento(quotazioni, "Civitanova Marche")
+    assert (minimo, massimo) == (1_200, 3_000)
+    assert "indicare la zona" in provenienza
+
+    # Comune assente: nessun numero inventato.
+    assert O.quotazione_di_riferimento(quotazioni, "Comune inesistente") == (0.0, 0.0, "")
+
 if __name__ == "__main__":
     superati = 0
     falliti = []
