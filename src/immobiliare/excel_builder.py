@@ -74,6 +74,7 @@ class Costruttore:
         self.foglio_rischio()
         self.foglio_comproprieta()
         self.foglio_checklist()
+        self.foglio_dossier()
         # Il foglio Annunci va costruito prima del confronto, che ne legge le righe
         # a partire da `self.riga_annunci`.
         self.foglio_annunci()
@@ -104,7 +105,8 @@ class Costruttore:
             ("6. Confronto affitto", "Comprare con mutuo oppure restare in affitto investendo la differenza, a parita' di esborso."),
             ("7. Scenari", "Sensibilita' del cash flow al tasso e al canone, e del rendimento al prezzo."),
             ("8. Checklist", "Verifiche legali, urbanistiche, catastali e condominiali da chiudere prima della proposta e prima del rogito."),
-            ("9. Annunci", "Registro degli immobili in valutazione, con link, prezzo al metro quadro e rendimento lordo calcolati."),
+            ("9. Dossier tecnico", "I documenti da farsi consegnare dall'agenzia o dal venditore in trattativa, con chi li rilascia, la norma che li impone e il costo."),
+            ("10. Annunci", "Registro degli immobili in valutazione, con link, prezzo al metro quadro e rendimento lordo calcolati."),
         ]
         for etichetta, testo in passi:
             c = ws.cell(row=r, column=1, value=etichetta)
@@ -231,6 +233,10 @@ class Costruttore:
         ws.cell(row=riga_conf, column=2).font = S.ETICHETTA_BOLD
         riga_ap = riga_kpi("Verifiche ancora aperte", "=verifiche_aperte", S.NUMERO,
                            "vanno a zero prima di firmare", "Nel foglio Checklist. Una proposta accettata e' gia' un contratto: le verifiche si chiudono prima, o diventano condizioni scritte.")
+        riga_doc = riga_kpi("Documenti bloccanti ancora da avere", "=documenti_bloccanti_aperti", S.NUMERO,
+                            "senza questi non si verifica nulla", "Nel foglio Dossier tecnico. Sono le carte la cui assenza rende nullo l'atto, blocca il mutuo o lascia ignoto il costo di regolarizzazione.")
+        riga_kpi("Completamento del fascicolo tecnico", "=documenti_completamento", S.PERC_1,
+                 "", "Documenti ricevuti sul totale di quelli applicabili a questo immobile.")
         r += 1
 
         for cella, regola in (
@@ -239,6 +245,7 @@ class Costruttore:
             (f"B{riga_dscr}", CellIsRule(operator="lessThan", formula=["1"], fill=S.FILL_ATTENZIONE)),
             (f"B{riga_rr}", CellIsRule(operator="greaterThan", formula=["0.35"], fill=S.FILL_ATTENZIONE)),
             (f"B{riga_ap}", CellIsRule(operator="greaterThan", formula=["0"], fill=S.FILL_ATTENZIONE)),
+            (f"B{riga_doc}", CellIsRule(operator="greaterThan", formula=["0"], fill=S.FILL_ATTENZIONE)),
             (f"B{riga_rn}", CellIsRule(operator="lessThan", formula=["rend_obiettivo"], fill=S.FILL_ATTENZIONE)),
         ):
             ws.conditional_formatting.add(cella, regola)
@@ -253,6 +260,7 @@ class Costruttore:
             ("Metriche, Scenari, Rischio", "Si leggono. Scenari da' tre ipotesi impostabili, Rischio la distribuzione su mille."),
             ("Comproprieta'", "Solo se comprate in piu' di uno: ripartisce per quote e calcola l'imposta di ciascuno."),
             ("Checklist", "Quando si passa dalla valutazione alla proposta. Filtra per fase e non firmare con righe rosse."),
+            ("Dossier tecnico", "Le carte da farsi dare in trattativa, con la norma che le rende dovute. Si chiedono prima della proposta, non dopo."),
         ]
         for foglio, cosa in percorso:
             a = ws.cell(row=r, column=1, value=foglio)
@@ -2017,6 +2025,344 @@ class Costruttore:
         riga_aperte = r
         r = S.campo(ws, r, "Verifiche ancora aperte", f'=COUNTIF(F{prima}:F{ultima},"da fare")+COUNTIF(F{prima}:F{ultima},"in corso")', S.NUMERO, risultato=True)
         self.nome("verifiche_aperte", ws, f"B{riga_aperte}")
+
+    # ------------------------------------------------------- dossier tecnico
+    def foglio_dossier(self) -> None:
+        """Fascicolo dei documenti da farsi consegnare prima di impegnarsi.
+
+        Sta separato dalla Checklist perche' risponde a una domanda diversa: la
+        Checklist elenca verifiche da fare, questo elenca carte da avere in mano.
+        Senza le carte le verifiche non si possono fare, e la richiesta va fatta
+        in trattativa, quando si ha ancora potere negoziale, non dopo la proposta
+        accettata, quando l'obbligo di comprare esiste gia'.
+        """
+        ws = self.wb.create_sheet("Dossier tecnico")
+        ws.sheet_view.showGridLines = False
+        r = S.titolo(
+            ws,
+            1,
+            "Documentazione tecnica da richiedere in trattativa",
+            "E' il fascicolo che un tecnico incaricato chiede all'agenzia o al venditore prima della proposta. "
+            "Le colonne gialle si compilano man mano. Un documento marcato bloccante non e' un giudizio del modello: "
+            "senza quello l'atto e' nullo, il mutuo non si delibera, oppure il costo di regolarizzazione resta ignoto.",
+            11,
+        )
+        r = S.intestazioni(
+            ws, r,
+            ["Famiglia", "Documento", "Chi lo rilascia o lo detiene", "Riferimento normativo",
+             "Che cosa prova, e il rischio se manca", "Peso", "Costo indicativo",
+             "Stato", "Richiesto il", "Ricevuto il", "Note"],
+            [24, 42, 24, 30, 66, 13, 16, 15, 13, 13, 26],
+        )
+        prima = r
+
+        # Il peso vale bloccante quando l'assenza impedisce l'atto, il mutuo o la
+        # quantificazione di un costo; importante quando incide su prezzo o rischio;
+        # se ricorre quando dipende dalla situazione concreta dell'immobile.
+        voci = [
+            ("Identificazione e titolarita'", "Visura catastale storica per immobile",
+             "Agenzia delle Entrate, catasto", "Art. 29 c. 1-bis legge 52/1985",
+             "Da' categoria, rendita, consistenza e tutte le variazioni subite. La rendita e' la base di quasi tutte le imposte, e la sequenza storica delle variazioni e' il primo indizio di lavori mai dichiarati.",
+             "bloccante", "1 EUR per unita'"),
+            ("Identificazione e titolarita'", "Planimetria catastale depositata",
+             "Agenzia delle Entrate, catasto", "Art. 29 c. 1-bis legge 52/1985",
+             "E' il termine di paragone della dichiarazione di conformita' catastale che il venditore rende in atto a pena di nullita'. Va confrontata con lo stato di fatto, stanza per stanza, non solo guardata.",
+             "bloccante", "circa 2 EUR"),
+            ("Identificazione e titolarita'", "Elaborato planimetrico ed elenco dei subalterni",
+             "Agenzia delle Entrate, catasto", "Prassi catastale",
+             "Individua parti comuni e pertinenze, cantina, box e posto auto, e dice se sono censite autonomamente. E' il documento che rivela la pertinenza che l'annuncio dava per compresa e che catastalmente non lo e'.",
+             "importante", "circa 2 EUR"),
+            ("Identificazione e titolarita'", "Ispezione ipotecaria ventennale su immobile e venditore",
+             "Conservatoria dei registri immobiliari", "Artt. 2643 e seguenti c.c.",
+             "Rivela ipoteche, pignoramenti, sequestri, domande giudiziali, servitu' trascritte e diritti di terzi. L'ipoteca del venditore si cancella prima o contestualmente al rogito, con tempi e costi da mettere a calendario.",
+             "bloccante", "80-200 EUR"),
+            ("Identificazione e titolarita'", "Atto di provenienza e continuita' delle trascrizioni",
+             "Venditore, notaio rogante", "Artt. 2643 e 2650 c.c.",
+             "Dice come il venditore e' diventato proprietario. Una provenienza donativa e' aggredibile dai legittimari lesi e molte banche non la finanziano; una successoria richiede accettazione tacita trascritta e voltura.",
+             "bloccante", "gratuito dal venditore"),
+            ("Identificazione e titolarita'", "Dati del venditore: identita', stato civile, regime patrimoniale",
+             "Venditore", "Artt. 177 e 179 c.c.",
+             "In comunione legale l'atto richiede l'intervento di entrambi i coniugi. Se il venditore e' impresa servono visura camerale, poteri del firmatario e verifica di procedure concorsuali in corso.",
+             "bloccante", "visura 5-25 EUR"),
+            ("Identificazione e titolarita'", "Certificato di destinazione urbanistica",
+             "Comune, ufficio urbanistica", "Art. 30 c. 2 DPR 380/2001",
+             "Obbligatorio a pena di nullita' quando l'atto comprende terreni; non serve per l'area di pertinenza di un fabbricato censito se inferiore a cinquemila metri quadrati. Fuori da quel caso resta utile per sapere cosa si potra' fare dell'area.",
+             "se ricorre", "bollo piu' diritti"),
+
+            ("Legittimita' urbanistica", "Titolo edilizio originario con tutti gli elaborati grafici",
+             "Comune, archivio edilizio", "Art. 9-bis c. 1-bis DPR 380/2001",
+             "E' il fondamento dello stato legittimo: licenza, concessione o permesso che ha previsto la costruzione. Senza gli elaborati approvati non esiste termine di paragone con lo stato di fatto, e nessun tecnico puo' asseverare la conformita'.",
+             "bloccante", "accesso agli atti"),
+            ("Legittimita' urbanistica", "Tutti i titoli successivi: DIA, SCIA, CILA, varianti",
+             "Comune, archivio edilizio", "Art. 9-bis c. 1-bis DPR 380/2001",
+             "Lo stato legittimo e' il titolo originario integrato dagli eventuali titoli successivi che hanno abilitato interventi parziali. Un intervento eseguito e mai titolato interrompe la catena e rende l'immobile difforme.",
+             "bloccante", "compreso nell'accesso"),
+            ("Legittimita' urbanistica", "Dichiarazione sostitutiva per opere iniziate prima del 1 settembre 1967",
+             "Venditore, atto notorio", "Art. 40 c. 3 legge 47/1985",
+             "Per gli edifici iniziati prima di quella data, in luogo degli estremi della licenza si puo' produrre una dichiarazione sostitutiva di atto notorio che ne attesti l'inizio anteriore. E' la via che rende commerciabile un fabbricato antico privo di titolo.",
+             "se ricorre", "gratuito"),
+            ("Legittimita' urbanistica", "Condono: domanda, ricevute di oblazione e oneri, sanatoria",
+             "Comune, venditore", "Leggi 47/1985, 724/1994, 326/2003",
+             "Un condono chiesto e non concluso lascia l'immobile in sospeso: il titolo non c'e' ancora e l'esito non e' garantito. Vanno verificati il pagamento integrale e, se il provvedimento manca, lo stato dell'istruttoria.",
+             "se ricorre", "accesso agli atti"),
+            ("Legittimita' urbanistica", "Dichiarazione asseverata sulle tolleranze costruttive",
+             "Tecnico abilitato", "Art. 34-bis c. 3 DPR 380/2001",
+             "Le tolleranze non sono violazioni ma vanno dichiarate dal tecnico con atto asseverato da allegare al trasferimento. Per le opere entro il 24 maggio 2024 la soglia e' del 5 per cento sotto i cento metri quadrati, 4 fra cento e trecento, 3 fra trecento e cinquecento, 2 oltre.",
+             "bloccante", "compresa nella perizia"),
+            ("Legittimita' urbanistica", "Relazione di conformita' urbanistica e catastale di parte",
+             "Tecnico incaricato dall'acquirente", "Art. 9-bis DPR 380/2001, art. 29 legge 52/1985",
+             "Sintetizza tutto il resto e quantifica il costo di regolarizzazione di cio' che non torna. Va commissionata dall'acquirente: la relazione del tecnico del venditore non risponde verso di lui.",
+             "bloccante", "400-900 EUR"),
+            ("Legittimita' urbanistica", "Agibilita' o certificato storico di abitabilita'",
+             "Comune, venditore", "Art. 24 DPR 380/2001",
+             "Attesta sicurezza, igiene, salubrita', risparmio energetico e conformita' dell'opera al progetto. La sua assenza non impedisce l'atto ma e' un indice: quasi sempre significa che qualcosa non fu mai chiuso.",
+             "importante", "accesso agli atti"),
+            ("Legittimita' urbanistica", "Assenza di ordinanze, diffide e procedimenti sanzionatori",
+             "Comune, edilizia privata", "Art. 22 legge 241/1990",
+             "Un procedimento aperto o un'ordinanza di demolizione non trascritta non compare in visura ipotecaria e si scopre solo chiedendolo. Serve la delega del proprietario oppure la dimostrazione di un interesse qualificato.",
+             "bloccante", "diritti di segreteria"),
+            ("Legittimita' urbanistica", "Verifica della destinazione d'uso, dei frazionamenti e delle fusioni",
+             "Tecnico, su titoli e catasto", "Art. 23-ter DPR 380/2001",
+             "Un ufficio venduto come abitazione, o due unita' unite di fatto e non in catasto, cambiano imposte, agevolazione prima casa e possibilita' di locazione. Il confronto fra categoria catastale, titolo edilizio e stato di fatto lo rivela.",
+             "importante", "compreso nella perizia"),
+
+            ("Struttura e sismica", "Denuncia dei lavori e autorizzazione sismica",
+             "Genio Civile, ufficio tecnico regionale", "Artt. 93 e 94 DPR 380/2001",
+             "In zona sismica i lavori strutturali richiedono preavviso e, fuori dalla bassa sismicita', autorizzazione preventiva. La loro assenza su interventi gia' eseguiti e' una difformita' che non si sana con una semplice pratica edilizia.",
+             "se ricorre", "accesso agli atti"),
+            ("Struttura e sismica", "Certificato di collaudo statico",
+             "Comune o Genio Civile", "Art. 67 DPR 380/2001",
+             "Chiude il ciclo delle opere strutturali. Manca spesso negli edifici degli anni sessanta e settanta, e la sua assenza pesa quando si vuole intervenire sulle strutture o accedere a incentivi.",
+             "importante", "accesso agli atti"),
+            ("Struttura e sismica", "Documentazione degli interventi strutturali eseguiti",
+             "Venditore, amministratore", "NTC 2018, art. 34-bis c. 3-bis DPR 380/2001",
+             "Rinforzi, cordoli, cappotti sismici, sostituzione di solai. In zona sismica il tecnico deve attestare che anche le tolleranze rispettino le norme tecniche vigenti al tempo dell'intervento.",
+             "importante", "gratuito dal venditore"),
+
+            ("Vincoli e tutele", "Vincolo paesaggistico o monumentale e autorizzazioni rilasciate",
+             "Soprintendenza, Comune", "D.lgs. 42/2004",
+             "Sotto vincolo ogni intervento richiede autorizzazione preventiva, le tolleranze esecutive del comma 2 dell'articolo 34-bis non si applicano, e i tempi di qualunque lavoro futuro cambiano ordine di grandezza.",
+             "se ricorre", "accesso agli atti"),
+            ("Vincoli e tutele", "Se bene culturale: denuncia di trasferimento e prelazione",
+             "Soprintendenza", "Artt. 59-62 d.lgs. 42/2004",
+             "Il trasferimento va denunciato e lo Stato ha diritto di prelazione entro il termine di legge. Finche' il termine non decorre l'acquisto non e' definitivo, e la circostanza va scritta nella proposta.",
+             "se ricorre", "gratuito"),
+            ("Vincoli e tutele", "Vincolo idrogeologico, piano di assetto idrogeologico, usi civici",
+             "Comune, Regione, autorita' di bacino", "Norme regionali e di piano",
+             "Determinano cosa si puo' fare dell'area e, nel caso del rischio idraulico, incidono su assicurabilita' e valore. Un uso civico non estinto rende l'immobile inalienabile senza sdemanializzazione.",
+             "se ricorre", "consultazione gratuita"),
+            ("Vincoli e tutele", "Convenzioni urbanistiche ed edilizia convenzionata",
+             "Comune, atto di provenienza", "Convenzione e norme di piano",
+             "Un immobile in edilizia convenzionata puo' avere un prezzo massimo di cessione ancora vigente: pagare sopra quel prezzo espone alla ripetizione dell'eccedenza. Il vincolo si rimuove con atto oneroso, da quantificare prima di trattare.",
+             "se ricorre", "accesso agli atti"),
+
+            ("Impianti ed energia", "Dichiarazione di conformita' degli impianti",
+             "Venditore, installatore", "DM 37/2008",
+             "Elettrico, termico, gas, idrico e ricezione. Serve per l'agibilita' e per qualunque intervento futuro. La sua assenza non blocca l'atto ma sposta sull'acquirente il costo dell'adeguamento e della messa a norma.",
+             "importante", "gratuito dal venditore"),
+            ("Impianti ed energia", "Dichiarazione di rispondenza per impianti anteriori al 2008",
+             "Tecnico abilitato", "Art. 7 c. 6 DM 37/2008",
+             "Sostituisce la dichiarazione di conformita' quando questa non e' reperibile, ed e' rilasciata da un professionista o da un'impresa con i requisiti di legge dopo verifica dell'impianto. Ha un costo e va messo a preventivo.",
+             "se ricorre", "300-600 EUR"),
+            ("Impianti ed energia", "Libretto di impianto e ultimo rapporto di efficienza energetica",
+             "Venditore, manutentore", "DPR 74/2013",
+             "Dice eta', potenza e stato della caldaia e se le manutenzioni obbligatorie sono state fatte. Una caldaia a fine vita e' una spesa certa a breve, che va scontata dal prezzo e non scoperta a dicembre.",
+             "importante", "gratuito dal venditore"),
+            ("Impianti ed energia", "Attestato di prestazione energetica in corso di validita'",
+             "Certificatore accreditato", "D.lgs. 192/2005",
+             "Va allegato all'atto e indicato nell'annuncio. Determina la classe da cui parte ogni valutazione di adeguamento futuro e incide sul valore, sui costi di gestione e sull'accesso ad alcune agevolazioni.",
+             "bloccante", "150-350 EUR"),
+            ("Impianti ed energia", "Denuncia dell'impianto di terra e verifiche periodiche",
+             "Amministratore, INAIL o organismo abilitato", "DPR 462/2001",
+             "Riguarda le parti comuni e le pertinenze come autorimesse e locali tecnici. La periodicita' delle verifiche dipende dal tipo di luogo, e l'omissione e' una responsabilita' che passa alla proprieta'.",
+             "se ricorre", "gratuito dall'amministratore"),
+            ("Impianti ed energia", "Documentazione dell'ascensore: matricola, dichiarazioni, verifiche biennali",
+             "Amministratore, manutentore", "DPR 162/1999",
+             "Un ascensore fuori verifica o da adeguare e' una spesa straordinaria in arrivo, e la delibera puo' essere gia' stata presa. Va incrociata con i verbali di assemblea.",
+             "se ricorre", "gratuito dall'amministratore"),
+            ("Impianti ed energia", "Certificato di prevenzione incendi",
+             "Comando provinciale dei vigili del fuoco", "DPR 151/2011",
+             "Riguarda le attivita' soggette, tipicamente autorimesse oltre trecento metri quadrati e centrali termiche sopra una certa potenza. La sua mancanza espone il condominio a sanzioni e a lavori di adeguamento.",
+             "se ricorre", "gratuito dall'amministratore"),
+            ("Impianti ed energia", "Valutazione della presenza di amianto e del suo stato",
+             "Tecnico, amministratore", "Legge 257/1992, DM 6 settembre 1994",
+             "Negli edifici anteriori al 1994 e' frequente in coperture, canne fumarie e tubazioni. Non e' vietato di per se' se in buono stato e confinato, ma va censito, valutato e gestito, e la rimozione ha costi rilevanti.",
+             "importante", "verifica 200-500 EUR"),
+            ("Impianti ed energia", "Misurazione del gas radon dove prescritta",
+             "Laboratorio riconosciuto", "D.lgs. 101/2020",
+             "Riguarda in particolare locali interrati e seminterrati e alcune aree regionali a rischio. Interessa chi destina l'immobile a luogo di lavoro o a locazione turistica organizzata.",
+             "se ricorre", "50-150 EUR"),
+            ("Impianti ed energia", "Allacci, fognatura, serbatoi interrati e fosse settiche",
+             "Venditore, gestore del servizio", "Regolamenti comunali e del gestore",
+             "L'assenza di allaccio alla fognatura pubblica, o la presenza di un serbatoio interrato dismesso, sono costi certi e a volte vincoli ambientali. Vanno verificati prima, non alla prima bolletta.",
+             "importante", "gratuito dal venditore"),
+
+            ("Condominio", "Regolamento di condominio, con gli estremi di trascrizione se contrattuale",
+             "Amministratore", "Artt. 1138 c.c. e 63 disp. att. c.c.",
+             "Un regolamento contrattuale trascritto puo' vietare la locazione turistica, l'uso diverso dall'abitazione, gli animali o il cambio di destinazione. Va letto prima di costruire un piano di reddito su affitti brevi.",
+             "bloccante", "gratuito"),
+            ("Condominio", "Tabelle millesimali",
+             "Amministratore", "Art. 68 disp. att. c.c.",
+             "Determinano la quota di ogni spesa e il peso del voto in assemblea. Tabelle non aggiornate dopo lavori o frazionamenti sono una fonte ricorrente di contenzioso fra condomini.",
+             "importante", "gratuito"),
+            ("Condominio", "Consuntivi degli ultimi due esercizi e preventivo in corso",
+             "Amministratore", "Art. 1130 c.c.",
+             "Sono l'unica base attendibile per la voce spese condominiali del modello. La stima a voce dell'agenzia e' sistematicamente ottimistica, e la differenza su vent'anni non e' piccola.",
+             "importante", "gratuito"),
+            ("Condominio", "Verbali delle assemblee degli ultimi tre anni",
+             "Amministratore", "Art. 1136 c.c.",
+             "Rivelano i lavori deliberati e non ancora eseguiti, che sono un costo certo che arriva dopo il rogito, e le liti in corso. E' il documento che piu' spesso cambia il prezzo di una trattativa.",
+             "bloccante", "gratuito"),
+            ("Condominio", "Dichiarazione dell'amministratore su spese insolute e liti in corso",
+             "Amministratore", "Art. 63 disp. att. c.c.",
+             "L'acquirente risponde in solido con il venditore per le spese dell'anno in corso e di quello precedente. Senza liberatoria si compra un debito altrui senza conoscerne l'importo.",
+             "bloccante", "gratuito o piccolo diritto"),
+            ("Condominio", "Attestazione sui lavori straordinari deliberati e sul fondo speciale",
+             "Amministratore", "Art. 1135 c.c.",
+             "Per le opere di manutenzione straordinaria l'assemblea deve costituire un fondo di importo pari all'opera. Sapere se il fondo esiste e chi lo ha versato dice quale parte della spesa arrivera' all'acquirente.",
+             "importante", "gratuito"),
+            ("Condominio", "Documentazione tecnica delle parti comuni",
+             "Amministratore", "Norme di settore e regolamenti locali",
+             "Agibilita' dell'edificio, antincendio, impianto di terra, ascensore, e dove istituito il fascicolo del fabbricato. Serve a capire se l'edificio ha adempimenti aperti che diventeranno quote straordinarie.",
+             "importante", "gratuito"),
+
+            ("Nuova costruzione", "Fideiussione a garanzia delle somme versate",
+             "Costruttore, banca o assicurazione", "Artt. 2 e 3 d.lgs. 122/2005",
+             "Obbligatoria per ogni somma versata prima del trasferimento, a pena di nullita' relativa azionabile dal solo acquirente. La tutela non e' rinunciabile e ogni patto contrario e' nullo: non si versa un euro senza averla in mano.",
+             "bloccante", "a carico del costruttore"),
+            ("Nuova costruzione", "Polizza indennitaria decennale postuma",
+             "Costruttore, assicurazione", "Art. 4 d.lgs. 122/2005",
+             "Copre rovina totale o parziale e gravi difetti costruttivi per dieci anni dall'ultimazione. Va consegnata all'atto e i suoi estremi vanno indicati nel rogito: verificarne massimali ed esclusioni, non solo l'esistenza.",
+             "bloccante", "a carico del costruttore"),
+            ("Nuova costruzione", "Preliminare con il contenuto tipizzato di legge",
+             "Costruttore, notaio", "Art. 6 d.lgs. 122/2005",
+             "La legge impone un contenuto minimo: descrizione, elaborati, capitolato, termini di consegna, estremi della fideiussione, ipoteche esistenti e loro frazionamento o cancellazione prima del rogito.",
+             "bloccante", "compreso nell'atto"),
+            ("Nuova costruzione", "Permesso di costruire, varianti ed elaborati approvati",
+             "Comune, costruttore", "DPR 380/2001",
+             "Va confrontato con quanto si sta comprando: superfici, altezze, destinazione delle parti comuni, numero di posti auto. La differenza fra reso e approvato e' il rischio tipico dell'acquisto sulla carta.",
+             "bloccante", "accesso agli atti"),
+            ("Nuova costruzione", "Agibilita' e accatastamento definitivo",
+             "Comune, costruttore", "Art. 24 DPR 380/2001",
+             "La banca non delibera prima dell'accatastamento definitivo. Su un immobile in costruzione la tempistica di questi due adempimenti determina la data del rogito, e va scritta con le relative penali.",
+             "bloccante", "a carico del costruttore"),
+            ("Nuova costruzione", "Visura camerale del costruttore e verifica di procedure concorsuali",
+             "Registro imprese, tribunale", "Art. 5 d.lgs. 122/2005",
+             "La tutela della legge nasce proprio dal rischio di crisi dell'impresa. Bilanci, anzianita' e assenza di procedure in corso dicono quanto quel rischio sia teorico.",
+             "importante", "5-25 EUR"),
+            ("Nuova costruzione", "Capitolato, extracapitolato, cronoprogramma e penali",
+             "Costruttore", "Contratto di appalto e preliminare",
+             "Distinguere cosa e' compreso nel prezzo da cosa e' extra evita la sorpresa piu' cara dell'acquisto sulla carta. Il cronoprogramma senza penali per il ritardo non e' un impegno.",
+             "importante", "compreso"),
+
+            ("Occupazione e tributi", "Contratti di locazione o comodato in essere",
+             "Venditore", "Legge 431/1998, art. 1599 c.c.",
+             "La locazione con data certa anteriore e' opponibile all'acquirente, che subentra nel contratto: si compra un immobile gia' occupato, al canone gia' pattuito, fino alla scadenza. E' fra le prime cose da chiedere.",
+             "bloccante", "gratuito dal venditore"),
+            ("Occupazione e tributi", "Stato di occupazione e impegno alla liberazione",
+             "Venditore", "Art. 1477 c.c.",
+             "Vanno scritti chi occupa l'immobile e a che titolo, e il termine entro cui sara' libero. Un'occupazione senza titolo trasforma l'acquisto in un contenzioso di durata imprevedibile.",
+             "bloccante", "gratuito"),
+            ("Occupazione e tributi", "Ultime ricevute IMU e TARI, e situazione dei tributi locali",
+             "Venditore", "Regolamenti comunali",
+             "Servono a verificare l'aliquota effettivamente applicata e la rendita usata, e a scoprire una diversa destinazione dichiarata al Comune rispetto a quella catastale.",
+             "importante", "gratuito"),
+            ("Occupazione e tributi", "Utenze: intestazioni, letture, subentri e stato dei pagamenti",
+             "Venditore, gestori", "Regolamenti dei gestori",
+             "Un contatore rimosso o una fornitura cessata da anni comportano costi e tempi di riattivazione che sorprendono chi conta di entrare subito.",
+             "importante", "gratuito"),
+            ("Occupazione e tributi", "Se provenienza donativa: rinunce all'azione di restituzione o polizza",
+             "Notaio, venditore", "Artt. 561 e 563 c.c.",
+             "La donazione espone l'acquirente all'azione dei legittimari lesi per vent'anni dalla trascrizione. Le vie praticate sono la rinuncia degli aventi diritto o una polizza specifica: entrambe hanno costi e tempi.",
+             "se ricorre", "polizza 0,5-1% del valore"),
+            ("Occupazione e tributi", "Se provenienza successoria: successione, accettazione trascritta, voltura",
+             "Venditore, notaio", "Artt. 2648 e 2650 c.c.",
+             "Senza accettazione dell'eredita' trascritta la continuita' delle trascrizioni si interrompe e il notaio non roga. E' un adempimento che il venditore spesso non ha fatto e che richiede tempo.",
+             "se ricorre", "a carico del venditore"),
+            ("Occupazione e tributi", "Rilievo metrico e verifica delle superfici dichiarate",
+             "Tecnico incaricato dall'acquirente", "DPR 138/1998, allegato C",
+             "La superficie commerciale dell'annuncio non e' un dato normato e comprende quote di balconi e pertinenze secondo criteri variabili. Il prezzo al metro quadro con cui si confronta il mercato dipende da quale superficie si usa.",
+             "importante", "compreso nella perizia"),
+        ]
+
+        stato = DataValidation(
+            type="list",
+            formula1='"da chiedere,richiesto,ricevuto,non applicabile"',
+            allow_blank=True,
+        )
+        ws.add_data_validation(stato)
+
+        for famiglia, documento, chi, norma, perche, peso, costo in voci:
+            ws.cell(row=r, column=1, value=famiglia).alignment = S.SINISTRA
+            c = ws.cell(row=r, column=2, value=documento)
+            c.alignment = S.SINISTRA
+            c.font = S.ETICHETTA_BOLD
+            ws.cell(row=r, column=3, value=chi).alignment = S.SINISTRA
+            ws.cell(row=r, column=4, value=norma).alignment = S.SINISTRA
+            ws.cell(row=r, column=5, value=perche).alignment = S.SINISTRA
+            ws.cell(row=r, column=6, value=peso).alignment = S.CENTRO
+            ws.cell(row=r, column=7, value=costo).alignment = S.CENTRO
+            s = ws.cell(row=r, column=8, value="da chiedere")
+            s.fill = S.FILL_INPUT
+            s.alignment = S.CENTRO
+            stato.add(s)
+            for col in (9, 10, 11):
+                ws.cell(row=r, column=col).fill = S.FILL_INPUT
+            for col in range(1, 12):
+                ws.cell(row=r, column=col).border = S.BORDO
+            ws.row_dimensions[r].height = 46
+            r += 1
+
+        ultima = r - 1
+        ws.auto_filter.ref = f"A{prima-1}:K{ultima}"
+        ws.freeze_panes = ws.cell(row=prima, column=1)
+        ws.conditional_formatting.add(
+            f"H{prima}:H{ultima}",
+            CellIsRule(operator="equal", formula=['"ricevuto"'], fill=S.FILL_RISULTATO),
+        )
+        ws.conditional_formatting.add(
+            f"H{prima}:H{ultima}",
+            CellIsRule(operator="equal", formula=['"da chiedere"'], fill=S.FILL_ATTENZIONE),
+        )
+        ws.conditional_formatting.add(
+            f"F{prima}:F{ultima}",
+            CellIsRule(operator="equal", formula=['"bloccante"'], fill=S.FILL_ATTENZIONE),
+        )
+        r += 1
+
+        r = S.sezione(ws, r, "Stato della raccolta", 11, secondaria=True)
+        r = S.campo(ws, r, "Documenti in elenco", f"=COUNTA(B{prima}:B{ultima})", S.NUMERO)
+        r = S.campo(ws, r, "Applicabili a questo immobile",
+                    f'=COUNTA(B{prima}:B{ultima})-COUNTIF(H{prima}:H{ultima},"non applicabile")', S.NUMERO,
+                    "Le voci marcate non applicabile escono dal denominatore: un immobile usato non ha le sette voci della nuova costruzione.")
+        r = S.campo(ws, r, "Ricevuti", f'=COUNTIF(H{prima}:H{ultima},"ricevuto")', S.NUMERO)
+        riga_pct = r
+        r = S.campo(ws, r, "Completamento del fascicolo",
+                    f'=IF(COUNTA(B{prima}:B{ultima})-COUNTIF(H{prima}:H{ultima},"non applicabile")=0,0,'
+                    f'COUNTIF(H{prima}:H{ultima},"ricevuto")/(COUNTA(B{prima}:B{ultima})-COUNTIF(H{prima}:H{ultima},"non applicabile")))',
+                    S.PERC, risultato=True)
+        self.nome("documenti_completamento", ws, f"B{riga_pct}")
+        riga_blocc = r
+        r = S.campo(ws, r, "Documenti bloccanti ancora da avere",
+                    f'=COUNTIFS(F{prima}:F{ultima},"bloccante",H{prima}:H{ultima},"da chiedere")'
+                    f'+COUNTIFS(F{prima}:F{ultima},"bloccante",H{prima}:H{ultima},"richiesto")',
+                    S.NUMERO, "Vanno a zero prima di firmare una proposta, oppure diventano condizioni scritte nella proposta stessa.",
+                    risultato=True)
+        self.nome("documenti_bloccanti_aperti", ws, f"B{riga_blocc}")
+        ws.conditional_formatting.add(
+            f"B{riga_blocc}",
+            CellIsRule(operator="greaterThan", formula=["0"], fill=S.FILL_ATTENZIONE),
+        )
+        r += 1
+
+        r = S.sezione(ws, r, "Come si usa questo foglio", 11, secondaria=True)
+        for testo in [
+            "La richiesta si fa per iscritto e in una volta sola, elencando i documenti con il loro riferimento normativo: una mail che chiede quindici cose motivate ottiene risposte diverse da quindici telefonate. Le voci marcate se ricorre si tolgono prima di inviare, marcandole non applicabile, cosi' la richiesta resta credibile.",
+            "Cio' che l'agenzia non ha, di norma esiste comunque. I documenti catastali e ipotecari li prende un tecnico o un visurista in giornata. I titoli edilizi stanno nell'archivio del Comune e si ottengono con l'accesso agli atti, che pero' richiede la delega scritta del proprietario oppure la dimostrazione di un interesse qualificato, tipicamente la proposta gia' sottoscritta: e' la ragione per cui la proposta va condizionata invece che attesa.",
+            "Un venditore che rifiuta di consegnare le carte, o un'agenzia che chiede di firmare prima, non sta necessariamente nascondendo qualcosa, ma sta chiedendo di assumersi un rischio che si puo' rifiutare. La via praticabile e' la proposta con condizione sospensiva legata all'esito della verifica tecnica, con termine breve e provvigione dovuta solo ad avveramento.",
+            "Il costo complessivo della verifica preventiva sta fra le seicento e le millecinquecento euro, contando la relazione del tecnico, le visure e i diritti di accesso agli atti. E' fra lo zero virgola cinque e l'uno per cento del prezzo, ed e' l'unica spesa dell'operazione che serve a non farla, quando non va fatta.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 11)
 
     # ----------------------------------------------------------------- annunci
     def foglio_annunci(self) -> None:

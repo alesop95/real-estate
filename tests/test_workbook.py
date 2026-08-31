@@ -42,7 +42,7 @@ def test_il_workbook_si_genera_con_tutti_i_fogli():
     wb = load_workbook(workbook())
     attesi = [
         "Guida", "Cruscotto", "Parametri", "Immobile", "Mutuo", "Ammortamento", "Simulatore mutuo", "Locazione",
-        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Rischio", "Comproprieta", "Checklist",
+        "Cash flow", "Metriche", "Confronto affitto", "Scenari", "Rischio", "Comproprieta", "Checklist", "Dossier tecnico",
         "Annunci", "Confronto immobili", "Fonti", "_Estrazioni",
     ]
     assert wb.sheetnames == attesi
@@ -187,6 +187,39 @@ def test_piano_ammortamento_copre_quaranta_anni():
     ]
     assert max(numeri) == E.MAX_RATE == 480
 
+
+def test_dossier_tecnico_ha_peso_e_contatori_coerenti():
+    """Ogni documento porta un peso fra i tre ammessi, e i contatori li leggono.
+
+    Il peso non e' decorativo: la formula del contatore dei bloccanti fa
+    `COUNTIFS` sulla stringa esatta, quindi un valore scritto diversamente,
+    anche solo con un'iniziale maiuscola, sparirebbe dal conteggio senza che
+    nulla protesti e il cruscotto direbbe zero documenti mancanti.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Dossier tecnico"]
+
+    ammessi = {"bloccante", "importante", "se ricorre"}
+    pesi = []
+    for riga in range(1, ws.max_row + 1):
+        documento = ws.cell(row=riga, column=2).value
+        peso = ws.cell(row=riga, column=6).value
+        # Le righe di dati sono quelle con un documento e uno stato iniziale.
+        if documento and ws.cell(row=riga, column=8).value == "da chiedere":
+            assert peso in ammessi, f"riga {riga}: peso {peso!r} non ammesso"
+            pesi.append(peso)
+
+    assert len(pesi) > 40, f"solo {len(pesi)} documenti in elenco"
+    assert pesi.count("bloccante") > 0
+
+    for nome in ("documenti_bloccanti_aperti", "documenti_completamento"):
+        assert nome in wb.defined_names, f"nome definito {nome} assente"
+
+    riferimento = wb.defined_names["documenti_bloccanti_aperti"].attr_text
+    assert riferimento.startswith("'Dossier tecnico'!")
+    cella = riferimento.split("!")[1].replace("$", "")
+    formula = ws[cella].value
+    assert formula.startswith("=COUNTIFS(") and '"bloccante"' in formula
 
 if __name__ == "__main__":
     superati = 0

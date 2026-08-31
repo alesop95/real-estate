@@ -180,6 +180,28 @@ Sono gli articoli che governano il passaggio da proposta a rogito, e sono la rag
 | Polizza decennale postuma | Art. 4 d.lgs. 122/2005 | Obbligo a pena di nullità di consegnare all'atto una polizza indennitaria decennale per rovina e gravi difetti ex art. 1669 c.c., con menzione degli estremi nel rogito |
 | Spese condominiali | Art. 63 disp. att. c.c. | L'acquirente è obbligato in solido per le spese dell'anno in corso e del precedente |
 
+### Documentazione tecnica pre-acquisto
+
+Il foglio Dossier tecnico elenca cinquantaquattro documenti in otto famiglie, con peso, chi li rilascia, la norma e il costo indicativo. È costruito da `foglio_dossier()` a partire da una lista di tuple, e i due nomi definiti `documenti_bloccanti_aperti` e `documenti_completamento` alimentano il Cruscotto. La scheda estesa è `docs/perizia-pre-acquisto.md`; qui stanno le sole norme che governano il fascicolo.
+
+| Voce | Norma | Perché è nel modello |
+|---|---|---|
+| Stato legittimo | Art. 9-bis c. 1-bis DPR 380/2001 | È il titolo che ha previsto la costruzione o ha disciplinato l'ultimo intervento sull'intera unità, integrato dai titoli successivi che hanno abilitato interventi parziali. Per gli immobili costruiti quando il titolo non era obbligatorio si desume dalle informazioni catastali di primo impianto o da altri documenti probanti |
+| Autonomia fra unità e parti comuni | Art. 9-bis c. 1-ter DPR 380/2001 | Ai fini dello stato legittimo della singola unità non rilevano le difformità sulle parti comuni ex art. 1117 c.c., e viceversa. Delimita il perimetro della verifica sull'appartamento |
+| Tolleranze e dichiarazione asseverata | Art. 34-bis cc. 1, 1-bis e 3 DPR 380/2001 | Soglia generale del due per cento; per gli interventi entro il 24 maggio 2024 il cinque per cento sotto i cento metri quadrati di superficie utile, il quattro fra cento e trecento, il tre fra trecento e cinquecento, il due oltre. Le tolleranze vanno dichiarate dal tecnico con atto asseverato allegato al trasferimento |
+| Attestazione sismica delle tolleranze | Art. 34-bis c. 3-bis DPR 380/2001 | In zona sismica non a bassa sismicità il tecnico attesta il rispetto delle norme tecniche vigenti al momento dell'intervento, con trasmissione allo sportello unico ai fini dell'autorizzazione regionale |
+| Opere iniziate prima del 1 settembre 1967 | Art. 40 c. 3 legge 47/1985 | In luogo degli estremi della licenza può essere prodotta dichiarazione sostitutiva di atto notorio del proprietario che attesti l'inizio anteriore a quella data, ricevuta nell'atto o allegata |
+| Certificato di destinazione urbanistica | Art. 30 c. 2 DPR 380/2001 | Nullità dell'atto avente ad oggetto terreni senza CDU allegato; esclusione per l'area di pertinenza di fabbricati censiti al catasto urbano inferiore a cinquemila metri quadrati |
+| Agibilità | Art. 24 DPR 380/2001 | Sicurezza, igiene, salubrità, risparmio energetico e conformità dell'opera al progetto sono attestati con segnalazione certificata, corredata dall'asseverazione del direttore dei lavori e dal collaudo statico |
+| Autorizzazione sismica | Artt. 93 e 94 DPR 380/2001 | In zona sismica preavviso allo sportello unico con progetto; fuori dalla bassa sismicità i lavori non possono iniziare senza autorizzazione preventiva dell'ufficio tecnico regionale |
+| Accesso agli atti | Art. 22 legge 241/1990 | Via per ottenere titoli edilizi ed eventuali procedimenti sanzionatori dall'archivio comunale. Richiede delega del proprietario o interesse qualificato: è la ragione tecnica per cui la proposta si presenta condizionata |
+| Tutela dei beni culturali | Artt. 59-62 d.lgs. 42/2004 | Denuncia del trasferimento e prelazione dello Stato nel termine di legge. Sotto tutela non si applicano le tolleranze esecutive del comma 2 dell'art. 34-bis |
+| Impianti | DM 37/2008 | Dichiarazione di conformità; per gli impianti anteriori al 2008 la dichiarazione di rispondenza rilasciata da soggetto con i requisiti dell'art. 7 c. 6 |
+| Prestazione energetica | D.lgs. 192/2005 | APE in corso di validità, da allegare all'atto e indicare nell'annuncio |
+| Locazione opponibile | Art. 1599 c.c., legge 431/1998 | La locazione con data certa anteriore all'alienazione è opponibile all'acquirente, che subentra nel contratto fino alla scadenza |
+| Provenienza donativa | Artt. 561 e 563 c.c. | Azione di restituzione contro i terzi acquirenti nel termine ventennale dalla trascrizione della donazione; si neutralizza con rinuncia degli aventi diritto o polizza dedicata |
+| Continuità delle trascrizioni | Artt. 2648 e 2650 c.c. | Senza accettazione dell'eredità trascritta la continuità si interrompe e l'atto successivo non produce effetto verso i terzi |
+
 ### Diritti del cliente nel rapporto con la banca
 
 Vengono dalla guida ufficiale della Banca d'Italia sul mutuo ipotecario e sono nella checklist perché quasi nessuno li usa. La banca deve consegnare gratuitamente il PIES, prospetto europeo standardizzato con condizioni personalizzate, ed è l'unico modo per confrontare offerte sulla stessa base. Ricevuta l'offerta vincolante il consumatore ha almeno sette giorni di riflessione, durante i quali l'offerta resta ferma per la banca. La portabilità è per legge gratuita in entrambe le gambe e non richiede il consenso della banca di partenza. Il tasso non può superare la soglia d'usura costruita sul tasso effettivo globale medio pubblicato trimestralmente. La polizza si può presentare reperita altrove purché di protezione equivalente, e se si accetta quella della banca si ha diritto di conoscere la provvigione che la compagnia le paga. L'accesso ai propri dati in Centrale dei Rischi è gratuito.

@@ -4,7 +4,7 @@
 
 ## Cos'e' questo progetto
 
-Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel di diciannove fogli con formule vive, quindi interattivo, che copre il cruscotto di sintesi, il costo reale dell'operazione, il mutuo con simulatore e piano di ammortamento, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilita', la simulazione probabilistica su mille scenari con analisi a tornado, la ripartizione fra comproprietari, la checklist delle verifiche legali e tecniche, il registro degli immobili in valutazione e il registro delle fonti.
+Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel di venti fogli con formule vive, quindi interattivo, che copre il cruscotto di sintesi, il costo reale dell'operazione, il mutuo con simulatore e piano di ammortamento, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilita', la simulazione probabilistica su mille scenari con analisi a tornado, la ripartizione fra comproprietari, la checklist delle verifiche legali e tecniche, il dossier dei documenti da farsi consegnare in trattativa, il registro degli immobili in valutazione e il registro delle fonti.
 
 Il perimetro e' deliberatamente definito. Sono coperti l'acquisto da privato e da impresa con IVA, la prima casa e le altre, l'acquisto in quota da parte di piu' soggetti, la nuova costruzione con le tutele del d.lgs. 122/2005. Non e' coperta la ristrutturazione come progetto a se', per scelta esplicita; resta invece modellata la ristrutturazione periodica di fine ciclo, perche' e' un costo ricorrente e ignorarlo falsa il rendimento.
 
@@ -65,6 +65,8 @@ docs/fiscalita-locazione.md  i quattro regimi a confronto, novita' 2026 sulle lo
                               brevi, oneri della registrazione, rischi non catturati
 docs/due-diligence.md        verifiche per fase, conformita' catastale e urbanistica,
                               Salva Casa, clausole della proposta, condominio, costruttore
+docs/perizia-pre-acquisto.md documentazione tecnica da farsi consegnare in trattativa:
+                              otto famiglie, chi rilascia, norma, costo, come si chiede
 docs/metodo-e-metriche.md    scelte metodologiche, denominatore dei rendimenti, metriche
                               e loro lettura, limiti dichiarati del modello
 docs/raccolta-annunci.md     registro degli annunci, vincoli dell'acquisizione automatica,

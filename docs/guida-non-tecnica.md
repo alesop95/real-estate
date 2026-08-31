@@ -152,6 +152,20 @@ Le due condizioni che non devono mancare mai sono quella legata al mutuo, perch�
 
 Le due verifiche tecniche che vanno fatte da un professionista e che sono spesso confuse fra loro sono la **conformità catastale**, cioè che la planimetria depositata corrisponda a com'è fatta la casa, e la **conformità urbanistica**, cioè che la casa corrisponda ai titoli edilizi rilasciati nel tempo. La seconda è quella che conta di più: è la difformità urbanistica che blocca la vendita e il mutuo, e il costo per sistemarla lo paga chi compra se non se ne accorge prima.
 
+### Nono, la scheda Dossier tecnico
+
+La Checklist dice che cosa verificare. Questa dice **quali carte ti servono per poterlo verificare**, ed è la lista che un ingegnere o un geometra incaricato manderebbe all'agenzia. Sono cinquantaquattro documenti divisi in otto famiglie: identificazione e titolarità, legittimità urbanistica, struttura e sismica, vincoli, impianti ed energia, condominio, nuova costruzione, occupazione e tributi.
+
+Per ciascuno trovi chi lo rilascia, la norma che lo rende dovuto, che cosa prova e che cosa rischi se manca, un costo indicativo, e le colonne gialle per segnare stato, data della richiesta e data di ricezione.
+
+La colonna **Peso** dice quanto pesa l'assenza. *Bloccante* significa che senza quel documento l'atto è nullo, la banca non delibera oppure non si può sapere quanto costa sistemare le cose: ce ne sono ventuno. *Importante* significa che incide sul prezzo o sul rischio. *Se ricorre* significa che dipende dal caso, per esempio la fideiussione del costruttore, che su un usato non c'entra: quelle voci si marcano come non applicabili e spariscono dal conteggio.
+
+Come si usa in pratica. Prima si marcano non applicabili le voci che non c'entrano con l'immobile in questione, poi si manda **una sola mail** con l'elenco di quello che resta, poi si segnano le date man mano che arrivano. In fondo al foglio c'è il completamento del fascicolo e il numero di documenti bloccanti ancora da avere, che compare anche sul Cruscotto.
+
+Due cose da sapere prima di iniziare. La prima è che quello che l'agenzia non ha, quasi sempre esiste lo stesso: visure e planimetrie le prende un tecnico in giornata per poche decine di euro, i documenti del condominio li ha gratis l'amministratore, i titoli edilizi stanno in Comune. La seconda è che i titoli edilizi in Comune si ottengono con l'accesso agli atti, che però vuole la delega del proprietario o una proposta già firmata: è il motivo per cui la proposta si fa **condizionata** all'esito della verifica, invece di aspettare documenti che non arriveranno mai prima.
+
+Il costo di tutta la verifica sta fra le seicento e le millecinquecento euro. Sembra molto finché non lo confronti con quello che costa scoprire dopo il rogito una difformità da sanare. La spiegazione distesa di ogni documento sta in `docs/perizia-pre-acquisto.md`.
+
 ## Le due voci da non lasciare al valore predefinito
 
 Il file arriva con valori d'esempio ovunque, e vanno tutti sostituiti. Due però meritano di essere ripetute perché sono quelle che più spesso si lasciano come sono e falsano il risultato: l'**aliquota IMU**, che va presa dalla delibera del tuo Comune, e le **spese condominiali**, che vanno prese dal consuntivo.

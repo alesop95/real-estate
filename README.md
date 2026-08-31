@@ -8,7 +8,7 @@ I parametri fiscali sono quelli in vigore al 28 agosto 2026, con le novita' dell
 
 ## Che cosa produce
 
-Il workbook ha diciannove fogli e si apre sul Cruscotto, che raccoglie i cinque numeri su cui si decide. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto, Scenari e Rischio. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist e Fonti, piu' il piano di ammortamento rata per rata.
+Il workbook ha venti fogli e si apre sul Cruscotto, che raccoglie i cinque numeri su cui si decide. Quelli in cui si lavora sono Immobile, Mutuo, Locazione, Cash flow e Annunci, dove le celle gialle sono gli input. Quelli che si leggono sono Confronto immobili, Metriche, Confronto affitto, Scenari e Rischio. Il Simulatore mutuo sta a se': serve a provare rimborsi volontari e rialzi di tasso senza toccare l'analisi principale. Quelli che si consultano sono Guida, Parametri, Checklist, Dossier tecnico e Fonti, piu' il piano di ammortamento rata per rata.
 
 Il foglio Immobile calcola le imposte di trasferimento nei quattro casi rilevanti, applica la regola prezzo-valore quando spetta, quantifica il valore economico del bonus prima casa mostrando quanto si pagherebbe senza, e arriva al costo totale dell'operazione e alla cassa che serve davvero.
 
@@ -21,6 +21,8 @@ Il foglio Confronto immobili applica lo stesso modello a ogni annuncio del regis
 Il foglio Rischio non chiede quanto rende l'immobile ma quanto puo' andare storto: mille scenari con canone, sfitto, tasso e rivalutazione che variano insieme, piu' l'evento raro di una morosita' grave, e in uscita la distribuzione del cash flow e del patrimonio finale. Il numero che conta e' la coda bassa, cioe' quanto si mette di tasca propria ogni mese nello scenario peggiore su venti. Accanto, un'analisi a tornado dice quale ipotesi muove di piu' il risultato, quindi dove convenga spendere tempo a stimare meglio.
 
 Il foglio Metriche da' rendimento lordo e netto, cap rate, cash on cash, debt service coverage ratio, tasso interno di rendimento e valore attuale netto, tutti calcolati sul costo totale e non sul prezzo. Il foglio Confronto affitto risponde alla domanda su quanto valga comprare rispetto a restare in affitto investendo la differenza. Il foglio Scenari mostra quanto l'esito dipenda dalle assunzioni, che e' la cosa piu' utile che un modello del genere possa fare.
+
+Il foglio Dossier tecnico elenca i cinquantaquattro documenti che un tecnico incaricato chiede all'agenzia o al venditore prima della proposta, divisi in otto famiglie e ciascuno con chi lo rilascia, la norma che lo rende dovuto, che cosa prova, che cosa si rischia se manca e un costo indicativo. Ventuno sono marcati bloccanti, nel senso preciso che senza di essi l'atto e' nullo, il mutuo non si delibera o il costo di regolarizzazione resta ignoto. Il foglio tiene lo stato della raccolta e riporta sul Cruscotto quanti bloccanti mancano ancora.
 
 ## Come si usa
 
