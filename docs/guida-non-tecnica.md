@@ -26,7 +26,7 @@ Quando un numero diventa rosso, o una cella si colora di rosa, è un avviso: qua
 
 ## L'ordine in cui si lavora
 
-Il file ha quattordici schede in fondo alla finestra. Non servono tutte insieme e non si leggono da sinistra a destra. L'ordine giusto è questo.
+Il file ha quindici schede in fondo alla finestra. Non servono tutte insieme e non si leggono da sinistra a destra. L'ordine giusto è questo.
 
 ### Primo, la scheda Annunci
 
@@ -96,13 +96,15 @@ La **detrazione degli interessi** vale il 19 per cento degli interessi pagati, s
 
 Il **rapporto rata reddito** diventa rosso sopra il trentacinque per cento, perché è lì che le banche si fermano.
 
-Cinque cose che la legge ti riconosce e che quasi nessuno usa, prese dalla guida ufficiale della Banca d'Italia sul mutuo ipotecario. La banca deve consegnarti gratuitamente il **PIES**, un prospetto standard europeo con le tue condizioni personalizzate, ed è l'unico modo per confrontare due offerte sulla stessa base. Quando ricevi l'offerta vincolante hai **sette giorni** di riflessione durante i quali l'offerta resta ferma. La **polizza incendio** è obbligatoria ma puoi portarne una tua presa altrove, purché equivalente, e la banca deve accettarla. Il tasso non può superare la **soglia d'usura**, che la Banca d'Italia pubblica ogni trimestre. E puoi consultare gratis la tua posizione in **Centrale dei Rischi**, cosa utile prima di chiedere, perché una pratica dimenticata aperta presso un mediatore pesa sulla delibera e si chiude revocando l'incarico per iscritto.
+Cinque cose che la legge ti riconosce e che quasi nessuno usa, prese dalla guida ufficiale della Banca d'Italia sul mutuo ipotecario. La banca deve consegnarti gratuitamente il **PIES**, un prospetto standard europeo con le tue condizioni personalizzate, ed è l'unico modo per confrontare due offerte sulla stessa base. Quando ricevi l'offerta vincolante hai **sette giorni** di riflessione durante i quali l'offerta resta ferma. La **polizza incendio** è obbligatoria ma puoi portarne una tua presa altrove, purché equivalente, e la banca deve accettarla; hai sessanta giorni per disdire quella che ti hanno venduto. Attenzione alla forma del premio: esiste sia annuo sia unico anticipato per tutta la durata, e le banche propongono spesso il secondo finanziandolo dentro il mutuo, il che significa pagarci sopra anche gli interessi. Il foglio ti fa scegliere quale delle due, e nel caso del premio unico lo mette fra i costi che escono al rogito. Il tasso non può superare la **soglia d'usura**, che la Banca d'Italia pubblica ogni trimestre. E puoi consultare gratis la tua posizione in **Centrale dei Rischi**, cosa utile prima di chiedere, perché una pratica dimenticata aperta presso un mediatore pesa sulla delibera e si chiude revocando l'incarico per iscritto.
 
 ### Quinto, la scheda Locazione
 
 Solo se l'immobile lo affitti. Metti il canone che pensi di ottenere, le spese condominiali e l'aliquota IMU, e il foglio mette a confronto quattro modi di tassare lo stesso affitto.
 
 Sui due numeri che contano di più va detto qualcosa. Le **spese condominiali** vanno prese dal consuntivo degli ultimi due esercizi, non dalla stima dell'agenzia, e insieme al consuntivo vanno letti i verbali delle assemblee, perché i lavori già deliberati e non ancora fatti sono un costo tuo che arriva dopo il rogito. L'**aliquota IMU** va letta nella delibera del tuo Comune per l'anno in corso: la legge fissa una base dello 0,86 per cento ma i Comuni possono arrivare all'1,06, e la differenza su vent'anni non è piccola.
+
+Due voci nuove che vale la pena non lasciare a zero. Il **costo figurativo del tuo tempo**: gestire un affitto costa ore, e se le conti a zero stai confrontando l'immobile con un investimento finanziario che di ore non ne chiede. Metti quante ore all'anno ci dedichi e quanto vale un'ora tua; per la locazione breve il foglio moltiplica quelle ore, perche' e' un'altra cosa. E il **moltiplicatore**: la locazione breve non e' un investimento passivo, e' piu' vicina a un mestiere.
 
 I quattro regimi, in breve.
 
@@ -117,6 +119,8 @@ La **locazione breve**, cioè contratti sotto i trenta giorni. Ha il rendimento 
 Su questo punto c'è un avvertimento che viene da un parere raccolto sul campo e che il file non può darti da solo: destinare a locazione turistica un immobile comprato con l'agevolazione prima casa, comunicandolo come attività, può far perdere l'agevolazione e aggiungere la sanzione. La scelta sul regime di affitto e quella sull'agevolazione vanno fatte insieme, non una dopo l'altra.
 
 ### Sesto, le schede che si leggono
+
+Nel foglio **Metriche** c'e' anche un controllo che non riguarda questo immobile ma tutto il tuo patrimonio: quanta parte e' gia' in mattone. Se superi i due terzi non hai un portafoglio, hai una scommessa sul mercato immobiliare della tua zona. E non consolarti pensando che l'immobiliare ti protegga quando le borse scendono: nelle recessioni i due si muovono insieme, perche' e' la stessa contrazione del credito a colpirli.
 
 **Metriche** dà gli indicatori. Il **rendimento netto** è il numero da usare per decidere: è l'utile dopo tutti i costi e le imposte, diviso il costo totale. Fra il lordo che leggi negli annunci e questo netto si perdono di solito due punti e mezzo, e chi ti promette un netto vicino al lordo sta contando male. Il **cash on cash** dice quanto rende il denaro tuo che hai messo. Il **tasso interno di rendimento** è l'unico numero che puoi confrontare con il rendimento di un investimento finanziario, perché tiene conto anche di quanto vale l'immobile alla fine.
 

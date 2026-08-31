@@ -16,6 +16,8 @@ I riferimenti fra fogli passano sempre per nomi definiti, mai per indirizzi di c
 python tools/valuta.py excel --con-annunci
 python tools/valuta.py riepilogo --prezzo 120000 --rendita 450 --mutuo 90000 --canone 500
 python tools/valuta.py tassi --tasso 0.032 --mutuo 90000 --durata 25
+python tools/valuta.py omi importa --file "fornitura.zip"
+python tools/valuta.py omi zone --comune "NOME DEL COMUNE"
 python tools/valuta.py omi cerca --comune "NOME DEL COMUNE"
 python tools/valuta.py annunci elenca
 python -m pytest tests
@@ -99,10 +101,18 @@ Sul quando convenga rimborsare, la regola è una sola e non è quella che si sen
 | Registro locazione | `reg_loc` | 2% del canone, minimo 67 | Solo in regime ordinario, per metà a ciascuna parte salvo patto. Base ridotta del trenta per cento per il concordato |
 | IMU | — | `rendita * 1,05 * 160 * aliquota` | Abitazione principale esente salvo A/1, A/8, A/9. Aliquota base 0,86 per cento, modulabile dai Comuni fino all'1,06: va letta nella delibera comunale dell'anno |
 | Accantonamento ristrutturazione | `accantonamento_ristrutturazione` | `prezzo / 3 / 40` | Un rifacimento completo ogni quarant'anni, ripartito. Vedi ADR-005 |
+| Costo figurativo del tempo | `costo_tempo` | `ore_gestione * valore_ora` | Il tempo speso a gestire e' un costo reale che quasi nessuna analisi mette a bilancio. Sulla locazione breve e' moltiplicato per `coefficiente_tempo_breve`, perche' non e' un investimento passivo. Predefinito a zero, quindi neutro finche' non lo si valorizza |
+| Polizza incendio | `polizza` | annua, oppure premio unico ripartito sulla durata | Obbligatoria per legge ma non necessariamente della banca. Il premio unico anticipato entra fra gli oneri iniziali, perche' e' cassa che esce al rogito, e se finanziato dentro il mutuo produce interessi |
 
 Dal 2026 il regime delle locazioni brevi si applica a un massimo di due unità per periodo d'imposta: dalla terza scatta la presunzione di attività d'impresa con obbligo di partita IVA. Restano gli obblighi del codice identificativo nazionale in ogni annuncio, della comunicazione degli alloggiati e dei dispositivi di sicurezza. Va inoltre verificato il regolamento condominiale, perché se è di natura contrattuale può vietare la destinazione turistica.
 
 Va segnalata un'asimmetria del regime ordinario che il modello non simula per intero ma che pesa: i canoni non percepiti restano imponibili fino alla convalida di sfratto, quindi in caso di morosità si pagano imposte su denaro mai incassato. È un argomento a favore della cedolare che non compare nel confronto fra aliquote.
+
+### Concentrazione del patrimonio
+
+Non riguarda l'immobile ma chi lo compra, e sta in `Metriche` perche' e' il rischio che nessun rendimento mostra. Si dichiarano patrimonio complessivo e valore immobiliare complessivo dopo l'acquisto, e il foglio restituisce la quota con tre fasce di lettura: entro un terzo, oltre un terzo, oltre due terzi.
+
+La soglia di un terzo viene dalla pratica della consulenza patrimoniale, dove si osserva che i portafogli privati arrivano abitualmente al settanta per cento di immobiliare. Va tenuto presente che l'immobiliare non decorrela dall'azionario nelle recessioni, perche' e' la stessa contrazione del credito e della domanda a colpire entrambi, e che l'abitazione principale, per quanto fiscalmente privilegiata, e' capitale che non si puo' diversificare ne' rendere liquido e va quindi contata.
 
 ### Metriche
 
@@ -140,6 +150,8 @@ Vengono dalla guida ufficiale della Banca d'Italia sul mutuo ipotecario e sono n
 Sulla surroga vale un'avvertenza pratica che nessuna norma scrive ma che la pratica conferma: se ne ottiene realisticamente una nella vita di un mutuo, perché la banca subentrante parte in perdita pagando il notaio e identifica chi surroga ripetutamente, e le surroghe hanno spesso spread più alti.
 
 ## Dove si interviene
+
+Le quotazioni OMI aggiornate non sono automatizzabili e la ragione va detta: la fornitura ufficiale passa da un'autenticazione personale ai servizi telematici, che uno script non deve simulare, e il servizio di consultazione a video non espone una API documentata ne' un `robots.txt`, quindi in assenza di permesso esplicito ci si astiene. La via supportata e' quindi scaricare la fornitura a mano una volta per semestre e ingerirla con `python tools/valuta.py omi importa --file <archivio>`, che accetta lo zip cosi' come arriva o i CSV gia' estratti; `omi zone --comune` elenca poi le zone omogenee per scegliere quella giusta. Il mirror open data resta per la serie storica e si ferma al 2018.
 
 Per l'aggiornamento fiscale annuale si tocca solo `src/immobiliare/parametri.py`, si sposta la costante `REVISIONE`, si aggiornano le schede di dominio impattate e si rieseguono test e verifica. I test congelano gli scaglioni IRPEF, il minimo di legge del registro e i moltiplicatori catastali, che sono le tre cose che cambiano più spesso e che passerebbero inosservate.
 

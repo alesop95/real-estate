@@ -2,6 +2,24 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-08-29, fonti residue chiuse: trascrizioni, canale Telegram, legge regionale, e tre correzioni al modello
+
+File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/omi.py`, `src/immobiliare/parametri.py`, `tools/valuta.py`, `docs/fonti.md`, le due guide, `_notes/INDICE-MATERIALE.md`.
+
+Trascrizioni dei video. I quattro video segnalati sono stati trascritti senza ricorrere al riconoscimento vocale: YouTube espone i sottotitoli automatici italiani e `yt-dlp` li scarica direttamente. Circa 68.000 parole ripulite dalla sovrapposizione tipica delle didascalie automatiche. Da qui vengono due voci nuove del modello.
+
+Canale Telegram. L'utente ha esportato a mano il sottocanale "Tassazione, spese, mutui", che dall'esterno non era leggibile perche' il gruppo sta dietro un passaggio anti bot. Quasi sedicimila messaggi su due anni e mezzo, filtrati a 2.385 pertinenti e 932 sostanziosi. Da qui viene la terza correzione.
+
+Legge regionale delle Marche sul turismo. Il PDF non era estraibile perche' privo di mappa Unicode; la conversione in JSON fornita dall'utente ha permesso di ricostruire il testo. Ne esce la soglia che mancava: l'articolo 33 consente l'uso occasionale di immobili a fini ricettivi per non piu' di novanta giorni l'anno, e l'articolo 27 comma 3 qualifica come attivita' ricettiva la gestione non occasionale e organizzata.
+
+Tre correzioni al modello, tutte da fonte. Il costo figurativo del tempo dedicato alla gestione, che nella diretta con Fineco viene indicato come voce da calcolare e non solo da citare, entra nel conto economico con un moltiplicatore dedicato per la locazione breve, che non e' un investimento passivo; resta a zero per impostazione predefinita, quindi il modello e' retrocompatibile. Il controllo di concentrazione del patrimonio, con la soglia di un terzo e l'avvertenza che l'immobiliare non decorrela dall'azionario nelle recessioni. E la forma del premio della polizza incendio, che il canale Telegram ha mostrato esistere anche come premio unico anticipato per l'intera durata, spesso finanziato dentro il mutuo: il modello ora lo tratta come onere iniziale e lo ripartisce sulla durata per il confronto.
+
+Quotazioni OMI. Verificato che il servizio di consultazione a video non espone una API documentata ne' un `robots.txt`, e la fornitura ufficiale richiede un'autenticazione personale: l'automazione non e' quindi una strada percorribile e ci si astiene, coerentemente con ADR-004. Aggiunti invece `omi importa`, che ingerisce la fornitura scaricata a mano accettando lo zip o i CSV, e `omi zone`, che elenca le zone omogenee di un Comune.
+
+Resta aperta la legge 448/1998: Normattiva rende gli articoli via JavaScript e la pagina statica non li contiene, mentre il corpus locale non restituisce l'atto al suo URN.
+
+Verifica: trentanove test verdi, workbook a quindici fogli riaperto con Excel senza celle in errore, scansione dei dati personali pulita.
+
 ## 2026-08-28, chiusura delle fonti arretrate, simulatore del mutuo e guide d'uso
 
 File toccati: `src/immobiliare/excel_builder.py` (foglio Simulatore mutuo, sei voci di checklist, fonte Banca d'Italia), `src/immobiliare/parametri.py`, `tests/test_workbook.py`, `docs/guida-non-tecnica.md` e `docs/guida-tecnica.md` nuovi, `CLAUDE.md`, `README.md`, `_notes/INDICE-MATERIALE.md`.

@@ -444,14 +444,24 @@ class Costruttore:
         riga_not = r
         r = S.campo(ws, r, "Notaio, atto di mutuo", 1000, S.EURO, input_utente=True, nota="Fattura distinta da quella della compravendita, e detraibile fra gli oneri accessori se prima casa.")
         self.nome("notaio_mutuo", ws, f"B{riga_not}")
+        riga_pol_modo = r
+        r = S.campo(ws, r, "Polizza incendio, forma del premio", "annuo", input_utente=True, nota="annuo per il premio ricorrente, unico per il premio anticipato in un'unica soluzione, che le banche propongono spesso finanziandolo dentro il mutuo.")
+        modo_pol = DataValidation(type="list", formula1='"annuo,unico"', allow_blank=False)
+        ws.add_data_validation(modo_pol)
+        modo_pol.add(ws.cell(row=riga_pol_modo, column=2))
+        self.nome("polizza_forma", ws, f"B{riga_pol_modo}")
+        riga_pol_imp = r
+        r = S.campo(ws, r, "Polizza incendio e scoppio, importo", 180, S.EURO, input_utente=True, nota="Se la forma e' annua e' il premio di ogni anno; se e' unica e' il totale per l'intera durata, che sul mercato si osserva attorno a cinque euro ogni mille di capitale.")
+        self.nome("polizza_importo", ws, f"B{riga_pol_imp}")
         riga_pol = r
-        r = S.campo(ws, r, "Polizza incendio e scoppio, premio annuo", 180, S.EURO, input_utente=True, nota="Obbligatoria per legge. Non e' detraibile. Si puo' stipulare fuori dalla banca.")
+        r = S.campo(ws, r, "Polizza, costo annuo equivalente", '=IF(polizza_forma="unico",IF(durata>0,polizza_importo/durata,0),polizza_importo)', S.EURO_DEC, nota="Il premio unico si ripartisce sulla durata per poterlo confrontare con quello annuo.")
         self.nome("polizza", ws, f"B{riga_pol}")
+        r = S.nota_riga(ws, r, "La polizza incendio e scoppio e' obbligatoria per legge ma non e' obbligatorio comprarla dalla banca: il cliente puo' presentarne una reperita altrove, purche' di protezione equivalente, e la banca deve accettarla. Se invece si accetta quella proposta, il cliente ha diritto di sapere quanta provvigione la compagnia paga alla banca. Le polizze vita o sulla perdita dell'impiego non sono mai obbligatorie e la concessione del credito non puo' esservi subordinata.")
         riga_pol_vita = r
         r = S.campo(ws, r, "Polizza vita o impiego, premio annuo", 0, S.EURO, input_utente=True, nota="Facoltativa per legge: la banca non puo' subordinare la concessione del credito alla sua sottoscrizione.")
         self.nome("polizza_facoltativa", ws, f"B{riga_pol_vita}")
         riga_oneri = r
-        r = S.campo(ws, r, "Oneri iniziali del mutuo", "=IF(mutuo_importo>0,sostitutiva+istruttoria+perizia+notaio_mutuo,0)", S.EURO, risultato=True)
+        r = S.campo(ws, r, "Oneri iniziali del mutuo", '=IF(mutuo_importo>0,sostitutiva+istruttoria+perizia+notaio_mutuo+IF(polizza_forma="unico",polizza_importo,0),0)', S.EURO, risultato=True, nota="Comprende il premio unico della polizza, se scelto: e' cassa che esce al rogito e va nel costo dell'operazione.")
         self.nome("oneri_mutuo", ws, f"B{riga_oneri}")
         r += 1
 
@@ -765,6 +775,22 @@ class Costruttore:
         self.nome("irpef_marginale", ws, f"B{riga_marg}")
         r += 1
 
+        r = S.sezione(ws, r, "Costo figurativo del proprio tempo", secondaria=True)
+        r = S.nota_riga(ws, r, "Gestire un immobile locato costa tempo: registrare e rinnovare i contratti, seguire le assemblee, cercare l'artigiano il 23 dicembre, selezionare gli inquilini, rincorrere un pagamento in ritardo. E' un costo reale che quasi nessuna analisi mette a bilancio, e non metterlo significa confrontare il rendimento di un immobile con quello di un investimento finanziario che di tempo non ne chiede. Va dato un valore alle proprie ore e va calcolato.")
+        riga_ore = r
+        r = S.campo(ws, r, "Ore all'anno dedicate alla gestione", 30, S.NUMERO, input_utente=True, nota="Trenta ore l'anno e' l'ordine di grandezza di una locazione lunga che va liscia. Una locazione breve gestita in proprio sta su un altro ordine di grandezza, dalle duecento ore in su.")
+        self.nome("ore_gestione", ws, f"B{riga_ore}")
+        riga_valore_ora = r
+        r = S.campo(ws, r, "Valore di un'ora del proprio tempo", 0, S.EURO, input_utente=True, nota="Zero per escludere questa voce dal conto. Un riferimento onesto e' il proprio costo orario netto, oppure quanto si pagherebbe qualcuno per farlo al posto proprio.")
+        self.nome("valore_ora", ws, f"B{riga_valore_ora}")
+        riga_costo_tempo = r
+        r = S.campo(ws, r, "Costo figurativo annuo", "=ore_gestione*valore_ora", S.EURO, nota="Entra nel conto economico come una qualsiasi altra voce di costo. Se resta a zero il modello si comporta come prima.")
+        self.nome("costo_tempo", ws, f"B{riga_costo_tempo}")
+        riga_coef = r
+        r = S.campo(ws, r, "Moltiplicatore del tempo per la locazione breve", 6, S.NUMERO_DEC, input_utente=True, nota="Quante volte il tempo della locazione lunga. La locazione breve non e' un investimento passivo: e' piu' vicina a un mestiere, e va confrontata con gli altri regimi tenendone conto.")
+        self.nome("coefficiente_tempo_breve", ws, f"B{riga_coef}")
+        r += 1
+
         r = S.sezione(ws, r, "Confronto fra regimi", secondaria=True)
         r = S.intestazioni(
             ws, r,
@@ -811,6 +837,11 @@ class Costruttore:
         riga_conf("Manutenzione ordinaria", "=-prezzo*manut_pct", "=-prezzo*manut_pct", "=-prezzo*manut_pct", "=-prezzo*manut_pct")
         riga_conf("Assicurazione", "=-assicurazione", "=-assicurazione", "=-assicurazione", "=-assicurazione")
         riga_conf(
+            "Costo figurativo del proprio tempo",
+            "=-costo_tempo", "=-costo_tempo", "=-costo_tempo",
+            "=-costo_tempo*coefficiente_tempo_breve",
+        )
+        riga_conf(
             "Accantonamento ristrutturazione di fine ciclo",
             "=-accantonamento_ristrutturazione", "=-accantonamento_ristrutturazione",
             "=-accantonamento_ristrutturazione", "=-accantonamento_ristrutturazione",
@@ -829,7 +860,7 @@ class Costruttore:
             f"=-D{riga_eff}*gestione_pct",
             f"=-E{riga_eff}*(gestione_pct+costi_brevi_pct)",
         )
-        riga_gest_r = base + 9
+        riga_gest_r = base + 10
         riga_conf(
             "Reddito operativo netto",
             f"=B{riga_eff}+SUM(B{base+4}:B{riga_gest_r})",
@@ -838,7 +869,7 @@ class Costruttore:
             f"=E{riga_eff}+SUM(E{base+4}:E{riga_gest_r})",
             risultato=True,
         )
-        riga_noi = base + 10
+        riga_noi = base + 11
         riga_conf(
             "Imposta sul reddito da locazione",
             f"=-B{riga_eff}*ced_libero",
@@ -846,7 +877,7 @@ class Costruttore:
             f"=-(D{riga_eff}*(1-abbatt_ord)*(irpef_marginale+addizionali)+MAX(D{riga_eff}*reg_loc,reg_loc_min)/2)",
             f"=-E{riga_eff}*ced_breve1",
         )
-        riga_imp = base + 11
+        riga_imp = base + 12
         riga_conf(
             "Utile netto annuo",
             f"=B{riga_noi}+B{riga_imp}",
@@ -855,7 +886,7 @@ class Costruttore:
             f"=E{riga_noi}+E{riga_imp}",
             risultato=True,
         )
-        riga_utile = base + 12
+        riga_utile = base + 13
         riga_conf(
             "Rendimento lordo sul prezzo",
             f"=B{riga_pot}/prezzo", f"=C{riga_pot}/prezzo", f"=D{riga_pot}/prezzo", f"=E{riga_pot}/prezzo",
@@ -1050,6 +1081,29 @@ class Costruttore:
         r = S.campo(ws, r, "Cassa cumulata a fine orizzonte", "=SUM(cash_flow_annuo_serie)", S.EURO)
         r = S.campo(ws, r, "Multiplo sul capitale proprio", "=IF(esborso>0,SUM(flussi_tir)/esborso+1,0)", S.NUMERO_DEC)
         r = S.campo(ws, r, "Anni per rientrare del capitale proprio", "=IF(cash_flow_primo_anno>0,esborso/cash_flow_primo_anno,\"mai, con questo cash flow\")", S.NUMERO_DEC)
+        r += 1
+
+        r = S.sezione(ws, r, "Concentrazione del patrimonio", secondaria=True)
+        riga_patr = r
+        r = S.campo(ws, r, "Patrimonio complessivo, immobili inclusi", 0, S.EURO, input_utente=True, nota="Somma di immobili gia' posseduti, liquidita' e investimenti finanziari, incluso questo acquisto. Zero per saltare il controllo.")
+        self.nome("patrimonio_totale", ws, f"B{riga_patr}")
+        riga_imm = r
+        r = S.campo(ws, r, "Valore immobiliare complessivo dopo questo acquisto", 0, S.EURO, input_utente=True, nota="Prima casa, seconde case, quote ereditate e questo immobile.")
+        self.nome("patrimonio_immobiliare", ws, f"B{riga_imm}")
+        riga_quota_imm = r
+        r = S.campo(ws, r, "Quota immobiliare del patrimonio", "=IF(patrimonio_totale>0,patrimonio_immobiliare/patrimonio_totale,\"n.d.\")", S.PERC, risultato=True)
+        r = S.campo(
+            ws, r, "Lettura della concentrazione",
+            f'=IF(patrimonio_totale=0,"controllo non attivo",IF(B{riga_quota_imm}>0.66,"molto concentrato: oltre due terzi in immobili",'
+            f'IF(B{riga_quota_imm}>0.33,"concentrato: oltre un terzo in immobili","entro un terzo del patrimonio")))',
+            risultato=True,
+        )
+        for testo in [
+            "Il controllo esiste perche' e' il rischio che il rendimento non vede. Un immobile e' un singolo bene, in una singola via, di un singolo Comune, comprato in un singolo momento del ciclo: porta insieme rischio di timing, di ciclo economico, di tasso e di localizzazione, e non si vende in tre giorni. Chi ha due terzi del patrimonio in mattone non ha un portafoglio diversificato, ha una scommessa sul mercato immobiliare della sua zona.",
+            "Va poi sfatata un'aspettativa ricorrente: l'immobiliare non decorrela dall'azionario quando servirebbe. Nelle recessioni i due si muovono insieme, perche' e' la stessa contrazione del credito e della domanda a colpirli. Cio' che ha decorrelato nei momenti di crisi, in modo diverso a seconda dello scenario, e' stato semmai il reddito fisso o il bene rifugio.",
+            "L'abitazione principale merita un discorso a parte. Il suo trattamento fiscale, dall'esenzione IMU alla detrazione degli interessi, e' un vantaggio che nessun altro investimento replica, ma resta un capitale che non si puo' diversificare, ne' rendere liquido, ne' bilanciare con il resto. E' la ragione per cui va contata nella concentrazione anche se non e' un investimento.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 3)
         r += 1
 
         r = S.sezione(ws, r, "Lettura", secondaria=True)

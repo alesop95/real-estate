@@ -166,6 +166,64 @@ def scarica_dal_mirror(semestre: str, cartella: str | Path = "data/omi") -> tupl
     return percorsi[0], percorsi[1]
 
 
+def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi") -> list[Path]:
+    """Ingerisce la fornitura ufficiale scaricata a mano dall'area riservata.
+
+    E' la via corretta e l'unica aggiornata. La fornitura si ottiene autenticandosi
+    ai servizi telematici dell'Agenzia, che e' un'autenticazione personale: uno
+    script non puo' simularla e non deve provarci. La consultazione a video del
+    servizio geopoi, dal canto suo, e' un'applicazione senza API documentata e
+    senza `robots.txt`, quindi in assenza di un permesso esplicito ci si astiene
+    dall'automatizzarla.
+
+    Questa funzione accetta l'archivio zip cosi' come arriva, oppure i CSV gia'
+    estratti, li normalizza nella cartella di cache e restituisce i percorsi utili.
+
+    Il percorso a video, una volta sola per semestre:
+    servizi telematici dell'Agenzia, area riservata, Servizi ipotecari e catastali
+    e Osservatorio del mercato immobiliare, Forniture OMI, Quotazioni immobiliari,
+    scelta del semestre e dell'ambito territoriale, poi scarico del prodotto.
+    """
+    import shutil
+    import zipfile
+
+    percorso = Path(percorso)
+    cartella = Path(cartella)
+    cartella.mkdir(parents=True, exist_ok=True)
+    if not percorso.exists():
+        raise FileNotFoundError(f"non trovo {percorso}")
+
+    estratti: list[Path] = []
+    if percorso.suffix.lower() == ".zip":
+        with zipfile.ZipFile(percorso) as z:
+            for nome in z.namelist():
+                if nome.lower().endswith(".csv"):
+                    destinazione = cartella / Path(nome).name
+                    with z.open(nome) as sorgente, destinazione.open("wb") as uscita:
+                        shutil.copyfileobj(sorgente, uscita)
+                    estratti.append(destinazione)
+    elif percorso.suffix.lower() == ".csv":
+        destinazione = cartella / percorso.name
+        shutil.copyfile(percorso, destinazione)
+        estratti.append(destinazione)
+    else:
+        raise ValueError(f"formato non riconosciuto: {percorso.suffix}. Attesi .zip o .csv")
+
+    if not estratti:
+        raise ValueError("nessun CSV trovato nell'archivio")
+    return estratti
+
+
+def elenca_zone(quotazioni: list[Quotazione], comune: str) -> list[tuple[str, str]]:
+    """Zone omogenee di un Comune, per scegliere quella dell'immobile."""
+    comune_norm = comune.strip().upper()
+    viste: dict[str, str] = {}
+    for q in quotazioni:
+        if q.comune.strip().upper() == comune_norm and q.zona not in viste:
+            viste[q.zona] = q.zona_descrizione
+    return sorted(viste.items())
+
+
 def cerca(
     quotazioni: list[Quotazione],
     comune: str,

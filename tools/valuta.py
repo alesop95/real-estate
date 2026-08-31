@@ -14,6 +14,8 @@ Esempi:
     python tools/valuta.py annunci importa --link https://...
     python tools/valuta.py annunci esporta
     python tools/valuta.py omi scarica --semestre 2018-2
+    python tools/valuta.py omi importa --file "QI_xxxxx.zip"
+    python tools/valuta.py omi zone --comune "NOME DEL COMUNE"
     python tools/valuta.py omi cerca --comune "NOME DEL COMUNE"
     python tools/valuta.py tassi
     python tools/valuta.py tassi --tasso 0.032 --mutuo 90000 --durata 25
@@ -296,6 +298,40 @@ def cmd_omi(args) -> int:
         print(f"Scaricati:\n  {valori}\n  {zone}")
         return 0
 
+    if args.azione == "importa":
+        if not args.file:
+            print("Serve --file con l'archivio zip o il CSV scaricato dall'area riservata.")
+            print(f"Percorso a video: {O.FORNITURA_UFFICIALE}")
+            return 2
+        try:
+            estratti = O.importa_fornitura(args.file)
+        except (FileNotFoundError, ValueError) as e:
+            print(f"Importazione fallita: {e}")
+            return 1
+        print(f"Importati {len(estratti)} file in data/omi:")
+        for f in estratti:
+            print(f"  {f.name}")
+        print()
+        print("Ora sono interrogabili con: python tools/valuta.py omi cerca --comune \"...\"")
+        return 0
+
+    if args.azione == "zone":
+        cartella = RADICE / "data" / "omi"
+        valori = sorted(cartella.glob("*VALORI*.csv")) or sorted(cartella.glob("*.csv"))
+        if not valori:
+            print("Nessun file OMI in data/omi.")
+            return 1
+        zone_file = sorted(cartella.glob("*ZONE*.csv"))
+        quotazioni = O.carica(valori[-1], zone_file[-1] if zone_file else "")
+        elenco = O.elenca_zone(quotazioni, args.comune)
+        if not elenco:
+            print(f"Nessuna zona per {args.comune}.")
+            return 1
+        print(f"Zone omogenee di {args.comune}")
+        for codice, descrizione in elenco:
+            print(f"  {codice:<8} {descrizione}")
+        return 0
+
     if args.azione == "cerca":
         cartella = RADICE / "data" / "omi"
         valori = sorted(cartella.glob("*VALORI*.csv"))
@@ -459,7 +495,8 @@ def principale(argomenti=None) -> int:
     p.set_defaults(funzione=cmd_annunci)
 
     p = sub.add_parser("omi", help="quotazioni dell'Osservatorio del mercato immobiliare")
-    p.add_argument("azione", choices=["scarica", "cerca"])
+    p.add_argument("azione", choices=["scarica", "importa", "zone", "cerca"])
+    p.add_argument("--file", help="archivio zip o CSV della fornitura ufficiale, per importa")
     p.add_argument("--semestre", default="2018-2")
     p.add_argument("--comune", default="")
     p.add_argument("--zona", default="")
