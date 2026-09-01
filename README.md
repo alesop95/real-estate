@@ -54,6 +54,12 @@ python tools/valuta.py tassi
 python tools/valuta.py tassi --tasso 0.032 --mutuo 90000 --durata 25
 ```
 
+Sul tasso variabile serve un secondo numero, cioe' di quanto il tasso puo' salire. Il comando lo misura sulla serie storica dell'Euribor a tre mesi invece di lasciarlo all'intuizione, e confronta il risultato con i valori congelati nel codice che alimentano le note del workbook:
+
+```
+python tools/valuta.py tassi --risalita
+```
+
 Le quotazioni dell'Osservatorio del mercato immobiliare ancorano i prezzi a un riferimento pubblico:
 
 ```

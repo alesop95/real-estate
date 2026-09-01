@@ -209,6 +209,173 @@ def test_campi_a_tre_stati_normalizzati():
     assert "venditore_impresa" in [f.name for f in fields(A.Annuncio)]
 
 
+def test_prezzo_massimo_e_esatto_e_si_autoverifica():
+    """Il prezzo massimo sostenibile non deve piu' passare per l'incidenza dei costi.
+
+    La versione precedente divideva il costo totale sostenibile per uno piu'
+    l'incidenza percentuale dei costi accessori dello scenario base, e sbagliava
+    due volte: assumeva quell'incidenza costante al variare del prezzo, mentre
+    notaio, oneri del mutuo, imposte fisse e, con il prezzo-valore, l'intera
+    imposta di registro sono importi fissi la cui incidenza cresce al calare del
+    prezzo; e teneva l'utile netto fermo, mentre manutenzione e accantonamento per
+    la ristrutturazione sono quote del valore e quindi l'utile sale se il prezzo
+    scende. Sul caso precaricato le due formule danno 15.609 euro contro 43.445, e
+    l'errore va nella direzione che fa sembrare impossibile qualunque trattativa.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Scenari"]
+
+    righe = {}
+    for riga in range(1, 200):
+        etichetta = ws.cell(row=riga, column=1).value
+        if isinstance(etichetta, str) and etichetta not in righe:
+            righe[etichetta] = riga
+
+    for etichetta in ("Rendimento netto obiettivo", "Quota del prezzo che diventa costo aggiuntivo",
+                      "Costi che non dipendono dal prezzo", "Costi annui che scalano col prezzo",
+                      "Prezzo massimo corrispondente", "Verifica: rendimento netto a quel prezzo",
+                      "Scarto dalla soglia, deve essere zero"):
+        assert etichetta in righe, f"voce {etichetta!r} assente dalla sezione del prezzo massimo"
+
+    pmax = ws.cell(row=righe["Prezzo massimo corrispondente"], column=2).value
+    assert isinstance(pmax, str) and pmax.startswith("=")
+    assert "incidenza_costi" not in pmax, (
+        f"il prezzo massimo e' tornato all'approssimazione sull'incidenza dei costi: {pmax!r}"
+    )
+    # Deve citare le tre celle della soluzione chiusa e il rendimento obiettivo.
+    for etichetta in ("Quota del prezzo che diventa costo aggiuntivo",
+                      "Costi che non dipendono dal prezzo",
+                      "Costi annui che scalano col prezzo",
+                      "Rendimento netto obiettivo"):
+        assert f"B{righe[etichetta]}" in pmax, (
+            f"il prezzo massimo non legge {etichetta!r}: {pmax!r}"
+        )
+
+    # Lo scarto sul prezzo trattato deve derivare dal prezzo massimo, non ricalcolarlo.
+    scarto = ws.cell(row=righe["Scarto rispetto al prezzo trattato"], column=2).value
+    assert f"B{righe['Prezzo massimo corrispondente']}" in scarto and "prezzo" in scarto, (
+        f"lo scarto non deriva dal prezzo massimo: {scarto!r}"
+    )
+
+    # Il controllo di chiusura deve usare le formule esatte, floor di legge compreso.
+    verifica = ws.cell(row=righe["Verifica: rendimento netto a quel prezzo"], column=2).value
+    assert "reg_min" in verifica, (
+        f"la verifica non applica il minimo di legge dell'imposta di registro: {verifica!r}"
+    )
+    assert "utile_locazione" in verifica
+
+
+def test_tabella_scenari_non_usa_offset_numerici():
+    """Le formule dei tre scenari devono citare righe scritte, non righe calcolate.
+
+    La tabella usava indici del tipo base piu' una costante, con lo stesso difetto
+    del conto economico della locazione. Ora ogni riga si registra sotto una chiave
+    e le formule citano le chiavi: una chiave assente rompe la generazione, che e'
+    il comportamento giusto, invece di produrre un riferimento valido a una riga
+    diversa. Il test fissa la conseguenza osservabile: ogni formula della tabella
+    deve puntare a righe interne alla tabella e precedenti alla propria.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Scenari"]
+
+    intestazione = None
+    for riga in range(1, 60):
+        if ws.cell(row=riga, column=2).value == "Pessimistico":
+            intestazione = riga
+            break
+    assert intestazione is not None, "intestazione della tabella dei tre scenari non trovata"
+
+    attese = ["Canone mensile", "Mesi di sfitto all'anno", "Morosita'", "Tasso del mutuo",
+              "Rivalutazione annua dell'immobile", "Ricavo effettivo", "Costi operativi",
+              "Reddito operativo netto", "Imposta sul canone", "Utile netto", "Rata annua",
+              "Cash flow annuo", "Rendimento netto", "Debt service coverage ratio",
+              "Valore dell'immobile a fine orizzonte", "Debito residuo a fine orizzonte",
+              "Patrimonio netto a fine orizzonte"]
+    for scostamento, etichetta in enumerate(attese, start=1):
+        effettiva = ws.cell(row=intestazione + scostamento, column=1).value
+        assert effettiva == etichetta, (
+            f"riga {intestazione + scostamento}: attesa {etichetta!r}, trovata {effettiva!r}"
+        )
+
+    prima = intestazione + 1
+    ultima = intestazione + len(attese)
+    import re
+
+    for riga in range(prima, ultima + 1):
+        formula = ws.cell(row=riga, column=2).value
+        if not (isinstance(formula, str) and formula.startswith("=")):
+            continue
+        for citata in re.findall(r"\$?[BCD](\d+)", formula):
+            citata = int(citata)
+            assert prima <= citata <= ultima, (
+                f"la riga {riga} cita la riga {citata}, fuori dalla tabella: {formula!r}"
+            )
+            assert citata < riga, (
+                f"la riga {riga} cita la riga {citata}, che viene dopo: {formula!r}"
+            )
+
+
+def test_conto_economico_locazione_somma_le_righe_giuste():
+    """Il reddito operativo netto deve sommare tutte le righe di costo e nessun'altra.
+
+    Era il punto piu' fragile del generatore. Gli indici delle righe si scrivevano
+    come base piu' una costante a mano, quindi una voce inserita in mezzo al conto
+    economico spostava di uno tutte le righe successive e lasciava le costanti
+    dov'erano: la somma dei costi diventava un intervallo traslato, l'utile netto
+    leggeva la riga sbagliata, e nulla andava in errore. Il test fissa l'invariante
+    in termini di etichette e non di numeri di riga, cosi' che valga anche dopo un
+    riordino del foglio: l'intervallo sommato deve iniziare subito sotto il ricavo
+    effettivo e finire subito sopra il reddito operativo netto.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Locazione"]
+
+    righe = {}
+    for riga in range(1, 200):
+        etichetta = ws.cell(row=riga, column=1).value
+        if isinstance(etichetta, str) and etichetta not in righe:
+            righe[etichetta] = riga
+
+    for etichetta in ("Ricavo effettivo", "Reddito operativo netto",
+                      "Imposta sul reddito da locazione", "Utile netto annuo",
+                      "Spese condominiali a carico", "Gestione e costi variabili"):
+        assert etichetta in righe, f"voce {etichetta!r} non trovata nel foglio Locazione"
+
+    r_eff = righe["Ricavo effettivo"]
+    r_noi = righe["Reddito operativo netto"]
+    r_primo = righe["Spese condominiali a carico"]
+    r_ultimo = righe["Gestione e costi variabili"]
+
+    # L'ordine delle voci e' esso stesso parte dell'invariante.
+    assert r_eff < r_primo <= r_ultimo < r_noi, (
+        "l'ordine delle voci del conto economico non e' quello atteso: "
+        f"ricavo {r_eff}, costi da {r_primo} a {r_ultimo}, reddito operativo {r_noi}"
+    )
+    assert r_primo == r_eff + 1, "fra il ricavo effettivo e il primo costo c'e' una riga estranea"
+    assert r_ultimo == r_noi - 1, "fra l'ultimo costo e il reddito operativo c'e' una riga estranea"
+
+    noi = ws.cell(row=r_noi, column=2).value
+    assert isinstance(noi, str) and noi.startswith("=")
+    assert f"B{r_eff}" in noi, f"il reddito operativo non legge il ricavo effettivo: {noi!r}"
+    assert f"SUM(B{r_primo}:B{r_ultimo})" in noi, (
+        f"il reddito operativo non somma l'intero blocco dei costi: {noi!r}"
+    )
+
+    # L'utile netto deve leggere il reddito operativo e l'imposta, non altre righe.
+    r_imp = righe["Imposta sul reddito da locazione"]
+    utile = ws.cell(row=righe["Utile netto annuo"], column=2).value
+    assert f"B{r_noi}" in utile and f"B{r_imp}" in utile, (
+        f"l'utile netto non somma reddito operativo e imposta: {utile!r}"
+    )
+
+    # L'invariante vale su tutte e quattro le colonne dei regimi, non solo sulla prima.
+    for colonna, lettera in ((3, "C"), (4, "D"), (5, "E")):
+        formula = ws.cell(row=r_noi, column=colonna).value
+        assert f"SUM({lettera}{r_primo}:{lettera}{r_ultimo})" in formula, (
+            f"la colonna {lettera} del reddito operativo somma un intervallo diverso: {formula!r}"
+        )
+
+
 def test_regime_di_acquisto_per_riga_nel_confronto():
     """Le imposte del foglio di confronto leggono il regime della riga, non quello globale.
 

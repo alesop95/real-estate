@@ -113,6 +113,99 @@ def serie(chiave: str, osservazioni: int = 24) -> list[tuple[str, float]]:
     return _scarica(percorso, osservazioni)
 
 
+@dataclass
+class Risalita:
+    """La peggiore risalita osservata dell'indice su una finestra di N mesi.
+
+    Serve a rispondere a una domanda che nel foglio di calcolo si risponde a
+    sentimento: quanto puo' salire un tasso variabile. La risposta a sentimento e'
+    di norma un punto percentuale, perche' e' l'ordine di grandezza che sembra
+    prudente. La risposta empirica e' che fra giugno 2022 e giugno 2023 l'Euribor a
+    tre mesi e' salito di 3,78 punti in dodici mesi, e chi aveva simulato un punto
+    aveva simulato un quinto dello scenario che si e' poi verificato.
+
+    La finestra si misura sulla serie mensile pubblicata dalla Banca centrale
+    europea, che parte dal gennaio 1994, quindi copre tre cicli di politica
+    monetaria completi. Non e' una previsione e non e' un limite superiore: e' il
+    peggio che i dati disponibili contengono, che e' l'unico riferimento onesto in
+    assenza di una previsione, e va usato come misura di sostenibilita' e non di
+    probabilita'.
+    """
+
+    mesi: int
+    variazione: float
+    """Punti percentuali di aumento, cioe' 3,78 e non 0,0378."""
+    periodo_iniziale: str
+    periodo_finale: str
+    valore_iniziale: float
+    valore_finale: float
+
+    @property
+    def punti(self) -> float:
+        """La variazione come frazione, pronta per il modello: 3,78 diventa 0,0378."""
+        return self.variazione / 100
+
+
+def risalite_storiche(
+    chiave: str = "euribor_3m",
+    finestre: tuple[int, ...] = (12, 24, 36),
+    osservazioni: int = 400,
+) -> list[Risalita]:
+    """Per ogni finestra, la peggiore risalita contenuta nella serie storica.
+
+    L'algoritmo e' una scansione lineare su tutte le posizioni di partenza, non un
+    massimo sui soli picchi: cercare il massimo assoluto e sottrargli il minimo
+    assoluto darebbe un numero piu' grande e privo di significato, perche' i due
+    estremi possono stare a vent'anni di distanza e nessun mutuo li attraversa
+    nella stessa finestra. Quello che serve e' la peggiore finestra di durata
+    fissata, che e' la cosa che un piano di ammortamento incontra davvero.
+    """
+    dati = serie(chiave, osservazioni)
+    esito = []
+    for mesi in finestre:
+        if len(dati) <= mesi:
+            continue
+        indice = max(
+            range(len(dati) - mesi),
+            key=lambda i: dati[i + mesi][1] - dati[i][1],
+        )
+        inizio, fine = dati[indice], dati[indice + mesi]
+        esito.append(
+            Risalita(
+                mesi=mesi,
+                variazione=fine[1] - inizio[1],
+                periodo_iniziale=inizio[0],
+                periodo_finale=fine[0],
+                valore_iniziale=inizio[1],
+                valore_finale=fine[1],
+            )
+        )
+    return esito
+
+
+def estremi_storici(chiave: str = "euribor_3m", osservazioni: int = 400) -> dict:
+    """Massimo, minimo e copertura temporale della serie, per contesto.
+
+    Il massimo storico serve a un controllo di sanita' che il solo scarto non da':
+    una risalita di quattro punti da un livello negativo arriva a un tasso che si
+    e' visto, mentre la stessa risalita dal livello di oggi arriverebbe a un tasso
+    che nella serie non compare. La differenza va saputa prima di decidere se lo
+    scenario e' pessimistico o implausibile.
+    """
+    dati = serie(chiave, osservazioni)
+    valori = [v for _, v in dati]
+    return {
+        "da": dati[0][0],
+        "a": dati[-1][0],
+        "osservazioni": len(dati),
+        "corrente": valori[-1],
+        "massimo": max(valori),
+        "periodo_massimo": dati[valori.index(max(valori))][0],
+        "minimo": min(valori),
+        "periodo_minimo": dati[valori.index(min(valori))][0],
+    }
+
+
 def quadro_corrente() -> list[Osservazione]:
     """Tutte le serie in un colpo solo, saltando quelle che non rispondono."""
     esito = []

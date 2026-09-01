@@ -74,6 +74,14 @@ python tools/valuta.py tassi --tasso 0.032 --mutuo 90000 --durata 25
 
 e la differenza rispetto al mercato viene tradotta in euro di interessi sull'intera durata, che è l'unica forma in cui un decimo di punto diventa una cifra su cui trattare.
 
+Se il tasso che si sta valutando è variabile, prima di andare avanti serve una prova in più, e c'è un comando anche per quella:
+
+```
+python tools/valuta.py tassi --risalita
+```
+
+Stampa di quanto l'Euribor a tre mesi è salito nelle peggiori finestre della sua storia dal 1994, che è la misura da mettere nel percorso del tasso della scheda **Simulatore mutuo**. Il numero da aspettarsi non è quello che viene in mente: fra giugno 2022 e giugno 2023 sono stati 3,78 punti in dodici mesi. Si compila il percorso a gradini con quel rialzo, si legge la rata massima raggiunta e si decide se è sostenibile, perché è quella la domanda che il variabile pone e che il tasso di partenza non fa vedere.
+
 Infine il foglio **Locazione**, se l'immobile si affitta: canone atteso, spese condominiali dal consuntivo, aliquota IMU dalla delibera. Il foglio mette a confronto quattro regimi fiscali sullo stesso immobile e si sceglie quello che alimenterà la proiezione.
 
 A questo punto si torna al **Cruscotto** e i numeri sono veri.

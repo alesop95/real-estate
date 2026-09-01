@@ -615,6 +615,64 @@ def cmd_tassi(args) -> int:
         print("  il mercato, non quale tasso otterrai tu, che dipende da reddito, loan to value,")
         print("  eta' e banca. Serve a sapere se vale la pena chiedere un altro preventivo.")
 
+    if getattr(args, "risalita", False):
+        try:
+            risalite = T.risalite_storiche(args.indice)
+            estremi = T.estremi_storici(args.indice)
+        except (T.TassiNonDisponibili, ValueError) as e:
+            print()
+            print(f"Serie storica non disponibile: {e}")
+            return 1
+
+        atteso = P.RISALITE_EURIBOR
+        print()
+        print("RISALITE STORICHE DELL'INDICE, cioe' quanto puo' salire un variabile")
+        print(f"  Serie                     {T.SERIE_INDICI[args.indice][1]}")
+        print(f"  Copertura                 {estremi['da']} / {estremi['a']}, {estremi['osservazioni']} osservazioni mensili")
+        print(f"  Livello corrente          {estremi['corrente']:>13.2f}%")
+        print(f"  Massimo storico           {estremi['massimo']:>13.2f}%   {estremi['periodo_massimo']}")
+        print(f"  Minimo storico            {estremi['minimo']:>13.2f}%   {estremi['periodo_minimo']}")
+        print()
+        print(f"  {'Finestra':<12}{'Rialzo':>10}{'Da':>10}{'Livello':>10}{'A':>10}{'Livello':>10}")
+        print("  " + "-" * 62)
+        for ri in risalite:
+            print(f"  {str(ri.mesi) + ' mesi':<12}{ri.variazione:>+9.2f}p"
+                  f"{ri.periodo_iniziale:>10}{ri.valore_iniziale:>9.2f}%"
+                  f"{ri.periodo_finale:>10}{ri.valore_finale:>9.2f}%")
+
+        # Il confronto con la costante congelata in parametri.py e' il punto del
+        # comando: dice se il valore scritto nel workbook e' ancora quello che i
+        # dati contengono, oppure se la serie ha prodotto una finestra peggiore.
+        congelate = {12: atteso.risalita_12_mesi, 24: atteso.risalita_24_mesi, 36: atteso.risalita_36_mesi}
+        print()
+        print(f"  Confronto con i valori congelati in parametri.py, verificati il {atteso.verificato_il.strftime('%d/%m/%Y')}")
+        disallineate = []
+        for ri in risalite:
+            riferimento = congelate.get(ri.mesi)
+            if riferimento is None:
+                continue
+            scarto = ri.variazione - riferimento
+            stato = "invariato" if abs(scarto) < 0.01 else f"cambiato di {scarto:+.2f} punti"
+            print(f"    {ri.mesi:>2} mesi: nel codice {riferimento:>5.2f}p, nei dati {ri.variazione:>5.2f}p   {stato}")
+            if abs(scarto) >= 0.01:
+                disallineate.append(ri)
+        if disallineate:
+            print()
+            print("  I valori nel codice non coincidono piu' con la serie: aggiornare")
+            print("  RISALITE_EURIBOR in src/immobiliare/parametri.py, spostare verificato_il")
+            print("  e rigenerare il workbook, perche' le note del foglio Simulatore mutuo")
+            print("  citano quei numeri.")
+        else:
+            print()
+            print("  Nessuna finestra peggiore di quelle gia' registrate: il workbook e' allineato.")
+
+        print()
+        print("  Come si usa questo numero. Nel foglio Simulatore mutuo si compila il percorso")
+        print("  del tasso a gradini con un terzo, due terzi e l'intera risalita, si legge la")
+        print("  rata massima raggiunta e si decide se e' sostenibile. Non e' una previsione:")
+        print("  e' il peggio che i dati contengono, che in assenza di previsione e' il solo")
+        print("  riferimento onesto per una prova di sostenibilita'.")
+
     print()
     print(f"Fonte: {T.FONTE}")
     return 0
@@ -775,6 +833,8 @@ def principale(argomenti=None) -> int:
     p.add_argument("--mutuo", type=float, default=100000.0, help="importo su cui quantificare lo scarto")
     p.add_argument("--durata", type=int, default=25)
     p.add_argument("--serie", default="fisso_lungo", choices=sorted(T.SERIE_MUTUI), help="tipologia di riferimento")
+    p.add_argument("--risalita", action="store_true", help="peggiori risalite storiche dell'indice, e confronto con i valori congelati nel codice")
+    p.add_argument("--indice", default="euribor_3m", choices=sorted(T.SERIE_INDICI), help="indice su cui misurare le risalite")
     p.set_defaults(funzione=cmd_tassi)
 
     p = sub.add_parser("indicatori", help="tasso a breve e inflazione, per tarare le assunzioni")

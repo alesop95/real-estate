@@ -15,15 +15,13 @@ Ogni aggiunta deve rispondere a una domanda che oggi resta senza risposta, non a
 
 ## Prossimo, se serve
 
-Suite di test automatici sotto `tests/`, che congeli il caso di riferimento e le verifiche di dominio elencate in `dev-testing.md`. E' la sola voce che considero dovuta a prescindere: senza, ogni aggiornamento annuale dei parametri e' un salto nel buio.
+Le tre voci che stavano qui sono chiuse al 1 settembre 2026, e restano registrate perche' la roadmap serve anche a ricordare cosa si e' deciso di fare e non solo cosa manca. La suite di test automatici esiste e conta sessantuno test in due file. Il confronto fra piu' immobili e' il foglio Confronto immobili, alimentato dal registro annunci, che dal 1 settembre porta il blocco delle quotazioni OMI di zona e il regime di acquisto dichiarato per riga. Il tasso variabile con scenario di risalita e' il percorso a gradini del foglio Simulatore mutuo, con la misura del rialzo presa dalla serie storica dell'Euribor invece che dall'intuizione, secondo ADR-015 e la voce 11 dello studio didattico.
 
-Confronto fra piu' immobili sullo stesso foglio, cioe' una colonna per immobile con le metriche affiancate, alimentato dal registro annunci. Oggi il workbook valuta un immobile alla volta e il confronto si fa a mano; e' il limite che si sente per primo quando gli annunci da valutare superano la decina.
-
-Tasso variabile con scenario di risalita, che oggi si simula solo con la tabella di sensibilita' sul tasso. Servirebbe una proiezione con Euribor che evolve, sul modello del calcolatore mutuo di Coletti che porta la serie storica.
+Non resta quindi nulla in questa sezione, e questo e' un fatto sullo stato del progetto e non un invito a riempirla. Le voci qui sotto vanno promosse solo se una domanda concreta le rende necessarie, secondo il principio di selezione in testa a questo documento.
 
 ## Piu' avanti, se il progetto lo giustifica
 
-Ammortamento della surroga e dell'estinzione parziale anticipata, che oggi non sono modellati e che sono decisioni ricorrenti nella vita di un mutuo.
+Ammortamento della surroga. L'estinzione parziale anticipata e' invece modellata dal 28 agosto, con il versamento una tantum e le due modalita' di imputazione del rimborso; la surroga no, e richiederebbe di modellare due piani in sequenza con il debito residuo del primo come capitale del secondo, piu' i costi di trasferimento, che sono nulli per legge ma non nella pratica dei tempi. E' la voce piu' vicina a essere utile, perche' un rialzo del tasso simulato con il percorso a gradini rende immediata la domanda successiva, cioe' quanto convenga surrogare a quel punto del piano.
 
 Riconoscimento semantico dei duplicati fra portali, per cui il cliente del modello locale espone gia' il calcolo dell'embedding ma manca la procedura che lo applica al registro.
 

@@ -10,6 +10,8 @@ Il perimetro e' deliberatamente definito. Sono coperti l'acquisto da privato e d
 
 Il progetto adotta il sistema di progetto portabile del template `E:\template-claude-developing`: memoria e schede di contesto versionate, regole modulari, e il pacchetto `studio-didattico`, cioe' il registro delle evoluzioni di progetto con i relativi approfondimenti nel codice reale.
 
+Due invarianti del generatore, imparate correggendo difetti reali e non scelte a priori, vanno conosciute prima di toccare `excel_builder.py`. Un riferimento da un foglio a un altro si scrive per nome definito e mai per coordinata di cella; la riga di una tabella costruita da un helper si prende dal valore che l'helper restituisce e mai calcolandola come ancoraggio piu' una costante. La ragione, distesa in ADR-013 e nella voce 8 dello studio didattico, e' che le due forme vietate non sbagliano rumorosamente: producono un riferimento valido a una cella diversa, quindi un numero plausibile su un foglio che si apre senza errori.
+
 ## Contesto operativo
 
 ```
@@ -37,6 +39,7 @@ python tools/valuta.py annunci elenca              registro degli immobili in va
 python tools/valuta.py annunci confronta            graduatoria per scarto sulla zona OMI
 python tools/valuta.py annunci importa --file ...  struttura un annuncio col modello locale
 python tools/valuta.py tassi --tasso 0.032        tassi correnti di mercato e confronto
+python tools/valuta.py tassi --risalita             peggiori risalite storiche dell'Euribor
 python tools/valuta.py indicatori                  euro short-term rate e inflazione ISTAT
 python tools/valuta.py omi cerca --comune ...      quotazioni OMI della zona
 python tools/valuta.py llm stato                   raggiungibilita' del modello locale
@@ -109,7 +112,7 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 Pacchetto `studio-didattico`, sotto `.claude/context/`. E' il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perche' era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perche' una scelta e' fatta cosi', prima di rifarla diversamente.
 
 ```
-studio-didattico-master.md                  indice narrativo, sette voci numerate
+studio-didattico-master.md                  indice narrativo, undici voci numerate
 refactor-01-formule-vive.md                 workbook come modello, non come rapporto
 refactor-02-denominatore.md                 il denominatore dei rendimenti
 refactor-03-verifica-con-excel.md           automazione COM e locale italiano
@@ -117,6 +120,10 @@ refactor-04-agevolazione-unica.md           una sola fonte di verita' per l'agev
 refactor-05-doppio-conteggio.md             un costo ricorrente sta in un posto solo
 refactor-06-contratto-posizionale.md        il contratto fra registro annunci e foglio
 refactor-07-simulazione-riproducibile.md    simulazione riproducibile e interattiva
+refactor-08-riferimenti-per-nome.md         nomi definiti invece di coordinate fisse
+refactor-09-regime-per-riga.md              il regime di acquisto e il terzo stato
+refactor-10-prezzo-massimo-esatto.md        soluzione chiusa invece di proporzione
+refactor-11-scenario-misurato.md            il rialzo del tasso preso dalla serie storica
 ```
 
 Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.

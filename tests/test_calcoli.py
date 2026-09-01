@@ -564,6 +564,93 @@ def test_omi_quotazione_di_riferimento_preferisce_lo_stato_normale():
     # Comune assente: nessun numero inventato.
     assert O.quotazione_di_riferimento(quotazioni, "Comune inesistente") == (0.0, 0.0, "")
 
+def test_risalita_storica_cerca_la_finestra_e_non_gli_estremi():
+    """La peggiore finestra di N mesi, non il massimo meno il minimo della serie.
+
+    E' la distinzione che rende il numero utilizzabile. Massimo assoluto meno
+    minimo assoluto da' sempre un valore piu' grande e privo di significato,
+    perche' i due estremi possono stare a decenni di distanza e nessun piano di
+    ammortamento li attraversa nella stessa finestra: cio' che un mutuo incontra
+    davvero e' la peggiore finestra di durata fissata. La serie sintetica di questo
+    test e' costruita perche' le due misure divergano, con il minimo assoluto
+    all'inizio e il massimo alla fine, lontani fra loro piu' della finestra.
+
+    Il test non tocca la rete: sostituisce la funzione che scarica la serie, che e'
+    l'unico punto di contatto con il portale dati.
+    """
+    from immobiliare import tassi as T
+
+    # Trenta osservazioni: scende da 2 a meno 1, resta bassa, poi risale a 5.
+    valori = (
+        [2.0, 1.0, 0.0, -1.0]          # discesa iniziale, minimo assoluto a indice 3
+        + [-0.5] * 10                  # pianura lunga
+        + [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0]   # risalita, massimo assoluto in coda
+        + [4.5] * 9
+    )
+    finta = [(f"2000-{i + 1:02d}", v) for i, v in enumerate(valori)]
+
+    originale = T.serie
+    T.serie = lambda chiave="euribor_3m", osservazioni=400: finta
+    try:
+        risalite = {r.mesi: r for r in T.risalite_storiche(finestre=(6, 12))}
+        estremi = T.estremi_storici()
+    finally:
+        T.serie = originale
+
+    # Escursione totale della serie: sei punti, da meno 1 a 5.
+    assert abs(estremi["massimo"] - estremi["minimo"] - 6.0) < 1e-9
+
+    # Su sei mesi la peggiore finestra vale meno di quell'escursione: la risalita
+    # e' graduale, quindi nessuna finestra di sei mesi la contiene per intero.
+    assert 6 in risalite
+    assert risalite[6].variazione < 6.0
+    assert abs(risalite[6].variazione - 5.0) < 1e-9, risalite[6].variazione
+    assert risalite[6].valore_iniziale == 0.0 and risalite[6].valore_finale == 5.0
+
+    # Su dodici mesi la finestra e' piu' larga e cattura piu' risalita, ma resta
+    # comunque sotto l'escursione totale, perche' il minimo assoluto sta troppo
+    # indietro per rientrare nella stessa finestra del massimo.
+    assert risalite[12].variazione > risalite[6].variazione
+    assert risalite[12].variazione < 6.0
+
+    # La proprieta' che rende il valore leggibile nel modello: punti percentuali
+    # nella fonte, frazione pronta per i calcoli nella proprieta'.
+    assert abs(risalite[6].punti - risalite[6].variazione / 100) < 1e-12
+
+    # Una finestra piu' lunga della serie non produce una voce inventata.
+    T.serie = lambda chiave="euribor_3m", osservazioni=400: finta
+    try:
+        assert T.risalite_storiche(finestre=(500,)) == []
+    finally:
+        T.serie = originale
+
+
+def test_risalite_congelate_coerenti_con_la_documentazione():
+    """I valori nel codice sono quelli che le note del workbook citano.
+
+    Le note del foglio Simulatore mutuo sono generate interpolando questi campi,
+    quindi un valore cambiato nel codice e non riverificato sulla serie finirebbe
+    scritto nel workbook come se fosse un dato osservato. Il test non puo'
+    verificare la fonte, che richiede rete: verifica la coerenza interna, cioe'
+    che i numeri stiano nell'ordine e nel dominio che la fonte impone.
+    """
+    r = P.RISALITE_EURIBOR
+
+    # Una finestra piu' lunga contiene quelle piu' corte, quindi la risalita su
+    # ventiquattro mesi non puo' essere inferiore a quella su dodici.
+    assert r.risalita_24_mesi >= r.risalita_12_mesi
+
+    # Nessuna finestra puo' superare l'escursione totale della serie.
+    assert max(r.risalita_12_mesi, r.risalita_24_mesi, r.risalita_36_mesi) <= r.massimo_storico - r.minimo_storico
+
+    # Il livello corrente sta fra gli estremi, e gli estremi sono nell'ordine.
+    assert r.minimo_storico <= r.livello_corrente <= r.massimo_storico
+
+    # I valori sono in punti percentuali, non in frazioni: un 3,78 scritto come
+    # 0,0378 passerebbe inosservato e produrrebbe note che dicono zero punti.
+    assert r.risalita_12_mesi > 1.0, "le risalite vanno scritte in punti, non in frazione"
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

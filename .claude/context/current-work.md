@@ -1,20 +1,22 @@
 ---
-generated-from-commit: 7307fdc
+generated-from-commit: da assegnare al prossimo commit
 generated-from-branch: main
-generated-date: 2026-08-31
+generated-date: 2026-09-01
 covers-paths:
   - src/**
   - tools/**
   - docs/**
-last-verified-commit: 7307fdc
-stato: strumento completo e verificato; resta da committare il solo allineamento della memoria
+last-verified-commit: da assegnare al prossimo commit
+stato: strumento completo e verificato; nessuna feature attiva, resta il commit del lavoro del 1 settembre
 ---
 
 # Lavoro in corso
 
 ## Feature: strumento di valutazione completo
 
-Cosa fa. Genera un workbook Excel interattivo di venti fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
+Cosa fa. Genera un workbook Excel interattivo di ventun fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
+
+Stato al 1 settembre 2026: non c'e' una feature aperta. Tutte le voci della definizione di completamento sono chiuse, le tre voci di "Prossimo" della roadmap sono chiuse, e i quattro limiti dichiarati che avevano una correzione delimitata sono stati corretti. Resta il commit, che spetta all'utente.
 
 ## Definizione di completamento
 
@@ -39,29 +41,37 @@ Cosa fa. Genera un workbook Excel interattivo di venti fogli che valuta l'acquis
 - [x] Foglio Rischio: mille scenari con estrazioni fisse, analisi a tornado
 - [x] Guida di avvio da zero
 - [x] Registro delle fonti con l'uso tecnico di ciascuna e le lacune dichiarate
-- [x] Strato didattico: master a sette voci e sette approfondimenti
-- [x] Foglio Dossier tecnico: sessantasei documenti pre-acquisto con norma, peso e costo, inclusa la famiglia delle garanzie legali e delle dichiarazioni in atto
+- [x] Strato didattico: master a undici voci e undici approfondimenti
+- [x] Foglio Dossier tecnico: settantatre' documenti pre-acquisto con norma, peso e costo
 - [x] Modulo `indicatori.py`: euro short-term rate e prezzi al consumo ISTAT
-- [ ] Commit del lavoro di questa sessione, che spetta all'utente, in entrambi i repository
+- [x] Blocco delle quotazioni OMI di zona nel foglio Confronto immobili, con lo scarto calcolato sul prezzo che il foglio usa
+- [x] Regime di acquisto per riga, con il vuoto come terzo stato che eredita dal foglio Immobile
+- [x] Normalizzazione dei campi a tre stati in ingresso
+- [x] Riferimenti fra fogli per nome definito, e righe delle tabelle catturate invece che calcolate per offset
+- [x] Prezzo massimo sostenibile in forma chiusa, con la cella di verifica accanto
+- [x] Avvertenza nel foglio Confronto affitto per il caso senza mutuo
+- [x] Percorso del tasso a sei gradini, con la misura del rialzo dalla serie storica dell'Euribor
+- [x] Segnale di chiusura del piano nel Simulatore mutuo
+- [ ] Commit del lavoro del 1 settembre, che spetta all'utente
 
 ## Da fare dopo il commit
 
-Aggiornare nelle quattro schede di `.claude/context/` che lo dichiarano i campi `generated-from-commit` e `last-verified-commit`, e il commit di riferimento nello snapshot di `.claude/memory/index.md`.
+Ancorare i campi `generated-from-commit` e `last-verified-commit` nelle schede di `.claude/context/` che li portano ancora come da assegnare, e il commit di riferimento nello snapshot di `.claude/memory/index.md`. Le schede interessate sono `STACK.md`, `design-and-security.md`, `deployment.md`, `dev-testing.md`, `current-work.md`, `roadmap.md` e `studio-didattico-master.md`.
 
 ## Domande aperte
 
-La fornitura OMI aggiornata richiede autenticazione personale ai servizi telematici e non e' automatizzabile. La scelta attuale e' accettare il download manuale semestrale, normalizzato da `omi.importa_fornitura`. L'alternativa, una consultazione puntuale sul servizio a video, non darebbe un file riutilizzabile e ricadrebbe sotto ADR-004.
+Restano aperte le questioni che non hanno una correzione delimitata, e per ciascuna e' scritto perche'.
 
-Il foglio degli scenari calcola la tabella sul prezzo con un'approssimazione, perche' assume che l'incidenza percentuale dei costi accessori resti quella dello scenario base. E' dichiarato nel foglio. Renderla esatta richiederebbe di replicare l'intero calcolo delle imposte in ogni cella, cosa gia' fatta per la colonna delle imposte ma non propagata al resto.
+La fornitura OMI aggiornata richiede autenticazione personale ai servizi telematici e non e' automatizzabile, per ADR-011. La scelta e' accettare il download manuale semestrale, normalizzato da `omi.importa_fornitura`.
 
-Il confronto fra comprare e affittare non modella il caso in cui chi compra non ha un mutuo. Funziona, perche' la rata risulta nulla, ma il confronto perde di significato: andrebbe aggiunta un'avvertenza nel foglio.
-
-Il foglio Confronto immobili applica a tutti gli immobili il regime di acquisto impostato nel foglio Immobile. E' dichiarato nel foglio, ma rende non confrontabile un usato accanto a un nuovo da costruttore. Renderlo per riga richiederebbe due colonne di input nel registro e formule piu' pesanti.
+La tabella sul prezzo del foglio Scenari, cioe' quella che fa variare il prezzo in sette scaglioni, calcola le imposte in modo esatto in colonna ma propaga al resto della riga l'assunzione che l'incidenza degli altri costi accessori resti quella dello scenario base. E' l'ultimo residuo dell'approssimazione corretta il 1 settembre nel prezzo massimo sostenibile, e la correzione sarebbe la stessa: scomporre in parte proporzionale e parte fissa. Non e' stata fatta perche' quella tabella si legge come sensibilita' e non come numero di decisione, ma e' la prima cosa da prendere se qualcuno la usa per trattare.
 
 La simulazione del foglio Rischio assume le variabili indipendenti, mentre nella realta' tassi, prezzi, sfitto e morosita' si muovono insieme. Introdurre una struttura di correlazione richiederebbe di stimare una matrice che nessuno ha, e sostituirebbe un'assunzione dichiarata con una nascosta: si e' scelto di restare indipendenti e dirlo nel foglio.
 
-Gli indici di riga del conto economico nel foglio Locazione sono calcolati per offset da una base. Chi inserisce una riga in mezzo deve aggiornare i quattro offset, e il segnale che non l'ha fatto e' un valore di sintesi plausibile e falso. E' il punto piu' fragile del generatore, documentato in `refactor-05`.
+Il piano del Simulatore mutuo si ferma a quarant'anni di rate, e sotto la modalita' che riduce la durata un rialzo forte puo' non chiudere il piano entro la tabella. Dal 1 settembre il foglio lo dichiara con due righe di esito, ma non lo risolve: risolverlo richiederebbe una tabella piu' lunga di quanto abbia senso per un mutuo residenziale.
+
+Nel foglio Confronto immobili restano globali l'opzione prezzo-valore e la qualifica di immobile di lusso, prese dal foglio Immobile. Portarle nel registro sarebbe meccanicamente identico a quanto fatto per prima casa e venditore impresa, e non e' stato fatto perche' la prima e' una scelta che conviene quasi sempre e la seconda riguarda un caso raro: se in lista compare un immobile in categoria A/1, A/8 o A/9, va valutato a parte.
 
 ## Prossima azione concreta
 
-Committare, poi ancorare i frontmatter. Sul merito, riempire il foglio Immobile con un immobile reale e leggere Cruscotto e coda bassa del foglio Rischio.
+Committare. Sul merito, il lavoro utile non e' piu' sullo strumento ma con lo strumento: riempire il foglio Immobile con l'immobile reale scelto fra i dodici a registro, verificare l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, chiedere la rendita catastale che nessuno dei dodici annunci indica, e leggere Cruscotto, coda bassa del foglio Rischio e prezzo massimo sostenibile con il suo scarto sul prezzo trattato. Se il mutuo in valutazione e' a tasso variabile, prima di firmare va compilato il percorso del tasso con il rialzo storico e letta la rata massima raggiunta.
