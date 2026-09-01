@@ -2,6 +2,20 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-09-01, tre annunci reali dentro il modello, e un errore mio da correggere
+
+File toccati: solo `data/annunci.csv`, non versionato. Nessuna modifica al codice.
+
+Tre annunci acquisiti dagli screenshot forniti dall'utente, perche' idealista risponde 403 a qualunque client che non sia un browser e la catena automatica non si applica. La lettura degli screenshot ha sostituito il passaggio dal modello locale, che resta la via prevista per chi incolla il testo.
+
+Un errore mio, sistemato. Quando avevo registrato gli otto link in blocco avevo passato `--comune "Civitanova Marche"` a tutti, senza saperlo. Il primo annuncio prioritario si e' rivelato a Macerata, zona Vergini-Corneto: il Comune era sbagliato e con esso l'aggancio OMI, che appendeva la quotazione al Comune sbagliato senza che nulla lo segnalasse. Corretto. Resta da verificare il Comune degli altri sei link ancora senza dati, che sono tutti registrati come Civitanova senza prova.
+
+Con le zone OMI corrette il confronto diventa leggibile. L'annuncio di Macerata sta in zona C5, che nella fornitura si chiama letteralmente "ZONA LE VERGINI, ZONA CORNETO": corrispondenza esatta, nessuna stima. Il bilocale sul lungomare di Civitanova sta in B5, quello a dieci minuti dal mare in C5. Gli scarti sul medio di zona vanno da meno cinquantotto a piu' trentaquattro per cento, che e' esattamente l'informazione che la forbice comunale, larga da 900 a 3.300 euro al metro quadro, non dava.
+
+Tre osservazioni di merito nate dalla lettura, e nessuna delle tre e' un calcolo. Sull'annuncio di Macerata i 204 metri quadri sono dichiarati commerciali nelle caratteristiche e catastali nella descrizione, che sono misure diverse, e l'anno di costruzione e' 1984 nella descrizione e 1970 nelle caratteristiche. Su due dei tre la classe energetica risulta non indicata, mentre il decreto legislativo 192 del 2005 ne impone l'indicazione negli annunci. Su tutti e tre la superficie e' dichiarata commerciale, quindi il prezzo al metro quadro con cui si confrontano le quotazioni OMI, che sono su superficie commerciale, e' coerente, ma la calpestabile resta da verificare.
+
+Il registro sale a dodici immobili, sei con dati e sei con il solo link.
+
 ## 2026-08-31, undici annunci a registro, le aste nel perimetro, recap operativo
 
 File toccati: `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py`, `docs/aste-immobiliari.md` nuovo, `docs/raccolta-annunci.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`, `.claude/context/roadmap.md`, `.claude/memory/decisions.md` con ADR-012.

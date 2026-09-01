@@ -391,6 +391,26 @@ CAMPI_ESTRAIBILI = {
 }
 
 
+def _testo_per_il_modello(testo: str, limite: int = 24_000) -> str:
+    """Riduce il testo al limite conservando la coda, non solo la testa.
+
+    Chi copia un annuncio dal browser prende spesso l'intera pagina, menu e piede
+    compresi, e su un portale sono decine di migliaia di caratteri. Il troncamento
+    ingenuo taglia la fine, ma e' proprio in fondo che sta la tabella delle
+    caratteristiche, cioe' spese condominiali, classe energetica, rendita e
+    categoria catastale: i campi che valgono piu' di tutti gli altri messi insieme.
+    Tagliare la coda significa perderli senza che nulla lo segnali.
+
+    Si tiene quindi la testa, dove stanno titolo e prezzo, e la coda, dove stanno i
+    dati tabellari, dichiarando l'omissione nel mezzo perche' il modello sappia che
+    il testo non e' continuo e non provi a ricucirlo.
+    """
+    if len(testo) <= limite:
+        return testo
+    meta = limite // 2
+    return testo[:meta] + "\n\n[...parte centrale omessa per lunghezza...]\n\n" + testo[-meta:]
+
+
 def struttura_con_modello_locale(testo: str, url: str = "", modello: str = "") -> dict:
     """Struttura il testo di un annuncio con il modello linguistico locale.
 
@@ -407,7 +427,7 @@ def struttura_con_modello_locale(testo: str, url: str = "", modello: str = "") -
         "Regole: se un dato non compare nel testo usa la stringa vuota per i campi "
         "testuali e 0 per quelli numerici; non inventare nulla; non riportare nomi, "
         "numeri di telefono o indirizzi email di persone.\n\n"
-        f"Testo dell'annuncio:\n{testo[:8000]}"
+        f"Testo dell'annuncio:\n{_testo_per_il_modello(testo)}"
     )
     cliente = ClienteLocale(modello=modello) if modello else ClienteLocale()
     risposta = cliente.completa(prompt, formato_json=True)
