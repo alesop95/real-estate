@@ -1,12 +1,12 @@
 ---
-generated-from-commit: da assegnare al primo commit
+generated-from-commit: a0b3420
 generated-from-branch: main
-generated-date: 2026-08-28
+generated-date: 2026-09-01
 covers-paths:
   - pyproject.toml
   - requirements.txt
   - tools/**
-last-verified-commit: da assegnare al primo commit
+last-verified-commit: a0b3420
 ---
 
 # Ambiente ed esecuzione
@@ -43,9 +43,13 @@ I test non richiedono pytest: il file di test si esegue anche direttamente e rip
 
 Quattro funzioni escono dalla macchina e nessuna e' necessaria al funzionamento del modello.
 
-Il prelievo degli annunci contatta il portale, e solo se il suo `robots.txt` lo consente. La strutturazione del testo di un annuncio contatta un'istanza Ollama, il cui indirizzo predefinito e' quello standard in locale e si sovrascrive con la variabile d'ambiente `OLLAMA_HOST` quando il modello e' servito da un'altra macchina della propria rete; si verifica con `python tools/valuta.py llm stato`. Lo scarico delle quotazioni OMI storiche contatta il mirror open data su GitHub. La lettura dei tassi correnti contatta il portale dati della Banca centrale europea, senza chiave ne' registrazione.
+Il prelievo degli annunci contatta il portale, e solo se il suo `robots.txt` lo consente. La strutturazione del testo di un annuncio contatta un'istanza Ollama, il cui indirizzo predefinito e' quello standard in locale e si sovrascrive con la variabile d'ambiente `OLLAMA_HOST` quando il modello e' servito da un'altra macchina della propria rete; si verifica con `python tools/valuta.py llm stato`. Lo scarico delle quotazioni OMI storiche contatta il mirror open data su GitHub. La lettura dei tassi correnti e delle serie storiche degli indici contatta il portale dati della Banca centrale europea, senza chiave ne' registrazione, e la lettura dei prezzi al consumo contatta il servizio SDMX di ISTAT.
 
-Se nessuna delle tre risponde, il generatore, il motore di calcolo, il registro annunci e i test continuano a funzionare. E' una proprieta' voluta e va preservata: nessuna di queste dipendenze deve diventare obbligatoria.
+Se nessuna risponde, il generatore, il motore di calcolo, il registro annunci e i test continuano a funzionare. E' una proprieta' voluta e va preservata: nessuna di queste dipendenze deve diventare obbligatoria.
+
+Su questa proprieta' va detto come e' stata mantenuta nel caso piu' recente, perche' la tentazione era nell'altra direzione. Le note del foglio Simulatore mutuo citano le peggiori risalite storiche dell'Euribor, e la via breve sarebbe stata leggerle dalla BCE durante la generazione del workbook. Avrebbe reso il generatore dipendente dalla rete e la generazione non riproducibile: due file generati in due momenti avrebbero potuto differire senza che nulla lo dichiarasse. I valori sono quindi congelati in `parametri.RISALITE_EURIBOR` con la propria data di verifica, e la rete serve solo al comando che li riverifica. La regola generale che ne discende e' che una funzione di rete puo' informare una decisione ma non deve entrare nella catena che produce un artefatto.
+
+I test, allo stesso modo, non toccano la rete. La scansione delle risalite si verifica sostituendo la funzione di download con una che restituisce una serie sintetica, e il modulo degli indicatori ha un test dedicato al proprio degradare quando la rete non c'e'.
 
 ## Aggiornamento annuale
 
@@ -55,11 +59,13 @@ I test sono la rete di sicurezza di questo passaggio: congelano il caso di rifer
 
 ## Manutenzione ricorrente, il promemoria
 
-Le scadenze di questo progetto sono due, e nessuna delle due e' automatizzabile perche' entrambe passano da una fonte che richiede una persona.
+Le scadenze di questo progetto sono tre. Le prime due non sono automatizzabili perche' passano da una fonte che richiede una persona; la terza lo sarebbe, ed e' tenuta manuale per la ragione detta sopra, cioe' che il generatore non deve dipendere dalla rete.
 
 **Una volta l'anno, dopo la legge di bilancio: aggiornamento fiscale.** E' la procedura della sezione precedente. Va fatta a gennaio o febbraio, quando la legge di bilancio e' in vigore e le circolari dell'Agenzia sono uscite.
 
 **Due volte l'anno, a semestre chiuso: quotazioni OMI.** Cinque minuti, e vanno messi in calendario perche' altrimenti non si fanno. Il mirror open data che il modulo scarica da solo si ferma al secondo semestre 2018 ed e' utile solo per la serie storica; il dato corrente sta nella fornitura ufficiale, che e' gratuita ma vive dietro un'autenticazione personale con SPID, CIE, Entratel o Fisconline, che uno script non puo' e non deve simulare.
+
+**Quando la BCE pubblica un semestre nuovo, o dopo un ciclo di rialzi: risalite dell'Euribor.** Un comando e due minuti. `python tools/valuta.py tassi --risalita` ricalcola sulla serie corrente le peggiori risalite su dodici, ventiquattro e trentasei mesi, le confronta con i valori congelati in `parametri.RISALITE_EURIBOR` e dichiara se sono ancora quelli. Se una finestra peggiore e' comparsa, si aggiorna la costante, si sposta il suo campo `verificato_il`, che e' separato dalla `REVISIONE` fiscale perche' le due scadenze sono indipendenti, e si rigenera il workbook, perche' tre note del foglio Simulatore mutuo sono interpolate da quei campi. Non e' una scadenza di calendario: e' una verifica da fare quando i tassi si sono mossi, ed e' anche il momento in cui serve, perche' e' allora che qualcuno rimette in discussione un mutuo variabile.
 
 La procedura e' questa, e vale identica ogni volta.
 

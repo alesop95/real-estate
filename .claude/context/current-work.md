@@ -1,13 +1,13 @@
 ---
-generated-from-commit: da assegnare al prossimo commit
+generated-from-commit: a0b3420
 generated-from-branch: main
 generated-date: 2026-09-01
 covers-paths:
   - src/**
   - tools/**
   - docs/**
-last-verified-commit: da assegnare al prossimo commit
-stato: strumento completo e verificato; nessuna feature attiva, resta il commit del lavoro del 1 settembre
+last-verified-commit: a0b3420
+stato: strumento completo e verificato; nessuna feature attiva, nessun lavoro pendente
 ---
 
 # Lavoro in corso
@@ -16,7 +16,7 @@ stato: strumento completo e verificato; nessuna feature attiva, resta il commit 
 
 Cosa fa. Genera un workbook Excel interattivo di ventun fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
 
-Stato al 1 settembre 2026: non c'e' una feature aperta. Tutte le voci della definizione di completamento sono chiuse, le tre voci di "Prossimo" della roadmap sono chiuse, e i quattro limiti dichiarati che avevano una correzione delimitata sono stati corretti. Resta il commit, che spetta all'utente.
+Stato al 1 settembre 2026: non c'e' una feature aperta. Tutte le voci della definizione di completamento sono chiuse, le tre voci di "Prossimo" della roadmap sono chiuse, i quattro limiti dichiarati che avevano una correzione delimitata sono stati corretti, e il lavoro e' committato con l'albero pulito. Le schede di questa cartella sono ancorate al commit `a0b3420`.
 
 ## Definizione di completamento
 
@@ -52,11 +52,13 @@ Stato al 1 settembre 2026: non c'e' una feature aperta. Tutte le voci della defi
 - [x] Avvertenza nel foglio Confronto affitto per il caso senza mutuo
 - [x] Percorso del tasso a sei gradini, con la misura del rialzo dalla serie storica dell'Euribor
 - [x] Segnale di chiusura del piano nel Simulatore mutuo
-- [ ] Commit del lavoro del 1 settembre, che spetta all'utente
+- [x] Commit del lavoro del 1 settembre e ancoraggio dei frontmatter
 
-## Da fare dopo il commit
+## Riconciliazione
 
-Ancorare i campi `generated-from-commit` e `last-verified-commit` nelle schede di `.claude/context/` che li portano ancora come da assegnare, e il commit di riferimento nello snapshot di `.claude/memory/index.md`. Le schede interessate sono `STACK.md`, `design-and-security.md`, `deployment.md`, `dev-testing.md`, `current-work.md`, `roadmap.md` e `studio-didattico-master.md`.
+Fatta il 1 settembre 2026. Le sette schede di questa cartella, cioe' `STACK.md`, `design-and-security.md`, `deployment.md`, `dev-testing.md`, `current-work.md`, `roadmap.md` e `studio-didattico-master.md`, portano `generated-from-commit` e `last-verified-commit` ancorati a `a0b3420`, e nessuna porta piu' un segnaposto. Prima di ancorarle, `design-and-security.md` e `deployment.md` sono state allineate al lavoro della giornata, perche' erano le due schede che non avevo toccato ma che il lavoro aveva reso in parte non piu' vere: la prima sul criterio con cui si sceglie cosa chiedere al modello locale e sul limite di copertura della doppia implementazione, la seconda sulla terza scadenza ricorrente e sul principio che una funzione di rete non entra nella catena che produce un artefatto.
+
+Alla riconciliazione successiva la cosa da verificare per prima e' se `parametri.py` sia stato toccato, perche' governa due date indipendenti: la `REVISIONE` fiscale e il `verificato_il` delle risalite dell'Euribor.
 
 ## Domande aperte
 
@@ -74,4 +76,4 @@ Nel foglio Confronto immobili restano globali l'opzione prezzo-valore e la quali
 
 ## Prossima azione concreta
 
-Committare. Sul merito, il lavoro utile non e' piu' sullo strumento ma con lo strumento: riempire il foglio Immobile con l'immobile reale scelto fra i dodici a registro, verificare l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, chiedere la rendita catastale che nessuno dei dodici annunci indica, e leggere Cruscotto, coda bassa del foglio Rischio e prezzo massimo sostenibile con il suo scarto sul prezzo trattato. Se il mutuo in valutazione e' a tasso variabile, prima di firmare va compilato il percorso del tasso con il rialzo storico e letta la rata massima raggiunta.
+Sullo strumento non c'e' una prossima azione: il lavoro utile e' passato all'uso dello strumento. Riempire il foglio Immobile con l'immobile reale scelto fra i dodici a registro, verificare l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, chiedere la rendita catastale che nessuno dei dodici annunci indica, e leggere Cruscotto, coda bassa del foglio Rischio e prezzo massimo sostenibile con il suo scarto sul prezzo trattato. Se il mutuo in valutazione e' a tasso variabile, prima di firmare va compilato il percorso del tasso con il rialzo storico e letta la rata massima raggiunta.

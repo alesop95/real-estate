@@ -6,7 +6,7 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: ff86e78, regime di acquisto per riga
+Commit di riferimento: a0b3420, righe catturate e prezzo massimo esatto
 Ultimo aggiornamento:  2026-09-01
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
@@ -14,9 +14,9 @@ Test:                  61 verdi, 42 sul motore e 19 sulla struttura
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
 ```
 
-Gia' committato il 1 settembre, in quattro commit: il blocco delle quotazioni OMI di zona nel foglio Confronto immobili con lo scarto calcolato sul prezzo che il foglio usa, il regime di acquisto per riga con il terzo stato, la normalizzazione dei campi a tre stati, l'avvertenza sul confronto senza mutuo, la sostituzione delle coordinate fisse con nomi definiti nel Cruscotto, e i quattro test relativi.
+Tutto il lavoro del 1 settembre e' committato, in sei commit lungo la giornata, l'ultimo `a0b3420`. L'albero e' pulito. I frontmatter delle sette schede di contesto sono ancorati a questo commit, quindi non resta nessun segnaposto `da assegnare`.
 
-Non committato, dalla seconda parte della stessa giornata: la cattura delle righe nel conto economico del foglio Locazione e nella tabella dei tre scenari, con la rimozione delle due variabili di ancoraggio rimaste senza usi; il prezzo massimo sostenibile in forma chiusa, con le tre celle dei coefficienti e la cella di verifica accanto; il percorso del tasso a sei gradini nel Simulatore mutuo; `RISALITE_EURIBOR` in `parametri.py`; `risalite_storiche` ed `estremi_storici` in `tassi.py` con l'opzione `--risalita` del comando `tassi`; il nome definito `sim_debito` e le due righe che dicono se il piano si chiude; cinque test nuovi; l'allineamento di `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/metodo-e-metriche.md`, `docs/fonti.md`, `docs/da-zero.md`, `CLAUDE.md` e `README.md`; l'allineamento di memoria e schede di contesto, richiesto esplicitamente dall'utente; le ADR da 013 a 016; le voci da 8 a 11 dello studio didattico con i quattro approfondimenti nuovi. Il commit spetta all'utente.
+Resta fuori dal versionamento, per scelta, il solo `data/annunci.csv` con i dodici immobili a registro, perche' porta i link alle trattative e la colonna del prezzo obiettivo.
 
 ## Stato delle schede
 
@@ -62,7 +62,7 @@ Il materiale personale sta sotto `_notes/`, ignorato da git, con la mappa in `_n
 
 ## Punto di ripresa
 
-Sul processo: c'e' lavoro non committato, elencato nello snapshot. Il commit spetta all'utente; dopo il commit vanno ancorati i frontmatter delle sette schede di contesto che lo dichiarano.
+Sul processo non c'e' nulla da recuperare: albero pulito, schede ancorate, memoria e documentazione allineate al codice. La prossima sessione puo' partire dal merito.
 
 Sul merito, lo strumento non ha piu' voci di sviluppo aperte con una correzione delimitata, e le tre voci di "Prossimo" della roadmap sono chiuse. Il lavoro utile e' passato dallo strumento all'uso dello strumento: scegliere fra i dodici annunci a registro quello da approfondire, riempire il foglio Immobile con i suoi dati reali, verificare l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, e chiedere la rendita catastale, che nessuno dei dodici annunci indica ed e' il dato che sblocca il prezzo-valore. Poi si leggono il Cruscotto, la coda bassa del foglio Rischio e il prezzo massimo sostenibile con il suo scarto sul prezzo trattato. Se il mutuo in valutazione e' variabile, il percorso del tasso va compilato con il rialzo storico prima di firmare.
 

@@ -1,11 +1,11 @@
 ---
-generated-from-commit: da assegnare al prossimo commit
+generated-from-commit: a0b3420
 generated-from-branch: main
-generated-date: 2026-08-31
+generated-date: 2026-09-01
 covers-paths:
   - src/immobiliare/**
   - tests/**
-last-verified-commit: da assegnare al prossimo commit
+last-verified-commit: a0b3420
 ---
 
 # Studio didattico, racconto evolutivo

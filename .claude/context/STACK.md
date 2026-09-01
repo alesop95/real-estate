@@ -1,11 +1,11 @@
 ---
-generated-from-commit: da assegnare al primo commit
+generated-from-commit: a0b3420
 generated-from-branch: main
-generated-date: 2026-08-28
+generated-date: 2026-09-01
 covers-paths:
   - src/immobiliare/**
   - tools/**
-last-verified-commit: da assegnare al primo commit
+last-verified-commit: a0b3420
 ---
 
 # Stack e architettura
