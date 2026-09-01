@@ -108,9 +108,12 @@ L'ordine è questo, e ogni passo serve al successivo.
 
 ```
 python tools/valuta.py annunci omi          aggancia le quotazioni della zona a ogni annuncio
+python tools/valuta.py annunci confronta    graduatoria per scarto sulla zona, con le segnalazioni
 python tools/valuta.py annunci elenca       controlla che i dati siano quelli giusti
 python tools/valuta.py excel --con-annunci  genera il workbook con il registro dentro
 ```
+
+Il comando `annunci confronta` da' la stessa graduatoria a video, ordinata per scarto sulla quotazione di zona e non per prezzo, perche' fra immobili di taglia diversa il prezzo non dice nulla. Accanto a ogni riga espone il canone che la zona paga per quella superficie, ricavato dalle quotazioni OMI di locazione e non dall'annuncio, e una colonna di segnalazioni ricavata dalle note: immobile gia' locato, da ristrutturare, zona assegnata per ipotesi, dati incoerenti nell'annuncio, rendita catastale mancante. E' un'euristica su testo libero e va letta per quello che e', cioe' un promemoria per non perdere di vista un vincolo mentre si guarda una tabella di numeri.
 
 Nel workbook si apre il foglio Confronto immobili, che applica il modello completo a ogni riga e mette in fila rendimento netto, cap rate, cash on cash e debt service coverage ratio. Da lì esce il candidato su cui vale la pena spendere un'ora, e per quello si compila il foglio Immobile con i dati reali.
 

@@ -46,6 +46,6 @@ Il foglio degli scenari non usa le tabelle di simulazione di Excel, che la libre
 
 ## Interfaccia a riga di comando
 
-`tools/valuta.py` espone i sottocomandi `excel`, `riepilogo`, `annunci`, `omi`, `tassi`, `indicatori`, `llm`. Il file non puo' chiamarsi come il pacchetto, perche' altrimenti l'importazione ricadrebbe su se stesso.
+`tools/valuta.py` espone i sottocomandi `excel`, `riepilogo`, `annunci`, `omi`, `tassi`, `indicatori`, `llm`. Il sottocomando `annunci` ha a sua volta le azioni `elenca`, `confronta`, `aggiungi`, `modifica`, `importa`, `esporta`, `rimuovi` e `omi`. Il file non puo' chiamarsi come il pacchetto, perche' altrimenti l'importazione ricadrebbe su se stesso.
 
 Il sottocomando `riepilogo` riproduce a video il calcolo del workbook, e la coincidenza dei due risultati e' il test di regressione principale del progetto. L'unica divergenza voluta riguarda il tasso interno di rendimento, perche' la riga di comando assume un flusso costante mentre il workbook indicizza i costi all'inflazione.

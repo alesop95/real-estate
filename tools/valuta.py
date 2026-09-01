@@ -207,6 +207,101 @@ def cmd_riepilogo(args) -> int:
 def cmd_annunci(args) -> int:
     registro = A.Registro(ARCHIVIO)
 
+    if args.azione == "confronta":
+        """Graduatoria degli immobili a registro, ordinata per scarto sulla zona.
+
+        Risponde alla domanda che viene prima di ogni altra, cioe' quale merita
+        un'ora di lavoro, e la risponde senza aprire Excel. Il criterio di
+        ordinamento e' lo scarto sulla quotazione di zona e non il prezzo,
+        perche' fra immobili di taglia diversa il prezzo non dice nulla.
+        """
+        quotazioni, _ = O.carica_cartella(RADICE / "data" / "omi")
+        completi = [a for a in registro.annunci if a.mq and a.prezzo_richiesto]
+        if not completi:
+            print("Nessun annuncio con superficie e prezzo. Prima: annunci aggiungi oppure importa.")
+            return 1
+
+        def canone_di_zona(annuncio):
+            """Canone mensile atteso dalla zona, non dall'annuncio."""
+            if not (annuncio.zona_omi and quotazioni):
+                return None
+            normali = [
+                r for r in O.cerca(quotazioni, annuncio.comune, zona=annuncio.zona_omi)
+                if r.stato.strip().upper().startswith("NORMALE")
+            ]
+            if not normali:
+                return None
+            minimo = min(r.locazione_min for r in normali) * annuncio.mq
+            massimo = max(r.locazione_max for r in normali) * annuncio.mq
+            return minimo, massimo
+
+        def segnalazioni(annuncio):
+            """Bandiere rosse ricavate dalle note, che restano testo libero.
+
+            E' un'euristica dichiarata, non una classificazione: le note le
+            scrive una persona e queste parole chiave sono quelle che quella
+            persona ha usato finora. Serve a non perdere di vista un immobile
+            gia' locato o da ristrutturare mentre si guarda una tabella.
+            """
+            note = (annuncio.note or "").lower()
+            trovate = []
+            if "locato" in note or "affittato" in note:
+                trovate.append("locato")
+            if "ristrutturare" in note:
+                trovate.append("da ristrutturare")
+            # Le due frasi esatte, non le parole singole: "ipotesi" da solo
+            # pescava "ogni ipotesi abitativa" su un annuncio che non c'entrava,
+            # e un flag che compare dove non serve smette di voler dire qualcosa.
+            # Il primo tentativo di correzione ancorava la ricerca al contesto
+            # con uno split, ed era troppo furbo: perdeva i casi in cui la frase
+            # stava lontana dall'ancora. Due frasi intere bastano e si leggono.
+            if "per ipotesi" in note or "da confermare" in note:
+                trovate.append("zona incerta")
+            if "destinazione ufficio" in note or "cambio d uso" in note or "cambio d'uso" in note:
+                trovate.append("uso non abitativo")
+            if "discordante" in note or "contraddizione" in note or "incoerenti" in note:
+                trovate.append("dati incoerenti")
+            if not annuncio.rendita_catastale:
+                trovate.append("manca rendita")
+            return trovate
+
+        completi.sort(key=lambda a: (a.scarto_su_omi if a.zona_omi else 9.9, -a.punteggio))
+
+        print(f"{'ID':<10}{'prio':>4}  {'comune':<12}{'zona':<5}{'mq':>5}{'prezzo':>10}"
+              f"{'EUR/mq':>9}{'scarto':>8}  {'canone di zona':<16}{'lordo':>13}  segnalazioni")
+        print("-" * 132)
+        for a in completi:
+            zona = a.zona_omi or "-"
+            scarto = f"{a.scarto_su_omi:+.0%}" if a.zona_omi and a.quotazione_omi_min else "n.d."
+            intervallo = canone_di_zona(a)
+            if intervallo:
+                lo, hi = intervallo
+                canone = f"{lo:,.0f}-{hi:,.0f}".replace(",", ".")
+                lordo = f"{lo * 12 / a.prezzo_richiesto:.1%}-{hi * 12 / a.prezzo_richiesto:.1%}"
+            else:
+                canone, lordo = "zona non indicata", ""
+            # I numeri si formattano prima e da soli: applicare la sostituzione
+            # del separatore all'intera riga mangerebbe anche le virgole che
+            # separano le segnalazioni, trasformando un elenco in una frase rotta.
+            prezzo = f"{a.prezzo_richiesto:>10,.0f}".replace(",", ".")
+            al_mq = f"{a.prezzo_mq:>9,.0f}".replace(",", ".")
+            print(f"{a.id:<10}{a.punteggio:>4}  {a.comune[:11]:<12}{zona:<5}{a.mq:>5.0f}"
+                  f"{prezzo}{al_mq}{scarto:>8}  "
+                  f"{canone:<16}{lordo:>13}  {', '.join(segnalazioni(a))}")
+
+        incompleti = [a for a in registro.annunci if not (a.mq and a.prezzo_richiesto)]
+        print()
+        print(f"{len(completi)} immobili confrontabili su {len(registro.annunci)} a registro.")
+        if incompleti:
+            print(f"Senza superficie o prezzo, quindi fuori dal confronto: {', '.join(a.id for a in incompleti)}.")
+        senza_zona = [a.id for a in completi if not a.zona_omi]
+        if senza_zona:
+            print(f"Senza zona OMI, quindi con lo scarto calcolato sull'intero Comune: {', '.join(senza_zona)}.")
+            print("La zona si trova con: python tools/valuta.py omi zone --comune \"...\"")
+        print()
+        print("Il canone di zona viene dalle quotazioni OMI di locazione, non dall'annuncio:")
+        print(f"e' quanto la zona paga per quella superficie. Fonte: {O.ATTRIBUZIONE}.")
+        return 0
     if args.azione == "omi":
         # Aggancia il registro alla fornitura in cache. E' il passo che rende
         # utile la colonna dello scarto nel workbook, che senza quotazioni resta
@@ -635,7 +730,7 @@ def principale(argomenti=None) -> int:
     p.set_defaults(funzione=cmd_riepilogo)
 
     p = sub.add_parser("annunci", help="registro degli immobili in valutazione")
-    p.add_argument("azione", choices=["elenca", "aggiungi", "modifica", "importa", "esporta", "rimuovi", "omi"])
+    p.add_argument("azione", choices=["elenca", "confronta", "aggiungi", "modifica", "importa", "esporta", "rimuovi", "omi"])
     p.add_argument("--id")
     p.add_argument("--link")
     p.add_argument("--file", help="file di testo con l'annuncio copiato dal browser")

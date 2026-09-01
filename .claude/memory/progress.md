@@ -2,6 +2,22 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-09-01, sei annunci acquisiti, e la graduatoria diventa un comando
+
+File toccati: `tools/valuta.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, `CLAUDE.md`, `.claude/context/STACK.md`. Il registro, non versionato, sale a dodici immobili di cui dodici con superficie e prezzo e nove con zona OMI assegnata.
+
+Acquisiti dagli screenshot gli annunci da house_6 a house_11, piu' house_12 aggiunto in corsa. Tutti bloccati al prelievo automatico, quindi letti a vista. Emerge una differenza fra portali che vale registrare: immobiliare.it espone anno di costruzione, classe energetica con indice di prestazione, spese condominiali mensili e prezzo al metro quadro; idealista si ferma spesso a "classe energetica non indicata" e casa.it aggiunge il campo dello stato al rogito, che su un annuncio ha rivelato l'immobile gia' locato.
+
+La graduatoria diventa `annunci confronta`. La stavo stampando a mano con script usa e getta a ogni giro, che e' il segnale che manca un comando. Ordina per scarto sulla quotazione di zona e non per prezzo, perche' fra immobili di taglia diversa il prezzo non dice nulla, ed espone accanto il canone che la zona paga per quella superficie, ricavato dalle quotazioni OMI di locazione e non dall'annuncio. Una colonna di segnalazioni ricava dalle note le bandiere rosse: immobile locato, da ristrutturare, zona assegnata per ipotesi, dati incoerenti, rendita mancante.
+
+Due difetti nella prima versione del comando, entrambi trovati eseguendolo. La sostituzione del separatore delle migliaia era applicata all'intera riga formattata e mangiava anche le virgole che separano le segnalazioni, trasformando un elenco in una frase rotta: i numeri ora si formattano da soli, prima di comporre la riga. E l'euristica delle segnalazioni cercava la parola "ipotesi" da sola, accendendo il flag della zona incerta su un annuncio la cui nota diceva "prima di ogni ipotesi abitativa". Il primo tentativo di correzione ancorava la ricerca al contesto con uno split ed era troppo furbo: perdeva i casi in cui la frase stava lontana dall'ancora. Due frasi intere, "per ipotesi" e "da confermare", bastano e si leggono. Il caso e' istruttivo perche' nessuno dei due difetti produce un errore: producono una colonna che diventa rumore, e una colonna che diventa rumore smette di essere guardata.
+
+Cosa dice il confronto sui dodici. Il mercato si divide in due blocchi senza quasi nulla in mezzo: quattro immobili grandi o periferici fra 686 e 1.714 euro al metro quadro con rendimenti lordi di zona dal quattro al diciotto per cento, e tre fra centro e lungomare fra 3.167 e 3.429 con rendimenti dal due al cinque. I due sotto la zona di piu' sono anche i due con incoerenze dichiarate nell'annuncio, il che e' coerente: uno sconto grande ha sempre una ragione, e la ragione va trovata prima di innamorarsene.
+
+Nessuno dei dodici annunci indica la rendita catastale, e la colonna delle segnalazioni lo dice su ogni riga. E' il dato che sblocca il prezzo-valore, cioe' la leva fiscale piu' grossa dell'operazione, e si chiede insieme alla superficie calpestabile con una mail sola.
+
+Verifica: cinquantadue test verdi, workbook a ventun fogli rigenerato con dodici annunci e riaperto con Excel senza celle in errore.
+
 ## 2026-09-01, tre annunci reali dentro il modello, e un errore mio da correggere
 
 File toccati: solo `data/annunci.csv`, non versionato. Nessuna modifica al codice.

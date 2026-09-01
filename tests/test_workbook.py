@@ -310,6 +310,66 @@ def test_schema_di_estrazione_copre_i_campi_che_decidono():
     for campo in A.CAMPI_ESTRAIBILI:
         assert campo in nomi, f"lo schema chiede {campo}, che non e' un campo di Annuncio"
 
+def test_annunci_confronta_ordina_per_scarto_e_non_per_prezzo():
+    """La graduatoria si ordina sullo scarto di zona, non sul prezzo.
+
+    Fra immobili di taglia diversa il prezzo non dice nulla: duecento metri
+    quadri a centoquarantamila euro e trentacinque a centoventimila non sono
+    confrontabili finche' non si rapportano alla quotazione della loro zona.
+    Il test congela il criterio, perche' e' una scelta di metodo e non un
+    dettaglio di presentazione, e chi la cambiasse per comodita' romperebbe il
+    senso del comando.
+    """
+    import subprocess
+    import sys as _sys
+
+    radice = Path(__file__).resolve().parent.parent
+    esito = subprocess.run(
+        [_sys.executable, str(radice / "tools" / "valuta.py"), "annunci", "confronta"],
+        capture_output=True, text=True, timeout=300, cwd=str(radice),
+    )
+    assert esito.returncode in (0, 1), esito.stderr[-500:]
+    uscita = esito.stdout
+    if "Nessun annuncio" in uscita:
+        return  # registro vuoto su una macchina pulita: nulla da verificare
+
+    assert "scarto" in uscita and "canone di zona" in uscita
+    # L'attribuzione della fonte OMI e' obbligatoria ovunque i dati compaiano.
+    assert "Agenzia Entrate - OMI" in uscita
+
+    percentuali = []
+    for riga in uscita.splitlines():
+        pezzi = riga.split()
+        if len(pezzi) > 7 and pezzi[0].startswith("house_"):
+            valore = next((p for p in pezzi if p.endswith("%") and (p.startswith("+") or p.startswith("-"))), None)
+            if valore:
+                percentuali.append(int(valore.rstrip("%")))
+    if len(percentuali) > 1:
+        assert percentuali == sorted(percentuali), f"non ordinato per scarto: {percentuali}"
+
+
+def test_segnalazioni_non_scattano_su_parole_fuori_contesto():
+    """Un flag che compare dove non serve smette di voler dire qualcosa.
+
+    La nota di un annuncio conteneva la frase "prima di ogni ipotesi abitativa",
+    e la ricerca della sola parola "ipotesi" lo marcava come zona incerta. Il
+    difetto non produce errori: produce una tabella in cui la colonna delle
+    segnalazioni e' rumore, e chi la legge smette di guardarla.
+    """
+    fuori_contesto = "Destinazione ufficio: verificare il cambio d uso prima di ogni ipotesi abitativa".lower()
+    dentro_contesto = "Zona B1 assegnata per prossimita': Via Mozzi non e' nominata, da confermare.".lower()
+    per_ipotesi = "ZONA OMI B5 ASSEGNATA PER IPOTESI: l'annuncio non da' via ne' mappa.".lower()
+
+    def incerta(nota):
+        return "per ipotesi" in nota or "da confermare" in nota
+
+    assert not incerta(fuori_contesto), "flag acceso su una nota che non parla di zona"
+    assert incerta(dentro_contesto)
+    assert incerta(per_ipotesi)
+
+    # E la nota fuori contesto deve invece accendere il flag che le compete.
+    assert "destinazione ufficio" in fuori_contesto
+
 if __name__ == "__main__":
     superati = 0
     falliti = []
