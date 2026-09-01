@@ -229,8 +229,11 @@ class Costruttore:
         riga_ver = riga_kpi("Sintesi automatica", "=verdetto", None, "", "Confronta il tasso interno con il costo opportunita' e con il portafoglio alternativo.")
         ws.cell(row=riga_ver, column=2).alignment = S.SINISTRA
         ws.cell(row=riga_ver, column=2).font = S.ETICHETTA_BOLD
-        riga_conf = riga_kpi("Comprare oppure restare in affitto", '=IF(Immobile!$B$21="SI",IF(\'Confronto affitto\'!$B$52>0,"conviene comprare","conviene restare in affitto e investire"),"non pertinente: non e\' abitazione principale")', None,
-                             "", "Il confronto ha senso solo se l'immobile e' destinato ad abitazione propria.")
+        # Nomi definiti, non coordinate: la versione precedente citava Immobile!$B$21
+        # e 'Confronto affitto'!$B$52, e una riga inserita in uno dei due fogli
+        # avrebbe cambiato il verdetto del Cruscotto senza sollevare nulla.
+        riga_conf = riga_kpi("Comprare oppure restare in affitto", "=IF(abitazione_principale=\"SI\",IF(conf_differenza>0,\"conviene comprare\",\"conviene restare in affitto e investire\"),\"non pertinente: non e' abitazione principale\")", None,
+                             "", "Il confronto ha senso solo se l'immobile e' destinato ad abitazione propria. Legge il foglio Confronto affitto per nome definito, non per coordinata.")
         ws.cell(row=riga_conf, column=2).alignment = S.SINISTRA
         ws.cell(row=riga_conf, column=2).font = S.ETICHETTA_BOLD
         riga_ap = riga_kpi("Verifiche ancora aperte", "=verifiche_aperte", S.NUMERO,
@@ -1344,14 +1347,29 @@ class Costruttore:
         r = S.campo(ws, r, "Patrimonio affittando, al netto dell'imposta", "=INDEX(conf_portafoglio,orizzonte+1)-MAX(0,INDEX(conf_portafoglio,orizzonte+1)-INDEX(conf_versato,orizzonte+1))*tax_port", S.EURO, risultato=True)
         riga_diff = r
         r = S.campo(ws, r, "Differenza a favore dell'acquisto", f"=B{riga_pc}-B{riga_pa}", S.EURO, risultato=True)
+        # Il nome definito esiste per il Cruscotto, che leggeva questa cella per
+        # coordinata. Una coordinata fissa dentro una formula che punta a un altro
+        # foglio e' il difetto piu' insidioso del generatore: inserire una riga qui
+        # sopra non produce alcun errore, produce un verdetto sbagliato sul primo
+        # foglio del workbook, cioe' quello che si legge per decidere.
+        self.nome("conf_differenza", ws, f"B{riga_diff}")
         riga_verd = r
         r = S.campo(ws, r, "Esito", f'=IF(B{riga_diff}>0,"Conviene comprare","Conviene restare in affitto e investire la differenza")', risultato=True)
         ws.cell(row=riga_verd, column=2).alignment = S.SINISTRA
+        riga_avv = r
+        r = S.campo(
+            ws, r, "Avvertenza",
+            '=IF(mutuo_importo>0,"","Acquisto senza mutuo: il confronto sopra non e\' significativo, vedi la nota in fondo")',
+            risultato=True,
+            nota="Compare da sola quando l'importo del mutuo e' zero, e resta bianca altrimenti.",
+        )
+        ws.cell(row=riga_avv, column=2).alignment = S.SINISTRA
         r += 1
         for testo in [
             "Il confronto e' sensibile a tre soli numeri: il rendimento atteso del portafoglio, la rivalutazione dell'immobile e il canone alternativo. Cambiando il primo di un punto l'esito spesso si ribalta, il che dice quanto poco vada preso come verdetto e quanto vada preso come mappa di sensibilita'.",
             "Il modello assume disciplina perfetta di chi affitta: investe davvero ogni euro di differenza, ogni anno, senza toccarlo. Nella realta' quasi nessuno lo fa, e il mutuo funziona come piano di accumulo forzato. E' un vantaggio comportamentale reale che il foglio non sa misurare.",
             "Restano fuori dal conto la sicurezza abitativa, la liberta' di ristrutturare, il rischio di sfratto e il vincolo di mobilita' lavorativa. Sono decisivi nella scelta di dove vivere e irrilevanti nella scelta di dove investire: e' la ragione per cui le due domande vanno tenute separate.",
+            "Se l'importo del mutuo e' zero il foglio continua a calcolare ma il confronto perde significato, e conviene sapere perche'. Il confronto e' costruito a parita' di esborso: chi non compra investe l'anticipo e poi, ogni anno, la differenza fra quanto esce a chi ha comprato e il canone che paga. Senza mutuo l'anticipo diventa il prezzo intero, quindi il portafoglio alternativo parte con tutto il capitale investito, mentre le uscite di chi ha comprato si riducono ai soli costi da proprietario. Il conto che ne esce non e' sbagliato, e' un'altra domanda: non piu' comprare a debito contro affittare e investire, ma immobilizzare il capitale in un immobile contro investirlo sui mercati. Per quella domanda il foglio da leggere e' Metriche, con il tasso interno di rendimento contro il rendimento del portafoglio, e non questo.",
         ]:
             r = S.nota_riga(ws, r, testo, 3)
 
@@ -2589,7 +2607,7 @@ class Costruttore:
             ws,
             1,
             "Registro degli immobili in valutazione",
-            "Un immobile per riga. Le colonne calcolate danno prezzo al metro quadro, rendimento lordo e scarto rispetto alla quotazione OMI della zona, cosi' che il confronto sia immediato. Il file si popola anche dalla riga di comando con lo strumento annunci.",
+            "Un immobile per riga. Le colonne calcolate danno prezzo al metro quadro, rendimento lordo e scarto rispetto alla quotazione OMI della zona, cosi' che il confronto sia immediato. Le due colonne in coda dichiarano il regime di acquisto della singola riga, prima casa e venditore impresa: lasciate vuote, la riga eredita il regime del foglio Immobile. Il file si popola anche dalla riga di comando con lo strumento annunci.",
             26,
         )
         # L'ordine delle colonne e' contrattuale: `annunci.esporta_in_excel` scrive
@@ -2607,6 +2625,7 @@ class Costruttore:
             ("Asta", 8), ("Base d'asta", 14), ("Data asta", 12),
             ("Tribunale e procedura", 24), ("Stato occupazione", 24),
             ("Punteggio", 10), ("Note", 46),
+            ("Prima casa", 12), ("Venditore impresa", 16),
         ]
         CALCOLATE = (19, 22, 29)   # prezzo al mq, scarto su OMI, rendimento lordo
         TOTALE = len(colonne)
@@ -2628,7 +2647,7 @@ class Costruttore:
              "000 0000000", "https://portale.invalid/annuncio/1", "Comune di esempio",
              "XX", "D4", "via di esempio 1", "trilocale", "abitazione", "NO", "pronto",
              75, 89000, 82000, None, 1100, 1450, None, 420, "A/3", "1", "E", 900, 550, None, 7,
-             "Riga di esempio: sovrascriverla o cancellarla al primo uso"),
+             "Riga di esempio: sovrascriverla o cancellarla al primo uso", "", ""),
         ]
         for e in esempi:
             for i, valore in enumerate(e, start=1):
@@ -2656,6 +2675,10 @@ class Costruttore:
             stato.add(ws.cell(row=riga, column=3))
             nuova.add(ws.cell(row=riga, column=14))
             uso.add(ws.cell(row=riga, column=13))
+            # Il vuoto e' ammesso e significa "eredita dal foglio Immobile": la
+            # validazione non lo vieta, percio' le due colonne restano a tre stati.
+            nuova.add(ws.cell(row=riga, column=37))
+            nuova.add(ws.cell(row=riga, column=38))
             for col in range(1, TOTALE + 1):
                 ws.cell(row=riga, column=col).border = S.BORDO
                 if col in CALCOLATE:
@@ -2708,7 +2731,9 @@ class Costruttore:
         r = S.campo(ws, r, "Aliquota sul canone", "=ced_libero", S.PERC, nota="Predefinita alla cedolare secca a canone libero. Si puo' sovrascrivere con 10% per il concordato o con l'aliquota marginale per il regime ordinario.", input_utente=True)
         self.nome("aliquota_conf", ws, f"B{riga_aliq}")
         r = S.nota_riga(ws, r, "Tutto il resto arriva dagli altri fogli: tasso e durata dal foglio Mutuo, sfitto, morosita', manutenzione, assicurazione e aliquota IMU dal foglio Locazione, provvigione, notaio e altri costi dal foglio Immobile, soglia di rendimento dal foglio Scenari.")
-        r = S.nota_riga(ws, r, "Un'assunzione va dichiarata perche' non e' innocua: il regime di acquisto, cioe' prima casa oppure no, venditore privato oppure impresa con IVA, e opzione prezzo-valore, e' quello impostato nel foglio Immobile e viene applicato a tutti gli immobili della lista. Se si confrontano un usato da privato e un nuovo da costruttore, il confronto delle imposte non e' valido e vanno valutati separatamente.")
+        r = S.nota_riga(ws, r, "Il regime di acquisto si dichiara per riga, nelle due colonne in coda al foglio Annunci: prima casa e venditore impresa. Le colonne \"Prima casa\" e \"Da impresa\" di questo foglio mostrano il regime che la riga sta effettivamente usando, e sono quelle che le formule delle imposte e dei costi accessori leggono. Lasciare vuota la cella nel registro non e' un NO: significa che la riga eredita il regime impostato nel foglio Immobile, quindi un registro compilato senza toccare quelle colonne si comporta esattamente come prima.")
+        r = S.nota_riga(ws, r, "Restano globali due assunzioni che il registro non porta: l'opzione prezzo-valore e la qualifica di immobile di lusso, cioe' la categoria A/1, A/8 o A/9, entrambe prese dal foglio Immobile. La prima e' una scelta che si esercita in atto e che conviene quasi sempre, la seconda riguarda un caso raro: se in lista c'e' un immobile di lusso accanto a immobili ordinari, quello va valutato a parte.")
+        r = S.nota_riga(ws, r, "Una cosa che il foglio non puo' controllare per costruzione: l'agevolazione prima casa si usa una volta sola, mentre qui possono esserci piu' righe che la dichiarano. E' corretto cosi', perche' ogni riga e' un'alternativa all'altra e non un acquisto che si somma agli altri, ma la lettura giusta della graduatoria e' che il bonus andra' a una sola di quelle righe.")
         r += 1
 
         intest = [
@@ -2717,10 +2742,11 @@ class Costruttore:
             "Esborso", "Ricavo effettivo", "Costi operativi", "NOI", "Imposta canone",
             "Utile netto", "Rata annua", "Cash flow", "Rend. lordo", "Rend. netto",
             "Cap rate", "Cash on cash", "DSCR",
+            "Prima casa", "Da impresa",
             "Zona OMI", "Quot. OMI min", "Quot. OMI max", "Scarto su OMI", "Esito",
         ]
         larghezze = [12, 20, 8, 14, 12, 12, 14, 12, 14, 14, 16, 14, 14, 16, 16, 14, 14,
-                     14, 14, 14, 12, 12, 12, 12, 10, 12, 15, 15, 14, 16]
+                     14, 14, 14, 12, 12, 12, 12, 10, 11, 11, 12, 15, 15, 14, 16]
         r = S.intestazioni(ws, r, intest, larghezze)
         prima = r
         origine = self.riga_annunci
@@ -2739,10 +2765,10 @@ class Costruttore:
             ws.cell(
                 row=r, column=9,
                 value=(
-                    f'=IF({vuoto},"",IF(da_impresa="SI",'
-                    f'$D{r}*IF(agevolata="SI",iva_prima,IF(di_lusso="SI",iva_lusso,iva_ord))+3*fisso_impresa,'
-                    f'MAX(IF(AND(usa_prezzo_valore="SI",$F{r}>0),$F{r}*riv_rendita*IF(agevolata="SI",molt_prima,molt_ord),$D{r})'
-                    f'*IF(agevolata="SI",reg_prima,reg_ord),reg_min)+ipo_priv+cat_priv))'
+                    f'=IF({vuoto},"",IF($AA{r}="SI",'
+                    f'$D{r}*IF($Z{r}="SI",iva_prima,IF(di_lusso="SI",iva_lusso,iva_ord))+3*fisso_impresa,'
+                    f'MAX(IF(AND(usa_prezzo_valore="SI",$F{r}>0),$F{r}*riv_rendita*IF($Z{r}="SI",molt_prima,molt_ord),$D{r})'
+                    f'*IF($Z{r}="SI",reg_prima,reg_ord),reg_min)+ipo_priv+cat_priv))'
                 ),
             ).number_format = S.EURO
             ws.cell(row=r, column=10, value=f'=IF({vuoto},"",$D{r}*ltv_conf)').number_format = S.EURO
@@ -2750,7 +2776,7 @@ class Costruttore:
                 row=r, column=11,
                 value=(
                     f'=IF({vuoto},"",$I{r}+$D{r}*provv_pct*(1+iva_provv)+notaio_cv+altri_costi'
-                    f'+IF($J{r}>0,$J{r}*IF(agevolata="SI",sost_prima,sost_ord)+istruttoria+perizia+notaio_mutuo,0))'
+                    f'+IF($J{r}>0,$J{r}*IF($Z{r}="SI",sost_prima,sost_ord)+istruttoria+perizia+notaio_mutuo,0))'
                 ),
             ).number_format = S.EURO
             ws.cell(row=r, column=12, value=f'=IF({vuoto},"",$D{r}+$K{r})').number_format = S.EURO
@@ -2780,29 +2806,39 @@ class Costruttore:
             # davvero, cioe' l'obiettivo quando e' compilato. Leggerla da la' avrebbe
             # messo in riga un solo numero riferito a un prezzo diverso da quello di
             # tutte le altre colonne, che e' il tipo di incoerenza che non si vede.
+            # Il regime di acquisto della riga. Le due colonne non sono decorative:
+            # sono le celle che le formule delle imposte e dei costi accessori
+            # leggono, al posto dei nomi globali del foglio Immobile che leggevano
+            # prima. Il registro puo' dichiararlo per riga, e il vuoto significa
+            # eredita dal foglio Immobile, cioe' il comportamento precedente. Il
+            # regime resta visibile accanto alle imposte proprio perche' una
+            # graduatoria in cui una riga paga l'IVA e un'altra il registro va letta
+            # sapendolo, non scoprendolo.
+            ws.cell(row=r, column=26, value=f'=IF({vuoto},"",IF(Annunci!$AK{s}="",agevolata,Annunci!$AK{s}))')
+            ws.cell(row=r, column=27, value=f'=IF({vuoto},"",IF(Annunci!$AL{s}="",da_impresa,Annunci!$AL{s}))')
             # La concatenazione con la stringa vuota non e' un vezzo: una cella vuota
             # nel registro, letta per riferimento diretto, arriva a video come zero,
             # e un codice di zona OMI che vale zero e' un dato falso, non un dato
             # assente. Lo stesso vale per le due quotazioni, che restano bianche
             # invece di dichiarare un valore di zero euro al metro quadro.
-            ws.cell(row=r, column=26, value=f'=IF({vuoto},"",Annunci!$J{s}&"")')
-            ws.cell(row=r, column=27, value=f'=IF(OR({vuoto},N(Annunci!$T{s})=0),"",Annunci!$T{s})').number_format = S.EURO
-            ws.cell(row=r, column=28, value=f'=IF(OR({vuoto},N(Annunci!$U{s})=0),"",Annunci!$U{s})').number_format = S.EURO
+            ws.cell(row=r, column=28, value=f'=IF({vuoto},"",Annunci!$J{s}&"")')
+            ws.cell(row=r, column=29, value=f'=IF(OR({vuoto},N(Annunci!$T{s})=0),"",Annunci!$T{s})').number_format = S.EURO
+            ws.cell(row=r, column=30, value=f'=IF(OR({vuoto},N(Annunci!$U{s})=0),"",Annunci!$U{s})').number_format = S.EURO
             ws.cell(
-                row=r, column=29,
+                row=r, column=31,
                 value=(
-                    f'=IFERROR(IF(AND(N($AA{r})>0,N($AB{r})>0,N($E{r})>0),'
-                    f'$E{r}/AVERAGE($AA{r},$AB{r})-1,""),"")'
+                    f'=IFERROR(IF(AND(N($AC{r})>0,N($AD{r})>0,N($E{r})>0),'
+                    f'$E{r}/AVERAGE($AC{r},$AD{r})-1,""),"")'
                 ),
             ).number_format = S.PERC
             ws.cell(
-                row=r, column=30,
+                row=r, column=32,
                 value=(
                     f'=IF({vuoto},"",IF(NOT(ISNUMBER($V{r})),"",'
                     f'IF($V{r}>=rend_obiettivo,"sopra soglia","sotto soglia")))'
                 ),
             )
-            for col in range(1, 31):
+            for col in range(1, 33):
                 cella = ws.cell(row=r, column=col)
                 cella.border = S.BORDO
                 cella.fill = S.FILL_CALCOLO
@@ -2810,22 +2846,22 @@ class Costruttore:
 
         ultima = r - 1
         ws.freeze_panes = ws.cell(row=prima, column=3)
-        ws.auto_filter.ref = f"A{prima-1}:AD{ultima}"
+        ws.auto_filter.ref = f"A{prima-1}:AF{ultima}"
         for colonna, verso in (("V", "alto"), ("X", "alto"), ("T", "alto")):
             ws.conditional_formatting.add(
                 f"{colonna}{prima}:{colonna}{ultima}",
                 ColorScaleRule(start_type="min", start_color="F8CBAD", end_type="max", end_color="C6E0B4"),
             )
         ws.conditional_formatting.add(
-            f"AC{prima}:AC{ultima}",
+            f"AE{prima}:AE{ultima}",
             ColorScaleRule(start_type="min", start_color="C6E0B4", mid_type="num", mid_value=0, mid_color="FFF2CC", end_type="max", end_color="F8CBAD"),
         )
         ws.conditional_formatting.add(
-            f"AD{prima}:AD{ultima}",
+            f"AF{prima}:AF{ultima}",
             CellIsRule(operator="equal", formula=['"sopra soglia"'], fill=S.FILL_RISULTATO),
         )
         ws.conditional_formatting.add(
-            f"AD{prima}:AD{ultima}",
+            f"AF{prima}:AF{ultima}",
             CellIsRule(operator="equal", formula=['"sotto soglia"'], fill=S.FILL_ATTENZIONE),
         )
 

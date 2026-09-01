@@ -122,10 +122,60 @@ class Annuncio:
     chi entra a registro senza averlo ancora deciso.
     """
     note: str = ""
+    prima_casa: str = ""
+    """SI, NO, oppure vuoto per ereditare il regime del foglio Immobile.
+
+    Non e' una caratteristica dell'immobile ma della posizione di chi compra
+    rispetto a quell'immobile: lo stesso appartamento e' prima casa per chi non
+    ha altre abitazioni nel Comune e non lo e' per chi ce le ha, e la differenza
+    vale qualche migliaio di euro di imposte. Sta nel registro perche' quando si
+    confrontano piu' immobili la risposta puo' cambiare da riga a riga, tipico il
+    caso di un immobile nel Comune di residenza accanto a uno fuori.
+
+    Il vuoto e' un terzo stato e non un sinonimo di NO: significa che la riga non
+    dichiara nulla e il foglio di confronto le applica il regime impostato nel
+    foglio Immobile, cioe' esattamente il comportamento precedente. Un registro
+    scritto prima che questo campo esistesse continua percio' a dare gli stessi
+    numeri di prima.
+    """
+    venditore_impresa: str = ""
+    """SI, NO, oppure vuoto per ereditare il regime del foglio Immobile.
+
+    Discrimina l'acquisto soggetto a IVA da quello con l'imposta di registro, che
+    e' il salto piu' grosso fra due righe della stessa lista: sullo stesso prezzo
+    l'IVA si applica per intero mentre il registro con il prezzo-valore si applica
+    al valore catastale, che di norma e' una frazione. Confrontare un usato da
+    privato e un nuovo da costruttore senza questa distinzione produce una
+    graduatoria sbagliata nel verso peggiore, perche' fa sembrare piu' conveniente
+    proprio l'immobile che porta l'imposta piu' alta.
+    """
+
+    CAMPI_SI_NO = ("asta", "nuova_costruzione", "prima_casa", "venditore_impresa")
+    """I campi che il workbook confronta con la stringa SI.
+
+    Excel confronta il testo senza distinguere le maiuscole, quindi una cella che
+    contiene si minuscolo si comporta correttamente. Non si comporta correttamente
+    una cella che contiene true, yes oppure 1, che e' esattamente cio' che un
+    modello linguistico restituisce quando gli si chiede un booleano: il foglio la
+    legge come diversa da SI, cioe' come un NO, senza segnalare nulla. La
+    normalizzazione esiste per questo, e lascia intatto quello che non riconosce,
+    perche' un valore strano che resta visibile e' preferibile a un valore strano
+    tradotto per ipotesi in una delle due risposte.
+    """
 
     def __post_init__(self) -> None:
         if not self.data:
             self.data = date.today().isoformat()
+        affermativi = {"si", "s", "yes", "y", "true", "vero", "1"}
+        negativi = {"no", "n", "false", "falso", "0"}
+        for campo in self.CAMPI_SI_NO:
+            valore = str(getattr(self, campo) or "").strip()
+            if not valore:
+                setattr(self, campo, "")
+            elif valore.casefold() in affermativi:
+                setattr(self, campo, "SI")
+            elif valore.casefold() in negativi:
+                setattr(self, campo, "NO")
 
     @property
     def prezzo_mq(self) -> float:
@@ -387,6 +437,10 @@ CAMPI_ESTRAIBILI = {
     "provincia": "sigla della provincia, due lettere",
     "destinazione_uso": "abitazione, ufficio, negozio, box",
     "data_consegna": "data prevista di consegna se in costruzione, altrimenti vuoto",
+    # Il regime del venditore si estrae, quello dell'acquirente no: che la vendita
+    # sia diretta dal costruttore o soggetta a IVA sta scritto nell'annuncio, mentre
+    # essere o non essere in prima casa dipende da chi compra e il testo non lo sa.
+    "venditore_impresa": "SI se la vendita e' diretta dal costruttore o da un'impresa, o se l'annuncio indica il prezzo soggetto a IVA, altrimenti vuoto",
     "note": "una sintesi in una riga delle caratteristiche rilevanti",
 }
 
@@ -513,7 +567,7 @@ def esporta_in_excel(registro: Registro, percorso_workbook: str) -> int:
         "rendita_catastale", "categoria", "piano", "classe_energetica",
         "spese_condominio_anno", "canone_atteso_mese", None,
         "asta", "base_asta", "data_asta", "tribunale_procedura", "stato_occupazione",
-        "punteggio", "note",
+        "punteggio", "note", "prima_casa", "venditore_impresa",
     ]
     colonne_calcolate = {i for i, campo in enumerate(ordine, start=1) if campo is None}
     totale_colonne = len(ordine)

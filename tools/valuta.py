@@ -261,6 +261,12 @@ def cmd_annunci(args) -> int:
                 trovate.append("uso non abitativo")
             if "discordante" in note or "contraddizione" in note or "incoerenti" in note:
                 trovate.append("dati incoerenti")
+            # Questa non viene dalle note ma dal campo, e non e' un difetto
+            # dell'immobile: e' l'avviso che quella riga non e' commensurabile
+            # alle altre a colpo d'occhio, perche' paga l'IVA sul prezzo intero
+            # invece dell'imposta di registro sul valore catastale.
+            if annuncio.venditore_impresa == "SI":
+                trovate.append("IVA, non registro")
             if not annuncio.rendita_catastale:
                 trovate.append("manca rendita")
             return trovate
