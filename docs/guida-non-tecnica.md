@@ -44,6 +44,10 @@ Qui la cosa da guardare non è il rendimento lordo ma il **cash flow**, che è l
 
 L'altro numero è il **DSCR**, che confronta quanto rende l'immobile con quanto costa la rata. Sotto 1 il reddito dell'immobile non copre la rata, e la differenza esce dalla tua tasca.
 
+Accanto a questi numeri la scheda porta la zona OMI dell'immobile, le due quotazioni al metro quadro di quella zona e lo scarto del prezzo rispetto alla loro media. Uno scarto negativo dice che si sta trattando sotto la media della zona, uno positivo che si sta trattando sopra, e nessuno dei due è un giudizio: la quotazione è una media di zona per tipologia, quindi non vede lo stato di conservazione, il piano, l'affaccio, la classe energetica né i lavori deliberati in condominio. Serve a sapere quali righe vale la pena capire, non a ordinarle.
+
+Una differenza da tenere presente fra le due schede. Lo scarto della scheda Annunci è calcolato sul prezzo richiesto dal venditore, quello della scheda Confronto immobili sul prezzo che il calcolo sta effettivamente usando, cioè l'obiettivo quando è compilato. La distanza fra i due numeri è, letta al contrario, lo sconto che si sta chiedendo.
+
 Da qui esce il candidato su cui vale la pena spendere tempo. Gli altri restano in lista.
 
 ### Terzo, la scheda Immobile
