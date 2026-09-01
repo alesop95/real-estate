@@ -372,6 +372,56 @@ FINANZA = Finanza()
 
 
 # ---------------------------------------------------------------------------
+# Risalite storiche dell'indice dei mutui a tasso variabile
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class RisaliteEuribor:
+    """Le peggiori risalite dell'Euribor a tre mesi contenute nella serie BCE.
+
+    Esistono per sostituire un numero inventato con un numero osservato. Chi
+    simula un mutuo a tasso variabile deve scegliere di quanto far salire il tasso,
+    e la scelta spontanea e' un punto percentuale, perche' e' l'ordine di grandezza
+    che suona prudente. Fra giugno 2022 e giugno 2023 l'Euribor a tre mesi e' salito
+    di 3,78 punti in dodici mesi: chi aveva simulato un punto aveva simulato un
+    quinto dello scenario che si e' verificato, e la rata che ne e' uscita non era
+    quella che aveva dichiarato sostenibile.
+
+    I valori sono in punti percentuali e non in frazioni, come li pubblica la
+    fonte. Si rileggono in qualunque momento con `python tools/valuta.py tassi
+    --risalita`, che li ricalcola sulla serie corrente e segnala se si sono
+    spostati: la scansione e' la stessa di `tassi.risalite_storiche`, quindi il
+    confronto e' fra la stessa misura calcolata in due momenti diversi.
+
+    Perche' la finestra e non il massimo assoluto. Il massimo della serie e' il 7,58
+    per cento del marzo 1995 e il minimo il meno 0,58 del dicembre 2021: la loro
+    differenza sono piu' di otto punti, un numero grande e privo di significato,
+    perche' i due estremi distano ventisei anni e nessun piano di ammortamento li
+    attraversa nella stessa finestra. Cio' che un mutuo incontra davvero e' la
+    peggiore finestra di durata fissata, ed e' quella che questi valori misurano.
+    """
+
+    indice: str = "Euribor 3 mesi"
+    serie: str = "FM/M.U2.EUR.RT.MM.EURIBOR3MD_.HSTA"
+    verificato_il: date = date(2026, 9, 1)
+    copertura: str = "1994-01 / 2026-08, 392 osservazioni mensili"
+    livello_corrente: float = 2.51
+    massimo_storico: float = 7.58
+    periodo_massimo: str = "1995-03"
+    minimo_storico: float = -0.58
+    periodo_minimo: str = "2021-12"
+    risalita_12_mesi: float = 3.78
+    finestra_12_mesi: str = "2022-06 / 2023-06, da -0,24 a 3,54"
+    risalita_24_mesi: float = 4.54
+    finestra_24_mesi: str = "2021-11 / 2023-11, da -0,57 a 3,97"
+    risalita_36_mesi: float = 4.49
+    finestra_36_mesi: str = "2020-11 / 2023-11, da -0,52 a 3,97"
+
+
+RISALITE_EURIBOR = RisaliteEuribor()
+
+
+# ---------------------------------------------------------------------------
 # Registro delle fonti
 # ---------------------------------------------------------------------------
 

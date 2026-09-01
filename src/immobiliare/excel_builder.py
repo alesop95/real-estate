@@ -760,13 +760,36 @@ class Costruttore:
         r += 1
 
         r = S.sezione(ws, r, "Percorso del tasso, per il variabile", secondaria=True)
-        riga = r
-        r = S.campo(ws, r, "Variazione del tasso", 0.0, S.PERC, input_utente=True, nota="Punti percentuali aggiunti o tolti al tasso di partenza. Un punto in piu' su un variabile e' uno scenario ordinario, non estremo.")
-        self.nome("sim_shock", ws, f"B{riga}")
-        riga = r
-        r = S.campo(ws, r, "Mese in cui la variazione entra in vigore", 25, S.NUMERO, input_utente=True, nota="Prima di questo mese vale il tasso di partenza.")
-        self.nome("sim_shock_mese", ws, f"B{riga}")
-        r = S.nota_riga(ws, r, "Per un tasso fisso si lascia la variazione a zero. Per un variabile si prova a spostarla, e la riga della rata massima dice se lo scenario resta sostenibile: e' la sola domanda che conta davvero prima di firmare un variabile.")
+        r = S.nota_riga(ws, r, "Il percorso si descrive a gradini: ogni riga dice da quale mese vale quale variazione rispetto al tasso di partenza, e la variazione e' cumulata, non incrementale. Vale l'ultimo gradino il cui mese e' stato raggiunto, quindi le righe vanno riempite dall'alto verso il basso in ordine di mese crescente e le righe lasciate vuote non hanno alcun effetto. Con il solo primo gradino compilato il comportamento e' quello di un gradino singolo, cioe' quello che il foglio faceva prima.")
+        intest_perc = ["Gradino", "Dal mese", "Variazione cumulata"]
+        r = S.intestazioni(ws, r, intest_perc, [12, 14, 20])
+        prima_perc = r
+        # Il primo gradino conserva i due nomi definiti che c'erano prima, cosi' che
+        # nulla di quanto li citava debba cambiare: il gradino singolo non e' stato
+        # sostituito, e' diventato la prima riga di un percorso.
+        valori_iniziali = [(25, 0.0), (None, None), (None, None), (None, None), (None, None), (None, None)]
+        for indice, (mese, delta) in enumerate(valori_iniziali, start=1):
+            ws.cell(row=r, column=1, value=indice).number_format = S.NUMERO
+            cella_mese = ws.cell(row=r, column=2, value=mese)
+            cella_mese.number_format = S.NUMERO
+            cella_delta = ws.cell(row=r, column=3, value=delta)
+            cella_delta.number_format = S.PERC
+            for colonna in (1, 2, 3):
+                c = ws.cell(row=r, column=colonna)
+                c.border = S.BORDO
+                c.fill = S.FILL_CALCOLO if colonna == 1 else S.FILL_INPUT
+            if indice == 1:
+                self.nome("sim_shock_mese", ws, f"B{r}")
+                self.nome("sim_shock", ws, f"C{r}")
+            r += 1
+        ultima_perc = r - 1
+        ws.cell(row=prima_perc, column=5, value="Il primo gradino porta i valori di partenza: mese 25 e variazione zero, cioe' nessun effetto.").font = S.NOTA
+        ws.cell(row=prima_perc, column=5).alignment = S.SINISTRA
+        r += 1
+        r = S.nota_riga(ws, r, f"Quanto puo' salire un tasso variabile non e' una domanda di opinione: la serie mensile dell'{P.RISALITE_EURIBOR.indice} pubblicata dalla Banca centrale europea copre {P.RISALITE_EURIBOR.copertura}, e la peggiore finestra di dodici mesi che contiene e' un rialzo di {P.RISALITE_EURIBOR.risalita_12_mesi:.2f} punti, avvenuto fra {P.RISALITE_EURIBOR.finestra_12_mesi.split(',')[0]}. Su ventiquattro mesi la peggiore vale {P.RISALITE_EURIBOR.risalita_24_mesi:.2f} punti, su trentasei {P.RISALITE_EURIBOR.risalita_36_mesi:.2f}. Chi simula un punto percentuale sta simulando un quinto di cio' che e' appena successo. I valori si rileggono con: python tools/valuta.py tassi --risalita")
+        r = S.nota_riga(ws, r, f"Come si riempie il percorso per riprodurre quel rialzo, che e' l'esercizio utile prima di firmare un variabile. Primo gradino a un terzo della risalita dal mese in cui si vuole far partire lo scenario, secondo a due terzi quattro mesi dopo, terzo alla risalita intera altri quattro mesi dopo: sui {P.RISALITE_EURIBOR.risalita_12_mesi:.2f} punti della finestra 2022-2023 significa piu' 1,26, piu' 2,52 e piu' 3,78 per cento. Poi si legge la rata massima raggiunta e si decide se quella cifra si puo' sostenere, che e' la sola domanda che conta.")
+        r = S.nota_riga(ws, r, f"Una verifica di plausibilita' che il solo scarto non da'. La stessa risalita produce tassi molto diversi a seconda del livello di partenza: quella del 2022-2023 partiva da un Euribor negativo e arrivava al {P.RISALITE_EURIBOR.finestra_12_mesi.split('a ')[-1]} per cento, mentre applicata al livello di oggi, {P.RISALITE_EURIBOR.livello_corrente:.2f} per cento, porterebbe a un tasso che nella serie storica dal 1994 compare soltanto negli anni Novanta, con il massimo al {P.RISALITE_EURIBOR.massimo_storico:.2f} per cento del {P.RISALITE_EURIBOR.periodo_massimo}. Non e' una ragione per escluderlo: e' una ragione per sapere che si sta guardando la coda della distribuzione e non il centro.")
+        r = S.nota_riga(ws, r, "Per un tasso fisso si lascia il percorso com'e', con la variazione a zero. Per un variabile si compilano i gradini, e la riga della rata massima dice se lo scenario resta sostenibile: e' la sola domanda che conta davvero prima di firmare un variabile.")
         r = S.nota_riga(ws, r, "Una precisazione che cambia il risultato. Il mutuo a tasso variabile italiano tiene ferma la scadenza e sposta l'aumento sulla rata, quindi per simulare un rialzo dei tassi va scelto sotto l'effetto \"riduci rata\". Con \"riduci durata\" la rata resta quella di partenza e a crescere e' il numero di mesi: e' il funzionamento del mutuo a rata costante e durata variabile, che esiste ma e' meno diffuso, e in caso di forte rialzo puo' allungare il piano oltre la scadenza contrattuale.")
         r += 1
 
@@ -809,6 +832,31 @@ class Costruttore:
         r = S.campo(ws, r, "Massimo esborso in un mese", "=MAX(sim_pagato)", S.EURO_DEC, nota="Comprende anche l'eventuale versamento una tantum.")
         r = S.campo(ws, r, "Totale versato", "=SUM(sim_pagato)", S.EURO)
         r = S.campo(ws, r, "Costo effettivo annuo", "=IFERROR(IRR(sim_flussi)*12,\"non calcolabile\")", S.PERC, nota="Tasso interno dei flussi del solo mutuo: coincide col nominale se non ci sono rimborsi ne' variazioni di tasso.")
+
+        # Il piano modellato si ferma a quarant'anni di rate. Sotto l'effetto che
+        # riduce la durata, un rialzo forte del tasso allunga il piano invece di
+        # alzare la rata, e con una risalita delle dimensioni di quella del
+        # 2022-2023 il piano puo' arrivare al fondo della tabella con il debito non
+        # ancora estinto. In quel caso la durata effettiva mostra 480 mesi e gli
+        # interessi totali mostrano la somma di cio' che sta in tabella: due numeri
+        # veri e due numeri che rispondono a una domanda diversa da quella posta,
+        # perche' il piano non si e' chiuso e il costo totale del debito e'
+        # maggiore di quanto scritto. Le due righe seguenti esistono per dirlo,
+        # invece di lasciarlo dedurre da una durata sospettosamente rotonda.
+        riga_res = r
+        r = S.campo(ws, r, "Debito residuo alla fine del piano", "=MIN(sim_debito)", S.EURO,
+                    nota=f"Deve essere zero. La tabella modella {MAX_RATE} mesi, cioe' quarant'anni di rate.")
+        r = S.campo(
+            ws, r, "Il piano si chiude",
+            f'=IF(B{riga_res}>0.005,"NO: il debito non si estingue entro i {MAX_RATE} mesi modellati, quindi durata effettiva e interessi totali sono troncati e non risolti","SI")',
+            risultato=True,
+            nota="Con l'effetto che riduce la durata un rialzo forte allunga il piano invece di alzare la rata: se il piano non si chiude, lo scenario va riletto sotto l'effetto che riduce la rata, che e' anche il funzionamento del variabile italiano.",
+        )
+        ws.cell(row=r - 1, column=2).alignment = S.SINISTRA
+        ws.conditional_formatting.add(
+            f"B{r-1}:B{r-1}",
+            CellIsRule(operator="notEqual", formula=['"SI"'], fill=S.FILL_ATTENZIONE),
+        )
         r += 1
 
         intest = ["Mese", "Data", "Tasso annuo", "Tasso mensile", "Debito iniziale",
@@ -835,7 +883,19 @@ class Costruttore:
             attivo = f"$L{p}>0.005"         # finche' resta debito, oltre l'arrotondamento
             ws.cell(row=r, column=1, value=mese).number_format = S.NUMERO
             ws.cell(row=r, column=2, value=f"=EDATE(data_erogazione,$A{r})").number_format = S.DATA
-            ws.cell(row=r, column=3, value=f"=sim_tasso+IF($A{r}>=sim_shock_mese,sim_shock,0)").number_format = S.PERC
+            # Il tasso del mese: tasso di partenza piu' l'ultimo gradino raggiunto.
+            # La catena di IF viene generata dal basso verso l'alto, cosi' che il
+            # primo confronto vero sia quello del gradino piu' avanzato: e' il modo
+            # di ottenere "vale l'ultimo gradino raggiunto" senza CERCA, che
+            # pretenderebbe una colonna ordinata e si comporterebbe in modo opaco
+            # sulle righe lasciate vuote. Il test di ogni gradino include la
+            # presenza del mese, percio' una riga vuota non partecipa.
+            gradino = "0"
+            for riga_g in range(prima_perc, ultima_perc + 1):
+                gradino = (
+                    f'IF(AND($B${riga_g}<>"",$A{r}>=$B${riga_g}),$C${riga_g},{gradino})'
+                )
+            ws.cell(row=r, column=3, value=f"=sim_tasso+{gradino}").number_format = S.PERC
             ws.cell(row=r, column=4, value=f'=IF(sim_convenzione="composta",(1+$C{r})^(1/12)-1,$C{r}/12)').number_format = "0.0000%"
             ws.cell(row=r, column=5, value=f"=IF({attivo},$L{p},0)").number_format = S.EURO_DEC
             ws.cell(row=r, column=6, value=f"=$E{r}*$D{r}").number_format = S.EURO_DEC
@@ -872,6 +932,10 @@ class Costruttore:
         self.nome_intervallo("sim_pagato", ws, f"$I${prima+1}:$I${ultima}")
         self.nome_intervallo("sim_rate", ws, f"$G${prima+1}:$G${ultima}")
         self.nome_intervallo("sim_flussi", ws, f"$M${prima}:$M${ultima}")
+        # Serve al controllo di chiusura del piano, che sta nella sezione dell'esito
+        # e quindi viene scritto prima di questa tabella: il nome definito e' cio'
+        # che permette di citarla in avanti senza conoscerne le coordinate.
+        self.nome_intervallo("sim_debito", ws, f"$L${prima+1}:$L${ultima}")
         ws.freeze_panes = ws.cell(row=prima, column=3)
 
     # -------------------------------------------------------------- locazione
@@ -953,10 +1017,23 @@ class Costruttore:
             ["Voce", "Cedolare libero", "Cedolare concordato", "IRPEF ordinaria", "Locazione breve"],
             [42, 20, 20, 20, 20],
         )
-        base = r
 
         def riga_conf(etichetta, f_lib, f_conc, f_irp, f_brev, formato=S.EURO, risultato=False):
+            """Scrive una voce del conto economico e restituisce la riga occupata.
+
+            Il valore di ritorno e' il presidio contro il difetto piu' insidioso di
+            questo generatore. La versione precedente calcolava gli indici delle
+            righe come base piu' una costante scritta a mano accanto a ogni
+            chiamata: inserire una voce in mezzo al conto economico spostava di uno
+            tutte le righe successive e lasciava le costanti dov'erano, quindi il
+            reddito operativo netto sommava un intervallo traslato e l'utile netto
+            leggeva la riga sbagliata. Il file si apriva, nessuna cella andava in
+            errore e i valori di sintesi restavano plausibili, che e' esattamente il
+            difetto che una revisione a video non vede. Chiedendo la riga a chi la
+            scrive, l'allineamento smette di essere una cosa da ricordare.
+            """
             nonlocal r
+            scritta = r
             e = ws.cell(row=r, column=1, value=etichetta)
             e.font = S.ETICHETTA_BOLD if risultato else S.ETICHETTA
             e.alignment = S.SINISTRA
@@ -968,28 +1045,30 @@ class Costruttore:
                 if risultato:
                     c.font = S.ETICHETTA_BOLD
             r += 1
+            return scritta
 
-        riga_conf("Canone o ricavo lordo annuo", "=canone_mese*12", "=canone_conc_mese*12", "=canone_mese*12", "=ricavi_brevi")
-        riga_pot = base
-        riga_conf("Perdita per sfitto", "=-canone_mese*mesi_sfitto", "=-canone_conc_mese*mesi_sfitto", "=-canone_mese*mesi_sfitto", "=0",)
-        riga_sf = base + 1
-        riga_conf(
+        riga_pot = riga_conf("Canone o ricavo lordo annuo", "=canone_mese*12", "=canone_conc_mese*12", "=canone_mese*12", "=ricavi_brevi")
+        riga_sf = riga_conf("Perdita per sfitto", "=-canone_mese*mesi_sfitto", "=-canone_conc_mese*mesi_sfitto", "=-canone_mese*mesi_sfitto", "=0",)
+        riga_mo = riga_conf(
             "Accantonamento morosita'",
             f"=-(B{riga_pot}+B{riga_sf})*morosita_pct",
             f"=-(C{riga_pot}+C{riga_sf})*morosita_pct",
             f"=-(D{riga_pot}+D{riga_sf})*morosita_pct",
             "=0",
         )
-        riga_mo = base + 2
-        riga_conf(
+        riga_eff = riga_conf(
             "Ricavo effettivo",
             f"=SUM(B{riga_pot}:B{riga_mo})",
             f"=SUM(C{riga_pot}:C{riga_mo})",
             f"=SUM(D{riga_pot}:D{riga_mo})",
             f"=SUM(E{riga_pot}:E{riga_mo})",
         )
-        riga_eff = base + 3
-        riga_conf("Spese condominiali a carico", "=-condominio*quota_condominio", "=-condominio*quota_condominio", "=-condominio*quota_condominio", "=-condominio")
+        # Il blocco dei costi. Si catturano la prima e l'ultima riga, e il reddito
+        # operativo netto somma fra le due invece che fra due costanti: una voce di
+        # costo aggiunta qui in mezzo entra da sola nella somma, che e' il solo modo
+        # di rendere sicura un'operazione che prima richiedeva di ricordarsi di
+        # aggiornare quattro numeri sparsi.
+        riga_primo_costo = riga_conf("Spese condominiali a carico", "=-condominio*quota_condominio", "=-condominio*quota_condominio", "=-condominio*quota_condominio", "=-condominio")
         riga_conf("Manutenzione ordinaria", "=-prezzo*manut_pct", "=-prezzo*manut_pct", "=-prezzo*manut_pct", "=-prezzo*manut_pct")
         riga_conf("Assicurazione", "=-assicurazione", "=-assicurazione", "=-assicurazione", "=-assicurazione")
         riga_conf(
@@ -1009,32 +1088,29 @@ class Costruttore:
             "=-rendita*riv_rendita*imu_molt*imu_aliquota",
             "=-rendita*riv_rendita*imu_molt*imu_aliquota",
         )
-        riga_conf(
+        riga_ultimo_costo = riga_conf(
             "Gestione e costi variabili",
             f"=-B{riga_eff}*gestione_pct",
             f"=-C{riga_eff}*gestione_pct",
             f"=-D{riga_eff}*gestione_pct",
             f"=-E{riga_eff}*(gestione_pct+costi_brevi_pct)",
         )
-        riga_gest_r = base + 10
-        riga_conf(
+        riga_noi = riga_conf(
             "Reddito operativo netto",
-            f"=B{riga_eff}+SUM(B{base+4}:B{riga_gest_r})",
-            f"=C{riga_eff}+SUM(C{base+4}:C{riga_gest_r})",
-            f"=D{riga_eff}+SUM(D{base+4}:D{riga_gest_r})",
-            f"=E{riga_eff}+SUM(E{base+4}:E{riga_gest_r})",
+            f"=B{riga_eff}+SUM(B{riga_primo_costo}:B{riga_ultimo_costo})",
+            f"=C{riga_eff}+SUM(C{riga_primo_costo}:C{riga_ultimo_costo})",
+            f"=D{riga_eff}+SUM(D{riga_primo_costo}:D{riga_ultimo_costo})",
+            f"=E{riga_eff}+SUM(E{riga_primo_costo}:E{riga_ultimo_costo})",
             risultato=True,
         )
-        riga_noi = base + 11
-        riga_conf(
+        riga_imp = riga_conf(
             "Imposta sul reddito da locazione",
             f"=-B{riga_eff}*ced_libero",
             f"=-C{riga_eff}*ced_conc",
             f"=-(D{riga_eff}*(1-abbatt_ord)*(irpef_marginale+addizionali)+MAX(D{riga_eff}*reg_loc,reg_loc_min)/2)",
             f"=-E{riga_eff}*ced_breve1",
         )
-        riga_imp = base + 12
-        riga_conf(
+        riga_utile = riga_conf(
             "Utile netto annuo",
             f"=B{riga_noi}+B{riga_imp}",
             f"=C{riga_noi}+C{riga_imp}",
@@ -1042,7 +1118,6 @@ class Costruttore:
             f"=E{riga_noi}+E{riga_imp}",
             risultato=True,
         )
-        riga_utile = base + 13
         riga_conf(
             "Rendimento lordo sul prezzo",
             f"=B{riga_pot}/prezzo", f"=C{riga_pot}/prezzo", f"=D{riga_pot}/prezzo", f"=E{riga_pot}/prezzo",
@@ -1454,10 +1529,11 @@ class Costruttore:
         r = S.nota_riga(ws, r, "Le celle gialle di questa sezione sono indipendenti dal resto del workbook: si impostano qui le tre ipotesi e si legge come cambia l'esito. Serve a rispondere alla domanda che conta davvero prima di comprare, cioe' non quanto rende se tutto va bene, ma quanto si perde se va male.")
         intest_sc = ["Voce", "Pessimistico", "Base", "Ottimistico"]
         r = S.intestazioni(ws, r, intest_sc, [46, 18, 18, 18])
-        base_sc = r
 
         def riga_scenario(etichetta, valori, formato=S.EURO, input_utente=False, risultato=False, nota=""):
+            """Scrive una riga della tabella a tre scenari e restituisce la sua riga."""
             nonlocal r
+            scritta = r
             e = ws.cell(row=r, column=1, value=etichetta)
             e.font = S.ETICHETTA_BOLD if risultato else S.ETICHETTA
             e.alignment = S.SINISTRA
@@ -1477,45 +1553,46 @@ class Costruttore:
                 n_.font = S.NOTA
                 n_.alignment = S.SINISTRA
             r += 1
+            return scritta
 
-        riga_scenario("Canone mensile", ["=canone_mese*0.85", "=canone_mese", "=canone_mese*1.1"], S.EURO, input_utente=True,
-                      nota="Il pessimistico sconta un mercato in cui si affitta solo abbassando.")
-        riga_canone_sc = base_sc
-        riga_scenario("Mesi di sfitto all'anno", [3, "=mesi_sfitto", 0.5], S.NUMERO_DEC, input_utente=True,
-                      nota="Tre mesi e' un anno con un cambio di inquilino andato male.")
-        riga_sfitto_sc = base_sc + 1
-        riga_scenario("Morosita'", [0.08, "=morosita_pct", 0], S.PERC, input_utente=True)
-        riga_moro_sc = base_sc + 2
-        riga_scenario("Tasso del mutuo", ["=tasso+0.015", "=tasso", "=tasso-0.005"], S.PERC, input_utente=True,
-                      nota="Sul fisso i tre valori coincidono; sul variabile il pessimistico e' lo scenario da sostenere.")
-        riga_tasso_sc = base_sc + 3
-        riga_scenario("Rivalutazione annua dell'immobile", [-0.01, "=riv_immobile", 0.03], S.PERC, input_utente=True,
-                      nota="In termini reali il mattone italiano e' rimasto fermo per vent'anni: il pessimistico non e' catastrofismo.")
-        riga_riv_sc = base_sc + 4
+        # Ogni riga si registra in `posizioni` sotto una chiave breve, e le formule
+        # citano le altre righe solo attraverso quelle chiavi. La differenza con gli
+        # offset numerici usati prima non e' di stile: una chiave assente solleva un
+        # KeyError alla generazione, mentre un offset sbagliato produce un
+        # riferimento valido a una riga diversa, cioe' un numero plausibile e falso.
+        # Il vincolo che ne discende e' esplicito: una formula puo' citare solo righe
+        # gia' scritte, e il tentativo di citarne una successiva fallisce subito.
+        posizioni = {}
+        posizioni["ca"] = riga_scenario("Canone mensile", ["=canone_mese*0.85", "=canone_mese", "=canone_mese*1.1"], S.EURO, input_utente=True,
+                                        nota="Il pessimistico sconta un mercato in cui si affitta solo abbassando.")
+        posizioni["sf"] = riga_scenario("Mesi di sfitto all'anno", [3, "=mesi_sfitto", 0.5], S.NUMERO_DEC, input_utente=True,
+                                        nota="Tre mesi e' un anno con un cambio di inquilino andato male.")
+        posizioni["mo"] = riga_scenario("Morosita'", [0.08, "=morosita_pct", 0], S.PERC, input_utente=True)
+        posizioni["ta"] = riga_scenario("Tasso del mutuo", ["=tasso+0.015", "=tasso", "=tasso-0.005"], S.PERC, input_utente=True,
+                                        nota="Sul fisso i tre valori coincidono; sul variabile il pessimistico e' lo scenario da sostenere.")
+        posizioni["riv"] = riga_scenario("Rivalutazione annua dell'immobile", [-0.01, "=riv_immobile", 0.03], S.PERC, input_utente=True,
+                                         nota="In termini reali il mattone italiano e' rimasto fermo per vent'anni: il pessimistico non e' catastrofismo.")
 
         colonne = ("B", "C", "D")
-        for etichetta, formula, formato, risultato in [
-            ("Ricavo effettivo", "({c}{ca}*12-{c}{ca}*{c}{sf})*(1-{c}{mo})", S.EURO, False),
-            ("Costi operativi", "condominio*quota_condominio+prezzo*manut_pct+assicurazione+costo_tempo+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione", S.EURO, False),
-            ("Reddito operativo netto", "{c}{ric}-{c}{cos}", S.EURO, False),
-            ("Imposta sul canone", "{c}{ric}*ced_libero", S.EURO, False),
-            ("Utile netto", "{c}{noi}-{c}{imp}", S.EURO, True),
-            ("Rata annua", "IF(mutuo_importo>0,PMT({c}{ta}/12,durata*12,-mutuo_importo)*12,0)", S.EURO, False),
-            ("Cash flow annuo", "{c}{uti}-{c}{rat}", S.EURO, True),
-            ("Rendimento netto", "{c}{uti}/costo_totale", S.PERC, True),
-            ("Debt service coverage ratio", "IF({c}{rat}>0,{c}{noi}/{c}{rat},\"n.d.\")", S.NUMERO_DEC, False),
-            ("Valore dell'immobile a fine orizzonte", "prezzo*(1+{c}{riv})^orizzonte", S.EURO, False),
-            ("Debito residuo a fine orizzonte", "IF(mutuo_importo>0,mutuo_importo*((1+{c}{ta}/12)^(durata*12)-(1+{c}{ta}/12)^(MIN(orizzonte,durata)*12))/((1+{c}{ta}/12)^(durata*12)-1),0)", S.EURO, False),
-            ("Patrimonio netto a fine orizzonte", "{c}{val}*(1-costi_vendita)-{c}{deb}", S.EURO, True),
+        for etichetta, chiave, formula, formato, risultato in [
+            ("Ricavo effettivo", "ric", "({c}{ca}*12-{c}{ca}*{c}{sf})*(1-{c}{mo})", S.EURO, False),
+            ("Costi operativi", "cos", "condominio*quota_condominio+prezzo*manut_pct+assicurazione+costo_tempo+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione", S.EURO, False),
+            ("Reddito operativo netto", "noi", "{c}{ric}-{c}{cos}", S.EURO, False),
+            ("Imposta sul canone", "imp", "{c}{ric}*ced_libero", S.EURO, False),
+            ("Utile netto", "uti", "{c}{noi}-{c}{imp}", S.EURO, True),
+            ("Rata annua", "rat", "IF(mutuo_importo>0,PMT({c}{ta}/12,durata*12,-mutuo_importo)*12,0)", S.EURO, False),
+            ("Cash flow annuo", "cf", "{c}{uti}-{c}{rat}", S.EURO, True),
+            ("Rendimento netto", "rnet", "{c}{uti}/costo_totale", S.PERC, True),
+            ("Debt service coverage ratio", "dscr", "IF({c}{rat}>0,{c}{noi}/{c}{rat},\"n.d.\")", S.NUMERO_DEC, False),
+            ("Valore dell'immobile a fine orizzonte", "val", "prezzo*(1+{c}{riv})^orizzonte", S.EURO, False),
+            ("Debito residuo a fine orizzonte", "deb", "IF(mutuo_importo>0,mutuo_importo*((1+{c}{ta}/12)^(durata*12)-(1+{c}{ta}/12)^(MIN(orizzonte,durata)*12))/((1+{c}{ta}/12)^(durata*12)-1),0)", S.EURO, False),
+            ("Patrimonio netto a fine orizzonte", "pat", "{c}{val}*(1-costi_vendita)-{c}{deb}", S.EURO, True),
         ]:
-            riferimenti = dict(ca=riga_canone_sc, sf=riga_sfitto_sc, mo=riga_moro_sc, ta=riga_tasso_sc,
-                               riv=riga_riv_sc, ric=base_sc+5, cos=base_sc+6, noi=base_sc+7, imp=base_sc+8,
-                               uti=base_sc+9, rat=base_sc+10, val=base_sc+14, deb=base_sc+15)
-            valori = ["=" + formula.format(c=c, **riferimenti) for c in colonne]
-            riga_scenario(etichetta, valori, formato, risultato=risultato)
+            valori = ["=" + formula.format(c=c, **posizioni) for c in colonne]
+            posizioni[chiave] = riga_scenario(etichetta, valori, formato, risultato=risultato)
 
         ws.conditional_formatting.add(
-            f"B{base_sc+11}:D{base_sc+11}",
+            f"B{posizioni['cf']}:D{posizioni['cf']}",
             CellIsRule(operator="lessThan", formula=["0"], fill=S.FILL_ATTENZIONE),
         )
         r += 1
@@ -1526,10 +1603,80 @@ class Costruttore:
         riga_obiettivo = r
         r = S.campo(ws, r, "Rendimento netto obiettivo", 0.04, S.PERC, input_utente=True, nota="Il rendimento sotto il quale l'operazione non ha senso rispetto alle alternative. Lo usa anche il foglio Confronto immobili per dare l'esito di ciascun annuncio.")
         self.nome("rend_obiettivo", ws, f"B{riga_obiettivo}")
-        r = S.campo(ws, r, "Costo totale sostenibile a quel rendimento", f"=utile_locazione/B{riga_obiettivo}", S.EURO)
+        r = S.campo(ws, r, "Costo totale sostenibile a quel rendimento", f"=utile_locazione/B{riga_obiettivo}", S.EURO, nota="Serve come ordine di grandezza: il costo totale non e' proporzionale al prezzo, perche' una parte delle sue voci non dipende dal prezzo.")
         riga_costo_sost = r - 1
-        r = S.campo(ws, r, "Prezzo massimo corrispondente", f"=B{riga_costo_sost}/(1+incidenza_costi)", S.EURO, risultato=True, nota="Approssimazione: assume che l'incidenza percentuale dei costi accessori resti quella dello scenario base.")
-        r = S.campo(ws, r, "Scarto rispetto al prezzo trattato", f"=B{riga_costo_sost}/(1+incidenza_costi)-prezzo", S.EURO, nota="Se negativo, il prezzo trattato e' sopra quello che l'immobile puo' giustificare a quel rendimento.")
+
+        # Il prezzo massimo si ricava in forma chiusa, non per proporzione. La
+        # versione precedente divideva il costo sostenibile per uno piu' l'incidenza
+        # percentuale dei costi accessori dello scenario base, cioe' assumeva che
+        # quell'incidenza restasse costante al variare del prezzo. Non resta
+        # costante, e sbaglia sempre nella stessa direzione: notaio, oneri del mutuo,
+        # imposte ipotecaria e catastale e, con il prezzo-valore, l'intera imposta di
+        # registro sono importi fissi, quindi la loro incidenza percentuale cresce se
+        # il prezzo scende e cala se sale. Su un immobile piccolo con prezzo-valore la
+        # distorsione e' di alcune migliaia di euro, cioe' proprio nell'ordine di
+        # grandezza della trattativa che questo numero dovrebbe guidare.
+        #
+        # L'algebra e' elementare e vale la pena scriverla, perche' e' cio' che le
+        # tre celle seguenti calcolano. Il costo totale in funzione del prezzo P e'
+        # lineare a tratti, cioe' P*(1+k)+c dove k raccoglie tutto cio' che scala col
+        # prezzo e c tutto cio' che non scala. L'utile netto annuo, a sua volta,
+        # scende quando il prezzo sale, perche' manutenzione e accantonamento per la
+        # ristrutturazione sono quote del valore: utile(P) = utile_base - (P-prezzo)*m.
+        # Imporre utile(P)/costo(P) = obiettivo da' un'equazione di primo grado in P,
+        # la cui soluzione e' (utile_base + prezzo*m - obiettivo*c)/(obiettivo*(1+k)+m).
+        riga_k = r
+        r = S.campo(
+            ws, r, "Quota del prezzo che diventa costo aggiuntivo",
+            '=IF(da_impresa="SI",IF(agevolata="SI",iva_prima,IF(di_lusso="SI",iva_lusso,iva_ord)),'
+            'IF(AND(usa_prezzo_valore="SI",rendita>0),0,IF(agevolata="SI",reg_prima,reg_ord)))'
+            "+provv_pct*(1+iva_provv)",
+            S.PERC_1,
+            nota="Per ogni euro di prezzo in piu', quanti centesimi di costi accessori si aggiungono. Con il prezzo-valore l'imposta di registro non entra, perche' resta ancorata alla rendita catastale e non cresce col prezzo.",
+        )
+        riga_c = r
+        r = S.campo(
+            ws, r, "Costi che non dipendono dal prezzo",
+            '=IF(da_impresa="SI",3*fisso_impresa,'
+            'IF(AND(usa_prezzo_valore="SI",rendita>0),MAX(valore_catastale*IF(agevolata="SI",reg_prima,reg_ord),reg_min),0)'
+            "+ipo_priv+cat_priv)+notaio_cv+altri_costi+oneri_mutuo",
+            S.EURO,
+            nota="Notaio, altri costi, oneri del mutuo, imposte fisse, e con il prezzo-valore l'intera imposta di registro. Sono la ragione per cui l'incidenza percentuale dei costi non e' costante.",
+        )
+        riga_m = r
+        r = S.campo(
+            ws, r, "Costi annui che scalano col prezzo",
+            "=manut_pct+ristrutt_pct/ristrutt_anni",
+            S.PERC_1,
+            nota="Manutenzione ordinaria e accantonamento per la ristrutturazione di fine ciclo sono quote del valore, quindi un prezzo piu' alto abbassa l'utile netto oltre ad alzare il costo totale.",
+        )
+        riga_pmax = r
+        r = S.campo(
+            ws, r, "Prezzo massimo corrispondente",
+            f"=IFERROR((utile_locazione+prezzo*B{riga_m}-B{riga_obiettivo}*B{riga_c})/(B{riga_obiettivo}*(1+B{riga_k})+B{riga_m}),\"non calcolabile\")",
+            S.EURO, risultato=True,
+            nota="Soluzione esatta, non piu' una proporzione sull'incidenza dei costi. Se il rendimento obiettivo e' tanto alto da non essere raggiungibile a nessun prezzo positivo, il valore risulta negativo: e' la risposta corretta, e va letta come non esiste un prezzo che giustifichi l'operazione a quella soglia.",
+        )
+        r = S.campo(ws, r, "Scarto rispetto al prezzo trattato", f"=B{riga_pmax}-prezzo", S.EURO, nota="Se negativo, il prezzo trattato e' sopra quello che l'immobile puo' giustificare a quel rendimento, e la differenza e' lo sconto da ottenere.")
+
+        # Controllo di chiusura. Ricalcola il rendimento netto al prezzo appena
+        # trovato usando le formule esatte delle imposte, floor di legge compreso, e
+        # lo confronta con l'obiettivo. Deve dare zero: se non lo da', un'assunzione
+        # della linearizzazione non tiene, tipicamente il minimo di legge
+        # dell'imposta di registro che diventa vincolante sui prezzi molto bassi. E'
+        # scritto qui, e non lasciato a un test, perche' chi cambia gli input a video
+        # deve poterlo vedere nel momento in cui succede.
+        imposte_pmax = (
+            f'IF(da_impresa="SI",B{riga_pmax}*IF(agevolata="SI",iva_prima,IF(di_lusso="SI",iva_lusso,iva_ord))+3*fisso_impresa,'
+            f'MAX(IF(AND(usa_prezzo_valore="SI",rendita>0),valore_catastale,B{riga_pmax})*IF(agevolata="SI",reg_prima,reg_ord),reg_min)+ipo_priv+cat_priv)'
+        )
+        costo_pmax = f"B{riga_pmax}+{imposte_pmax}+B{riga_pmax}*provv_pct*(1+iva_provv)+notaio_cv+altri_costi+oneri_mutuo"
+        utile_pmax = f"utile_locazione-(B{riga_pmax}-prezzo)*B{riga_m}"
+        riga_ver = r
+        r = S.campo(ws, r, "Verifica: rendimento netto a quel prezzo", f"=IFERROR(({utile_pmax})/({costo_pmax}),\"non calcolabile\")", S.PERC_1,
+                    nota="Ricalcolato con le formule esatte delle imposte, minimo di legge compreso.")
+        r = S.campo(ws, r, "Scarto dalla soglia, deve essere zero", f"=IFERROR(B{riga_ver}-B{riga_obiettivo},\"non calcolabile\")", "0.0000%",
+                    nota="Diverso da zero solo se un'assunzione della soluzione chiusa non tiene: il caso noto e' il minimo di legge dell'imposta di registro, che su prezzi molto bassi diventa vincolante e rende il costo totale non piu' lineare nel prezzo.")
         r = S.campo(ws, r, "Canone minimo per un cash flow non negativo", "=(rata_annua+condominio*quota_condominio+prezzo*manut_pct+assicurazione+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione)/((12-mesi_sfitto)*(1-morosita_pct)*(1-ced_libero))", S.EURO_DEC, risultato=True, nota="Canone mensile sotto il quale l'immobile assorbe cassa invece di generarla.")
 
     # ------------------------------------------------------------- estrazioni
