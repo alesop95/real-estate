@@ -2716,10 +2716,11 @@ class Costruttore:
             "Spese cond.", "Imposte acq.", "Mutuo", "Costi accessori", "Costo totale",
             "Esborso", "Ricavo effettivo", "Costi operativi", "NOI", "Imposta canone",
             "Utile netto", "Rata annua", "Cash flow", "Rend. lordo", "Rend. netto",
-            "Cap rate", "Cash on cash", "DSCR", "Scarto su OMI", "Esito",
+            "Cap rate", "Cash on cash", "DSCR",
+            "Zona OMI", "Quot. OMI min", "Quot. OMI max", "Scarto su OMI", "Esito",
         ]
         larghezze = [12, 20, 8, 14, 12, 12, 14, 12, 14, 14, 16, 14, 14, 16, 16, 14, 14,
-                     14, 14, 14, 12, 12, 12, 12, 10, 14, 16]
+                     14, 14, 14, 12, 12, 12, 12, 10, 12, 15, 15, 14, 16]
         r = S.intestazioni(ws, r, intest, larghezze)
         prima = r
         origine = self.riga_annunci
@@ -2772,15 +2773,36 @@ class Costruttore:
             ws.cell(row=r, column=23, value=f'=IF(OR({vuoto},N($L{r})=0),"",$P{r}/$L{r})').number_format = S.PERC
             ws.cell(row=r, column=24, value=f'=IF(OR({vuoto},N($M{r})=0),"",$T{r}/$M{r})').number_format = S.PERC
             ws.cell(row=r, column=25, value=f'=IF(OR({vuoto},N($S{r})=0),"",$P{r}/$S{r})').number_format = S.NUMERO_DEC
-            ws.cell(row=r, column=26, value=f'=IF({vuoto},"",Annunci!$V{s})').number_format = S.PERC
+            # Il blocco OMI. La zona di riferimento e le due quotazioni arrivano dal
+            # registro, lo scarto no: si ricalcola qui invece di leggere la colonna V
+            # del foglio Annunci, perche' quella confronta la quotazione di zona con
+            # il prezzo richiesto mentre questo foglio valuta il prezzo che usa
+            # davvero, cioe' l'obiettivo quando e' compilato. Leggerla da la' avrebbe
+            # messo in riga un solo numero riferito a un prezzo diverso da quello di
+            # tutte le altre colonne, che e' il tipo di incoerenza che non si vede.
+            # La concatenazione con la stringa vuota non e' un vezzo: una cella vuota
+            # nel registro, letta per riferimento diretto, arriva a video come zero,
+            # e un codice di zona OMI che vale zero e' un dato falso, non un dato
+            # assente. Lo stesso vale per le due quotazioni, che restano bianche
+            # invece di dichiarare un valore di zero euro al metro quadro.
+            ws.cell(row=r, column=26, value=f'=IF({vuoto},"",Annunci!$J{s}&"")')
+            ws.cell(row=r, column=27, value=f'=IF(OR({vuoto},N(Annunci!$T{s})=0),"",Annunci!$T{s})').number_format = S.EURO
+            ws.cell(row=r, column=28, value=f'=IF(OR({vuoto},N(Annunci!$U{s})=0),"",Annunci!$U{s})').number_format = S.EURO
             ws.cell(
-                row=r, column=27,
+                row=r, column=29,
+                value=(
+                    f'=IFERROR(IF(AND(N($AA{r})>0,N($AB{r})>0,N($E{r})>0),'
+                    f'$E{r}/AVERAGE($AA{r},$AB{r})-1,""),"")'
+                ),
+            ).number_format = S.PERC
+            ws.cell(
+                row=r, column=30,
                 value=(
                     f'=IF({vuoto},"",IF(NOT(ISNUMBER($V{r})),"",'
                     f'IF($V{r}>=rend_obiettivo,"sopra soglia","sotto soglia")))'
                 ),
             )
-            for col in range(1, 28):
+            for col in range(1, 31):
                 cella = ws.cell(row=r, column=col)
                 cella.border = S.BORDO
                 cella.fill = S.FILL_CALCOLO
@@ -2788,22 +2810,22 @@ class Costruttore:
 
         ultima = r - 1
         ws.freeze_panes = ws.cell(row=prima, column=3)
-        ws.auto_filter.ref = f"A{prima-1}:AA{ultima}"
+        ws.auto_filter.ref = f"A{prima-1}:AD{ultima}"
         for colonna, verso in (("V", "alto"), ("X", "alto"), ("T", "alto")):
             ws.conditional_formatting.add(
                 f"{colonna}{prima}:{colonna}{ultima}",
                 ColorScaleRule(start_type="min", start_color="F8CBAD", end_type="max", end_color="C6E0B4"),
             )
         ws.conditional_formatting.add(
-            f"Z{prima}:Z{ultima}",
+            f"AC{prima}:AC{ultima}",
             ColorScaleRule(start_type="min", start_color="C6E0B4", mid_type="num", mid_value=0, mid_color="FFF2CC", end_type="max", end_color="F8CBAD"),
         )
         ws.conditional_formatting.add(
-            f"AA{prima}:AA{ultima}",
+            f"AD{prima}:AD{ultima}",
             CellIsRule(operator="equal", formula=['"sopra soglia"'], fill=S.FILL_RISULTATO),
         )
         ws.conditional_formatting.add(
-            f"AA{prima}:AA{ultima}",
+            f"AD{prima}:AD{ultima}",
             CellIsRule(operator="equal", formula=['"sotto soglia"'], fill=S.FILL_ATTENZIONE),
         )
 
@@ -2811,6 +2833,8 @@ class Costruttore:
         for testo in [
             "Le righe si popolano da sole man mano che il foglio Annunci si riempie: restano vuote finche' non c'e' un identificativo nella riga corrispondente. Gli annunci arrivano anche dalla riga di comando, con `python tools/valuta.py excel --con-annunci`.",
             "La colonna del cash flow e' quella che separa le operazioni sostenibili da quelle che assorbono cassa ogni mese, e non coincide quasi mai con l'ordine del rendimento lordo. Il debt service coverage ratio sotto uno dice la stessa cosa in forma di soglia.",
+            "Le tre colonne del blocco OMI dicono in quale zona dell'Osservatorio cade l'immobile e fra quali quotazioni al metro quadro si muove quella zona per la tipologia, e vengono dal registro annunci: si popolano con `python tools/valuta.py omi cerca --comune ...` e finiscono qui attraverso il foglio Annunci. Lo scarto e' calcolato su questo foglio, contro il prezzo al mq della colonna E, quindi contro il prezzo obiettivo quando c'e': puo' percio' differire dallo scarto della colonna V del foglio Annunci, che confronta sempre il prezzo richiesto. La differenza fra i due numeri e' esattamente lo sconto che si sta chiedendo.",
+            "Uno scarto negativo non e' di per se' un affare e uno positivo non e' di per se' un prezzo fuori mercato: la quotazione OMI e' un intervallo medio di zona per tipologia, non una stima dell'immobile, e non vede lo stato di conservazione, il piano, l'affaccio, la classe energetica ne' i lavori deliberati in condominio. Serve a segnalare le righe da capire, non a ordinarle.",
             "Questo foglio serve a scegliere quale immobile approfondire, non a decidere. Per l'immobile che sopravvive alla selezione si compila il foglio Immobile con i suoi dati reali, si verifica l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, e si legge il foglio Metriche.",
         ]:
             r = S.nota_riga(ws, r, testo, 6)

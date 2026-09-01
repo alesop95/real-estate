@@ -183,6 +183,63 @@ def test_confronto_immobili_legge_dalla_riga_giusta():
     assert f"Annunci!$A{prima_annunci}" in confronto.cell(row=prima_confronto, column=1).value
 
 
+def test_confronto_immobili_porta_il_blocco_omi():
+    """Il foglio di confronto mostra la zona OMI e ricalcola lo scarto sul proprio prezzo.
+
+    Il rischio che questo test presidia non e' la presenza delle colonne ma la
+    provenienza dello scarto. Leggerlo dalla colonna V del foglio Annunci sarebbe
+    stato piu' corto di una riga e sbagliato, perche' quella colonna confronta la
+    quotazione di zona con il prezzo richiesto mentre ogni altra colonna di questo
+    foglio ragiona sul prezzo obiettivo quando c'e': la riga avrebbe portato un solo
+    numero riferito a un prezzo diverso da tutti gli altri, senza alcun segnale.
+    Si verifica quindi che la formula dello scarto citi la colonna E del foglio
+    stesso, cioe' il prezzo al metro quadro locale, e non il foglio Annunci.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Confronto immobili"]
+
+    intestazione = None
+    for riga in range(1, 20):
+        if ws.cell(row=riga, column=1).value == "ID":
+            intestazione = riga
+            break
+    assert intestazione is not None, "intestazione del foglio di confronto non trovata"
+
+    testate = {
+        ws.cell(row=intestazione, column=colonna).value: colonna
+        for colonna in range(1, 40)
+        if isinstance(ws.cell(row=intestazione, column=colonna).value, str)
+    }
+    for etichetta in ("Zona OMI", "Quot. OMI min", "Quot. OMI max", "Scarto su OMI", "Esito"):
+        assert etichetta in testate, f"colonna {etichetta!r} assente dal foglio di confronto"
+
+    prima = intestazione + 1
+    zona = ws.cell(row=prima, column=testate["Zona OMI"]).value
+    assert isinstance(zona, str) and "Annunci!$J" in zona, (
+        f"la zona OMI non legge la colonna J del registro: {zona!r}"
+    )
+    for etichetta, colonna_registro in (("Quot. OMI min", "$T"), ("Quot. OMI max", "$U")):
+        formula = ws.cell(row=prima, column=testate[etichetta]).value
+        assert isinstance(formula, str) and f"Annunci!{colonna_registro}" in formula, (
+            f"{etichetta} non legge la colonna {colonna_registro} del registro: {formula!r}"
+        )
+
+    scarto = ws.cell(row=prima, column=testate["Scarto su OMI"]).value
+    assert isinstance(scarto, str) and scarto.startswith("=")
+    assert "Annunci!" not in scarto, (
+        "lo scarto su OMI e' tornato a leggere il foglio Annunci, quindi il prezzo "
+        f"richiesto invece di quello usato dal foglio: {scarto!r}"
+    )
+    assert f"$E{prima}" in scarto, (
+        f"lo scarto non usa il prezzo al mq della colonna E: {scarto!r}"
+    )
+
+    # L'esito resta l'ultima colonna e continua a leggere il rendimento netto.
+    esito = ws.cell(row=prima, column=testate["Esito"]).value
+    assert isinstance(esito, str) and "rend_obiettivo" in esito
+    assert testate["Esito"] == max(testate.values()), "l'esito non e' piu' l'ultima colonna"
+
+
 def test_piano_ammortamento_copre_quaranta_anni():
     wb = load_workbook(workbook())
     ws = wb["Ammortamento"]
