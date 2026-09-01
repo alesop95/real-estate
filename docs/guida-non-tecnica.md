@@ -36,6 +36,8 @@ Tre colonne si compilano da sole e non vanno toccate. Il **prezzo al metro quadr
 
 Le quotazioni OMI si ottengono gratis dal sito dell'Agenzia delle Entrate, cercando "quotazioni immobiliari OMI", e si inseriscono a mano nelle due colonne apposite. È un lavoro di cinque minuti per Comune che ripaga per tutte le valutazioni successive.
 
+In fondo alla riga ci sono due colonne che vale la pena compilare quando la lista mescola immobili diversi fra loro. "Prima casa" dice se quell'immobile sarebbe prima casa per te, e la risposta può cambiare da riga a riga: nel Comune dove hai la residenza sì, in un altro dove hai già un'abitazione no. "Venditore impresa" dice se compri da un costruttore o da un'impresa, cioè con l'IVA, invece che da un privato. Se le lasci vuote la riga usa quello che hai impostato nella scheda Immobile, quindi non devi compilarle per forza; se però in lista hai un usato da privato accanto a un nuovo da costruttore e non le compili, le imposte sono calcolate uguali per tutti e la classifica ti indica come migliore proprio l'immobile che costa più di imposte.
+
 ### Secondo, la scheda Confronto immobili
 
 Non si compila: si legge. Prende tutti gli annunci della scheda precedente e applica a ciascuno lo stesso calcolo completo, imposte comprese, mettendoli in fila.
@@ -129,6 +131,8 @@ Nel foglio **Metriche** c'e' anche un controllo che non riguarda questo immobile
 **Metriche** dà gli indicatori. Il **rendimento netto** è il numero da usare per decidere: è l'utile dopo tutti i costi e le imposte, diviso il costo totale. Fra il lordo che leggi negli annunci e questo netto si perdono di solito due punti e mezzo, e chi ti promette un netto vicino al lordo sta contando male. Il **cash on cash** dice quanto rende il denaro tuo che hai messo. Il **tasso interno di rendimento** è l'unico numero che puoi confrontare con il rendimento di un investimento finanziario, perché tiene conto anche di quanto vale l'immobile alla fine.
 
 **Confronto affitto** risponde alla domanda se convenga comprare o restare in affitto investendo la differenza. Va letto sapendo che dipende quasi solo da tre ipotesi: quanto rende il portafoglio alternativo, quanto si rivaluta l'immobile e quanto pagheresti di affitto. Cambiando la prima di un punto l'esito spesso si rovescia, e questo dice che va usato come mappa, non come sentenza.
+
+Se compri senza mutuo, in quella scheda compare da sola una riga di avvertenza, e conviene darle peso. Il confronto è costruito mettendo a paragone chi compra a debito e chi affitta investendo la differenza: senza mutuo la differenza non c'è più, perché tutto il capitale è già nell'immobile dal primo giorno, e il conto che esce risponde a un'altra domanda. In quel caso il numero da guardare è il tasso interno di rendimento nella scheda Metriche, confrontato con quanto renderebbe lo stesso capitale investito altrove.
 
 Nella scheda **Scenari** trovi anche tre colonne affiancate, pessimistico, base e ottimistico, con canone, sfitto, morosità, tasso e rivalutazione impostabili uno per uno. È lì che si risponde alla domanda vera: non quanto rende se tutto va bene, ma **quanto ci rimetto ogni mese se va male**. Guarda la riga del cash flow annuo, dividila per dodici, e chiediti se quella cifra te la puoi permettere per anni.
 

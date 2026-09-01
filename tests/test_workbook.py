@@ -183,6 +183,130 @@ def test_confronto_immobili_legge_dalla_riga_giusta():
     assert f"Annunci!$A{prima_annunci}" in confronto.cell(row=prima_confronto, column=1).value
 
 
+def test_campi_a_tre_stati_normalizzati():
+    """SI, NO oppure vuoto: un booleano del modello locale non deve passare per NO.
+
+    Il caso che conta e' `true`: Excel confronta il testo senza distinguere le
+    maiuscole, quindi `si` funziona, mentre `true` risulta diverso da SI e il
+    foglio lo legge come un NO senza segnalare nulla. Cio' che non e' riconosciuto
+    resta intatto, perche' un valore strano visibile e' preferibile a un valore
+    strano tradotto per ipotesi.
+    """
+    a = A.Annuncio(id="x_1", venditore_impresa="true", prima_casa="  sI ", asta="0")
+    assert (a.venditore_impresa, a.prima_casa, a.asta) == ("SI", "SI", "NO")
+
+    # Il vuoto resta vuoto: e' il terzo stato, cioe' eredita dal foglio Immobile.
+    b = A.Annuncio(id="x_2")
+    assert b.prima_casa == "" and b.venditore_impresa == ""
+
+    # Un valore non riconosciuto non viene indovinato.
+    c = A.Annuncio(id="x_3", prima_casa="da chiarire col notaio")
+    assert c.prima_casa == "da chiarire col notaio"
+
+    # I due campi nuovi non alterano il numero di campi del registro, che il
+    # contratto con il foglio Annunci conta.
+    assert "prima_casa" in [f.name for f in fields(A.Annuncio)]
+    assert "venditore_impresa" in [f.name for f in fields(A.Annuncio)]
+
+
+def test_regime_di_acquisto_per_riga_nel_confronto():
+    """Le imposte del foglio di confronto leggono il regime della riga, non quello globale.
+
+    Prima, ogni riga pagava le imposte del regime impostato nel foglio Immobile:
+    un usato da privato e un nuovo da costruttore comparivano nella stessa lista
+    con la stessa imposta, e la graduatoria sbagliava nel verso peggiore, perche'
+    faceva sembrare piu' conveniente proprio l'immobile con l'imposta piu' alta.
+    Il presidio non e' la presenza delle due colonne ma il fatto che la formula
+    delle imposte le legga: se tornasse ai nomi globali `agevolata` e `da_impresa`
+    il foglio continuerebbe a calcolare senza il minimo segnale.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Confronto immobili"]
+
+    intestazione = None
+    for riga in range(1, 20):
+        if ws.cell(row=riga, column=1).value == "ID":
+            intestazione = riga
+            break
+    assert intestazione is not None
+
+    testate = {
+        ws.cell(row=intestazione, column=colonna).value: colonna
+        for colonna in range(1, 40)
+        if isinstance(ws.cell(row=intestazione, column=colonna).value, str)
+    }
+    for etichetta in ("Prima casa", "Da impresa"):
+        assert etichetta in testate, f"colonna {etichetta!r} assente dal foglio di confronto"
+    assert testate["Prima casa"] == 26 and testate["Da impresa"] == 27, (
+        "le due colonne del regime hanno cambiato posizione: le formule delle imposte "
+        "le citano per lettera, quindi la posizione e' contrattuale"
+    )
+
+    prima = intestazione + 1
+    # Le due colonne ereditano dal foglio Immobile quando il registro tace.
+    for colonna, globale, registro in (
+        (26, "agevolata", "Annunci!$AK"), (27, "da_impresa", "Annunci!$AL"),
+    ):
+        formula = ws.cell(row=prima, column=colonna).value
+        assert isinstance(formula, str)
+        assert globale in formula, f"la colonna {colonna} non ricade su {globale}: {formula!r}"
+        assert registro in formula, f"la colonna {colonna} non legge {registro}: {formula!r}"
+
+    # Imposte di trasferimento e costi accessori devono leggere le due colonne.
+    imposte = ws.cell(row=prima, column=9).value
+    assert f"$AA{prima}" in imposte, f"le imposte non leggono il regime del venditore: {imposte!r}"
+    assert f"$Z{prima}" in imposte, f"le imposte non leggono la prima casa della riga: {imposte!r}"
+    assert "da_impresa" not in imposte and "agevolata" not in imposte, (
+        f"le imposte usano ancora il regime globale: {imposte!r}"
+    )
+    accessori = ws.cell(row=prima, column=11).value
+    assert f"$Z{prima}" in accessori and "agevolata" not in accessori, (
+        f"l'imposta sostitutiva del mutuo usa ancora il regime globale: {accessori!r}"
+    )
+
+
+def test_cruscotto_legge_il_confronto_affitto_per_nome():
+    """Il verdetto del Cruscotto non deve dipendere da una coordinata fissa.
+
+    La formula citava `'Confronto affitto'!$B$52`: inserire una riga in quel foglio
+    non avrebbe prodotto alcun errore, avrebbe prodotto un verdetto sbagliato sul
+    primo foglio del workbook, cioe' quello che si legge per decidere.
+    """
+    wb = load_workbook(workbook())
+    assert "conf_differenza" in wb.defined_names, (
+        "il nome definito conf_differenza non esiste piu'"
+    )
+
+    # Il nome deve puntare alla differenza, non a un'altra cella della sezione.
+    # E' l'invariante che il difetto precedente violava: la formula del Cruscotto
+    # citava $B$52, cioe' il patrimonio comprando, che e' positivo per qualunque
+    # immobile di valore, quindi il verdetto diceva "conviene comprare" anche
+    # quando il foglio concludeva l'opposto. Nessun errore, nessuna cella rossa:
+    # solo il primo foglio del workbook che risponde alla domanda sbagliata.
+    destinazioni = list(wb.defined_names["conf_differenza"].destinations)
+    assert len(destinazioni) == 1
+    foglio, coordinata = destinazioni[0]
+    assert foglio == "Confronto affitto", f"conf_differenza punta al foglio {foglio!r}"
+    riga_nome = int("".join(c for c in coordinata if c.isdigit()))
+    etichetta = wb[foglio].cell(row=riga_nome, column=1).value
+    assert etichetta == "Differenza a favore dell'acquisto", (
+        f"conf_differenza punta alla riga {riga_nome}, etichettata {etichetta!r}, "
+        "che non e' la differenza fra i due patrimoni"
+    )
+    ws = wb["Cruscotto"]
+    trovata = None
+    for riga in range(1, 80):
+        valore = ws.cell(row=riga, column=2).value
+        if isinstance(valore, str) and "conviene comprare" in valore:
+            trovata = valore
+            break
+    assert trovata is not None, "il verdetto sul comprare o affittare non si trova nel Cruscotto"
+    assert "conf_differenza" in trovata, f"il verdetto non usa il nome definito: {trovata!r}"
+    assert "$B$52" not in trovata and "$B$21" not in trovata, (
+        f"il verdetto cita ancora una coordinata fissa: {trovata!r}"
+    )
+
+
 def test_confronto_immobili_porta_il_blocco_omi():
     """Il foglio di confronto mostra la zona OMI e ricalcola lo scarto sul proprio prezzo.
 
