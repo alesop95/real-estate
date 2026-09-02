@@ -334,6 +334,88 @@ class Costruttore:
                             "senza questi non si verifica nulla", "Nel foglio Dossier tecnico. Sono le carte la cui assenza rende nullo l'atto, blocca il mutuo o lascia ignoto il costo di regolarizzazione.")
         riga_kpi("Completamento del fascicolo tecnico", "=documenti_completamento", S.PERC_1,
                  "", "Documenti ricevuti sul totale di quelli applicabili a questo immobile.")
+        riga_kpi("Controlli di plausibilita' non superati", "=controlli_falliti", S.NUMERO,
+                 "il dettaglio e' qui sotto", "Input che il modello considera non ancora attendibili: il dettaglio, con la ragione di ciascuno, sta nella sezione in fondo a questa pagina.")
+        r += 1
+
+        r = S.sezione(ws, r, "Controlli di plausibilita' sugli input", 4, secondaria=True)
+        r = S.nota_riga(ws, r, "Il modello non puo' sapere se un input e' giusto, ma puo' sapere se e' ancora quello di esempio, se e' a zero dove uno zero non e' plausibile, o se e' incoerente con un'altra scelta. I controlli qui sotto sono di questo tipo, e ciascuno dice che cosa comporta il valore trovato. Nessuno di essi blocca il calcolo: il foglio continua a produrre numeri, e il punto e' proprio che li produrrebbe anche sbagliati senza dirlo.", 4)
+        intest_ctrl = ["Controllo", "Esito", "Che cosa comporta", "Come si chiude"]
+        r = S.intestazioni(ws, r, intest_ctrl, [42, 30, 60, 56])
+        prima_ctrl = r
+
+        # Ogni controllo e' una formula che restituisce la stringa vuota quando
+        # e' superato e un messaggio quando non lo e'. La stringa vuota, e non
+        # la parola ok, perche' una colonna di ok e' rumore che si impara a
+        # ignorare, mentre una colonna quasi vuota rende visibile cio' che resta.
+        controlli = [
+            ("Rendita catastale contro prezzo-valore",
+             '=IF(AND(usa_prezzo_valore="SI",rendita<=0),"rendita a zero con prezzo-valore attivo","")',
+             "L'opzione prezzo-valore non si applica senza rendita, quindi le imposte si calcolano sul prezzo intero: e' la leva fiscale piu' grossa dell'operazione e si sta perdendo in silenzio.",
+             "Si chiede la visura catastale all'agenzia, o la si estrae da una visura propria."),
+            ("Aliquota IMU deliberata dal Comune",
+             '=IF(imu_aliquota=imu_base,"ancora al valore base di legge","")',
+             "I Comuni possono azzerarla o portarla all'1,06 per cento: sul valore base l'IMU stimata puo' sbagliare di un quarto, ogni anno per tutta la durata del possesso.",
+             "Si legge nella delibera comunale dell'anno in corso e si scrive nel foglio Locazione."),
+            ("Spese condominiali",
+             '=IF(condominio<=0,"a zero","")',
+             "Un immobile in condominio ha spese, e a zero il reddito operativo netto e' sovrastimato di tutto il loro importo.",
+             "Dal consuntivo condominiale degli ultimi due esercizi, non dalla stima dell'agenzia; insieme si leggono i verbali per i lavori deliberati."),
+            ("Canone atteso",
+             '=IF(AND(abitazione_principale<>"SI",canone_mese<=0),"a zero su un immobile da mettere a reddito","")',
+             "Senza canone il conto economico della locazione e ogni rendimento sono vuoti, e il cash flow risulta pari alla sola rata.",
+             "Dagli annunci di affitto comparabili nella stessa zona, o dalle quotazioni OMI di locazione."),
+            ("Superficie",
+             '=IF(mq<=0,"a zero","")',
+             "Senza superficie non esiste il prezzo al metro quadro, quindi non e' possibile alcun confronto con le quotazioni di zona.",
+             "Dall'annuncio, verificando se la superficie dichiarata e' commerciale o calpestabile."),
+            ("Comune",
+             '=IF(comune="","non compilato","")',
+             "Serve a ritrovare la delibera IMU e la zona OMI: senza, entrambe le verifiche restano aperte.",
+             "Dall'annuncio."),
+            ("Assicurazione del fabbricato",
+             '=IF(assicurazione<=0,"a zero","")',
+             "La polizza incendio e' obbligatoria con un mutuo e il suo costo esiste comunque: a zero il conto economico e' ottimistico.",
+             "Dal preventivo della polizza, o da quello che la banca propone; si puo' portarne una propria equivalente."),
+            ("Patrimonio complessivo",
+             '=IF(patrimonio_totale<=0,"non compilato, controllo di concentrazione spento","")',
+             "Il rischio di concentrazione e' quello che nessun rendimento vede: chi ha due terzi del patrimonio in mattone non ha un portafoglio ma una scommessa su una zona.",
+             "Si somma immobili gia' posseduti, liquidita' e investimenti, incluso questo acquisto, nel foglio Metriche."),
+        ]
+
+        for etichetta, formula, comporta, chiude in controlli:
+            e = ws.cell(row=r, column=1, value=etichetta)
+            e.font = S.ETICHETTA
+            e.alignment = S.SINISTRA
+            v = ws.cell(row=r, column=2, value=formula)
+            v.font = S.ETICHETTA_BOLD
+            v.alignment = S.SINISTRA
+            for colonna, testo in ((3, comporta), (4, chiude)):
+                c = ws.cell(row=r, column=colonna, value=testo)
+                c.font = S.NOTA
+                c.alignment = S.SINISTRA
+            for colonna in range(1, 5):
+                ws.cell(row=r, column=colonna).border = S.BORDO
+            ws.row_dimensions[r].height = 34
+            r += 1
+        ultima_ctrl = r - 1
+
+        # Il contatore che il Cruscotto mostra in testa. Conta le celle non vuote
+        # della colonna dell'esito, cioe' i controlli non superati.
+        self.nome_intervallo("controlli_esiti", ws, f"$B${prima_ctrl}:$B${ultima_ctrl}")
+        riga_cont = r
+        r = S.campo(ws, r, "Controlli non superati", '=COUNTIF(controlli_esiti,"?*")', S.NUMERO, risultato=True,
+                    nota="Conta le celle dell'esito che portano un messaggio. Il criterio conta le stringhe non vuote e non le celle non vuote, perche' una formula che restituisce la stringa vuota produce una cella tecnicamente non vuota.")
+        self.nome("controlli_falliti", ws, f"B{riga_cont}")
+        ws.conditional_formatting.add(
+            f"B{riga_cont}:B{riga_cont}",
+            CellIsRule(operator="greaterThan", formula=["0"], fill=S.FILL_ATTENZIONE),
+        )
+        ws.conditional_formatting.add(
+            f"B{prima_ctrl}:B{ultima_ctrl}",
+            CellIsRule(operator="notEqual", formula=['""'], fill=S.FILL_ATTENZIONE),
+        )
+        r = S.nota_riga(ws, r, "Un controllo non superato non e' un errore del modello: e' un input che non e' ancora un dato. La distinzione conta perche' il foglio calcola comunque, e un numero calcolato su un input di esempio ha la stessa faccia di un numero calcolato su un dato vero.", 4)
         r += 1
 
         for cella, regola in (
@@ -511,7 +593,12 @@ class Costruttore:
         r = S.campo(ws, r, "Riferimento interno", "house_1", input_utente=True, nota="Lo stesso identificativo usato nel foglio Annunci.")
         self.nome("riferimento_immobile", ws, f"B{riga_rif}")
         riga_com = r
+        riga_comune = r
         r = S.campo(ws, r, "Comune", "", input_utente=True, nota="Serve a ritrovare la delibera IMU e la zona OMI di riferimento.")
+        # Il nome esiste perche' la precompilazione da registro scrive per nome
+        # definito e non per coordinata: senza, questa cella non sarebbe
+        # raggiungibile e il Comune resterebbe l'unico campo da ridigitare.
+        self.nome("comune", ws, f"B{riga_comune}")
         self.nome("comune_immobile", ws, f"B{riga_com}")
         r = S.campo(ws, r, "Indirizzo", "", input_utente=True)
         r = S.campo(ws, r, "Link annuncio", "", input_utente=True)

@@ -83,6 +83,16 @@ python tools/valuta.py excel --output "percorso/mio-file.xlsx"
 
 Genera il workbook di ventun fogli in `output/Valutazione-Immobile.xlsx`. Con `--con-annunci` vi riversa anche il registro, scrivendo un immobile per riga nel foglio Annunci e preservando le tre colonne che contengono formule. Con `--output` si cambia la destinazione, cosa utile per tenere un file per immobile una volta scelto il candidato.
 
+Con `--da-annuncio` il workbook nasce già compilato coi dati di un immobile a registro, e questo toglie il passaggio più pericoloso del percorso: la ridigitazione a mano. Scelto l'immobile dalla graduatoria, i suoi dati stavano nel registro e andavano ricopiati nei fogli di input, un lavoro di due minuti che introduce l'unica classe di errore contro cui il modello non ha difese, cioè la trascrizione. Un prezzo con una cifra in meno produce un'operazione che sembra ottima e nessuna cella va in errore per dirlo.
+
+```
+python tools/valuta.py excel --con-annunci --da-annuncio house_6 --output "output/house_6.xlsx"
+```
+
+La scrittura passa per i nomi definiti delle celle e non per le coordinate, quindi un nome scomparso fa fallire il comando con un messaggio invece di scrivere un prezzo in una cella di manutenzione; e rifiuta di scrivere in una cella che contiene una formula, perché la distinzione fra input e calcolo vive nel colore e non nel tipo.
+
+Una cosa va capita perché è deliberata e sorprende: i campi che il registro non ha vengono **azzerati** e non lasciati al valore di esempio. Un workbook appena generato porta una rendita catastale di 450 euro che serve a mostrare il formato; in un file dedicato a un immobile reale quel valore farebbe applicare il prezzo-valore su una base inventata, e i controlli di plausibilità non se ne accorgerebbero perché guardano se il valore è zero, non se è vero. Azzerando, il foglio mostra un modello visibilmente incompleto invece di uno apparentemente sano, e i controlli del Cruscotto li segnalano tutti. Restano invece intatti i due campi del regime di acquisto e la base d'asta, perché lì il vuoto significa qualcosa.
+
 Il comando va rieseguito dopo ogni modifica al registro e dopo ogni modifica al codice del generatore. Attenzione a una cosa che capita: se il file è aperto in Excel, la scrittura falla con un errore di permesso, e il processo va chiuso prima di rigenerare.
 
 Rigenerare sovrascrive il file, quindi tutto quello che si è scritto a mano nelle celle gialle di quella copia si perde. Il modo di lavorare che regge è tenere il file generato come modello e salvarne una copia con un altro nome per l'immobile su cui si sta lavorando davvero.
@@ -114,6 +124,8 @@ python tools/valuta.py annunci esporta
 python tools/valuta.py annunci rimuovi --id house_7
 python tools/valuta.py annunci omi --id house_3
 ```
+
+`mancanti` risponde alla domanda che si pone a metà percorso: quale immobile è pronto per la valutazione e quale aspetta un dato. Non elenca i campi vuoti, che su trentacinque colonne sarebbero rumore, ma quelli che bloccano un calcolo, una riga per immobile, e in fondo mette una legenda che per ciascun campo dice che cosa blocca e come si ottiene. La legenda sta in fondo e non accanto a ogni riga perché quell'informazione è per campo e non per immobile: ripeterla trasformerebbe una risposta da dieci secondi in centoventisei righe.
 
 `elenca` stampa il registro. `confronta` stampa la graduatoria ordinata per scarto sulla quotazione di zona e non per prezzo, perché fra immobili di taglia diversa il prezzo non dice nulla; accanto mostra il canone che la zona paga per quella superficie, ricavato dalle quotazioni OMI di locazione e non dall'annuncio, e una colonna di segnalazioni che ricava dalle note le bandiere rosse, cioè immobile locato, da ristrutturare, zona assegnata per ipotesi, dati incoerenti, rendita mancante, più la segnalazione della vendita soggetta a IVA che rende quella riga non commensurabile alle altre.
 
@@ -180,6 +192,22 @@ python tools/valuta.py llm stato
 ```
 
 Dice se l'istanza Ollama configurata risponde e quali modelli espone. Va usato quando `annunci importa` falla, per capire se il problema è il modello o il testo.
+
+### scheda, una pagina per la trattativa
+
+```
+python tools/valuta.py scheda --id house_6
+python tools/valuta.py scheda --id house_6 --mutuo 110000 --tasso 0.031 --durata 25 --imu 0.0106
+python tools/valuta.py scheda --id house_6 --obiettivo 0.05 --output "output/schede/mia.tex"
+```
+
+Produce il sorgente LaTeX di una scheda di una pagina, da compilare con gli script del progetto e da portare in agenzia. Serve a un momento preciso: quando si telefona al venditore o si entra in agenzia, e servono in mano quattro numeri e un elenco. I numeri sono il costo reale dell'operazione, che non è il prezzo, il rendimento netto reale, il prezzo massimo che l'immobile giustifica ai propri criteri e lo sconto che ne consegue. L'elenco è quello dei dati che mancano, perché la telefonata serve anche a chiederli.
+
+Le opzioni sono i dati che il registro non porta e che cambiano il risultato: `--mutuo`, `--tasso` e `--durata` dal preventivo, `--imu` dalla delibera del Comune, `--obiettivo` per il rendimento netto sotto il quale l'operazione non ha senso. Senza `--imu` la scheda usa l'aliquota base di legge e lo dichiara nel piede, invece di lasciarla passare per un dato.
+
+Due comportamenti sono voluti. La scheda calcola col motore Python e non legge il workbook, quindi è un terzo riscontro della stessa matematica e non una copia. E i numeri che dipendono da un dato assente non vengono stampati: senza canone atteso, per esempio, il prezzo massimo non è calcolabile e la casella lo dice invece di contenere una cifra. La prima versione la conteneva, e su un immobile senza canone annunciava uno sconto da ottenere del centoquattro per cento del prezzo: aritmeticamente corretto, operativamente assurdo.
+
+Il file finisce in `output/schede/`, che non è versionato, ed è voluto: la scheda porta il prezzo obiettivo, che è la propria strategia di acquisto.
 
 ### verifica-excel.ps1, il controllo del workbook
 
@@ -260,6 +288,14 @@ Il primo foglio è l'indice e riporta questa stessa informazione in forma naviga
 | Fonti | si consulta | prima di fidarsi di un numero |
 
 Il ventunesimo foglio, `_Estrazioni`, è nascosto e contiene le mille estrazioni casuali della simulazione, generate una volta sola con un seme dichiarato. Non c'è nulla da leggerci e non va toccato: è ciò che rende la simulazione riproducibile invece di cambiare a ogni ricalcolo.
+
+## I controlli di plausibilità
+
+Il Cruscotto porta in testa un contatore, "Controlli di plausibilità non superati", e in fondo la sezione che li elenca uno per uno. Il modello non può sapere se un input è giusto, ma può sapere tre cose: se è ancora quello di esempio, se è a zero dove uno zero non è plausibile, e se è incoerente con un'altra scelta. Gli otto controlli sono di questo tipo, e ciascuno dice che cosa comporta il valore trovato e come si chiude.
+
+Il più importante è il primo: rendita catastale a zero mentre l'opzione prezzo-valore è attiva. In quel caso l'opzione non si applica, le imposte si calcolano sul prezzo intero, e si sta perdendo in silenzio la leva fiscale più grossa dell'operazione. Il secondo è l'aliquota IMU ancora al valore base di legge, che i Comuni possono azzerare o portare all'1,06 per cento: sul valore base l'IMU stimata può sbagliare di un quarto, ogni anno per tutta la durata del possesso.
+
+Nessun controllo blocca il calcolo, e il punto è proprio quello: il foglio produce numeri anche su input di esempio, e un numero calcolato su un input di esempio ha la stessa faccia di uno calcolato su un dato vero. Un controllo non superato non è un errore del modello, è un input che non è ancora un dato.
 
 ## Le convenzioni del workbook
 

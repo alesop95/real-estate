@@ -767,6 +767,83 @@ def test_fattore_rendita_crescente_coincide_con_la_somma_esplicita():
     )
 
 
+def test_scheda_sfugge_i_dati_e_non_inventa_il_prezzo_massimo():
+    """Due garanzie della scheda di trattativa, entrambe nate da difetti osservati.
+
+    La prima riguarda la separazione fra testo e marcatura. I campi di un annuncio
+    sono compilati a mano e contengono caratteri che in LaTeX hanno un significato:
+    il nome di un'agenzia con la e commerciale, un indirizzo col cancelletto, una
+    nota con la percentuale. Vanno sfuggiti, e insieme non va sfuggita la marcatura
+    che la scheda produce: le prime versioni passavano per la funzione di fuga
+    anche le etichette, che contenevano il comando del grassetto, e il PDF lo
+    stampava alla lettera.
+
+    La seconda riguarda i numeri che dipendono da un dato assente. Il prezzo
+    massimo sostenibile e' il prezzo a cui il rendimento raggiunge l'obiettivo,
+    quindi dipende dal canone: senza canone la prima versione stampava meno
+    seimila euro e annunciava uno sconto da ottenere del centoquattro per cento
+    del prezzo. Aritmeticamente corretto, operativamente assurdo, e con la faccia
+    di un obiettivo di negoziazione. La scheda deve rifiutarsi di stamparlo.
+    """
+    from immobiliare import annunci as A
+    from immobiliare import scheda as S
+
+    # Un annuncio con caratteri ostili in tutti i campi testuali.
+    ostile = A.Annuncio(
+        id="house_x", comune="Comune & Frazione", indirizzo="via Rossi #12 (100% ok)",
+        zona_omi="B_5", mq=60, prezzo_richiesto=100_000, canone_atteso_mese=500,
+        rendita_catastale=400, categoria="A/3", spese_condominio_anno=900,
+        quotazione_omi_min=1500, quotazione_omi_max=2500,
+    )
+    sorgente = S.costruisci(ostile, mutuo=70_000)
+
+    # I caratteri speciali dei dati sono sfuggiti.
+    assert r"Comune \& Frazione" in sorgente
+    assert r"\#12" in sorgente
+    assert r"100\% ok" in sorgente
+    assert r"B\_5" in sorgente
+
+    # E la marcatura prodotta dalla scheda non e' stata sfuggita: se lo fosse,
+    # comparirebbe la forma con la barra rovesciata resa visibile.
+    assert r"\textbackslash{}textbf" not in sorgente
+    assert r"\textbf{Costo totale}" in sorgente
+
+    # Il documento e' completo e a pagina singola.
+    assert sorgente.startswith("\\documentclass")
+    assert sorgente.rstrip().endswith(r"\end{document}")
+    assert sorgente.count(r"\begin{document}") == 1
+
+    # Con tutti i dati, il prezzo massimo si calcola e la casella lo riporta.
+    assert "Il numero da portare in trattativa" in sorgente
+    assert "non e' calcolabile" not in sorgente
+
+    # Senza canone, la stessa casella si rifiuta e dice perche'.
+    senza_canone = A.Annuncio(
+        id="house_y", comune="Comune di prova", mq=60, prezzo_richiesto=100_000,
+        rendita_catastale=400, categoria="A/3", spese_condominio_anno=900,
+        zona_omi="B5",
+    )
+    sorgente2 = S.costruisci(senza_canone)
+    assert "non e' calcolabile" in sorgente2
+    assert "Scheda incompleta" in sorgente2
+    # E i rendimenti non compaiono affatto, invece di comparire a zero.
+    assert "Rendimento netto reale" not in sorgente2
+    assert "Cash flow annuo" not in sorgente2
+
+    # Senza rendita catastale la scheda dichiara che il prezzo-valore non si
+    # applica, che e' la voce che cambia di piu' il costo dell'operazione.
+    senza_rendita = A.Annuncio(
+        id="house_z", comune="Comune di prova", mq=60, prezzo_richiesto=100_000,
+        canone_atteso_mese=500, categoria="A/3", spese_condominio_anno=900, zona_omi="B5",
+    )
+    sorgente3 = S.costruisci(senza_rendita)
+    assert "prezzo-valore non si applica" in sorgente3
+
+    # La mappa dei campi bloccanti e' condivisa col comando che li elenca: una
+    # copia locale divergerebbe, e la scheda direbbe di chiedere cose diverse.
+    assert S.CAMPI_BLOCCANTI is A.CAMPI_BLOCCANTI
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

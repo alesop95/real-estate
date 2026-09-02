@@ -414,6 +414,40 @@ def testo_da_html(html: str) -> str:
     return "\n".join(r for r in righe if r)
 
 
+CAMPI_BLOCCANTI = (
+    # campo, che cosa blocca la sua assenza, come si ottiene
+    ("mq", "prezzo al metro quadro, quindi lo scarto sulla zona e la graduatoria",
+     "dall'annuncio, verificando se e' commerciale o calpestabile"),
+    ("prezzo_richiesto", "qualunque calcolo: senza prezzo non c'e' operazione",
+     "dall'annuncio"),
+    ("rendita_catastale", "il prezzo-valore, cioe' la leva fiscale piu' grossa dell'operazione",
+     "si chiede all'agenzia con la visura, oppure la si legge in una visura propria"),
+    ("zona_omi", "lo scarto sulla quotazione di zona: senza, si usa la forbice dell'intero Comune",
+     'python tools/valuta.py omi zone --comune "..."'),
+    ("canone_atteso_mese", "tutto il conto economico della locazione e il rendimento",
+     "dagli annunci di affitto comparabili, o dalle quotazioni OMI di locazione"),
+    ("spese_condominio_anno", "i costi operativi, quindi il reddito operativo netto",
+     "dal consuntivo condominiale degli ultimi due esercizi, non dalla stima"),
+    ("categoria", "il moltiplicatore catastale e l'esclusione dall'agevolazione",
+     "dalla visura catastale"),
+    ("comune", "l'aggancio alle quotazioni OMI e la delibera IMU da cercare",
+     "dall'annuncio"),
+)
+"""I campi la cui assenza blocca un calcolo, in ordine di importanza decrescente.
+
+Non e' l'elenco dei campi vuoti, che sarebbe inutile su un registro di
+trentacinque colonne dove molti campi sono facoltativi per costruzione: e'
+l'elenco di quelli che, mancando, rendono muto un pezzo del modello, e per
+ciascuno dice quale pezzo e come si ottiene il dato.
+
+La costante ha due consumatori, il comando che risponde alla domanda "che cosa
+manca" e la scheda di trattativa che elenca cosa chiedere, ed e' la ragione per
+cui vive qui accanto alla dataclass invece che dentro uno dei due: due copie di
+un elenco divergono, e la loro divergenza non produce un errore ma una scheda
+che dice di chiedere una cosa diversa da quella che il comando segnala.
+"""
+
+
 STATI_ANNUNCIO = (
     "da contattare",
     "contattato",
@@ -560,6 +594,154 @@ def _numero(valore) -> float:
         return float(tenuto)
     except ValueError:
         return 0.0
+
+
+# I campi del registro che alimentano una cella di input del workbook, mappati
+# sul nome definito della cella. La mappa e' l'intero contratto di questa
+# funzione, ed e' scritta per nome e non per coordinata per la ragione di
+# ADR-013: un nome inesistente fallisce a voce alta, una coordinata sbagliata
+# scrive un prezzo in una cella di manutenzione senza che nulla protesti.
+#
+# Le tre voci con `trasformazione` esistono perche' il registro e il workbook
+# esprimono la stessa cosa in unita' diverse: il registro tiene il canone al
+# mese e le spese condominiali all'anno, il workbook vuole il canone al mese e
+# le spese all'anno, quindi la conversione e' l'identita'; il prezzo, invece, va
+# scelto fra obiettivo e richiesto, e la scelta e' la stessa che fa il foglio di
+# confronto, cosi' che i due non divergano.
+PRECOMPILAZIONE = (
+    # nome definito, campo del registro, formato di stampa, significato dell'assenza
+    ("prezzo", "prezzo_da_usare", "euro", "da_chiedere"),
+    ("rendita", "rendita_catastale", "euro", "da_chiedere"),
+    ("categoria", "categoria", "testo", "da_chiedere"),
+    ("mq", "mq", "numero", "da_chiedere"),
+    ("comune", "comune", "testo", "da_chiedere"),
+    ("canone_mese", "canone_atteso_mese", "euro", "da_chiedere"),
+    ("condominio", "spese_condominio_anno", "euro", "da_chiedere"),
+    # Le tre voci seguenti hanno un'assenza che non e' una lacuna. Il vuoto dei
+    # due campi del regime di acquisto e' il terzo stato di ADR-014, che
+    # significa eredita dal foglio Immobile, e non e' un dato da chiedere:
+    # `prima_casa` in particolare dipende da chi compra e non dall'immobile,
+    # quindi nessuna agenzia lo sa. La base d'asta riguarda solo le vendite
+    # giudiziarie, quindi su un immobile di libero mercato deve restare vuota.
+    ("prima_casa", "prima_casa", "testo", "neutro"),
+    ("da_impresa", "venditore_impresa", "testo", "neutro"),
+    ("asta_base", "base_asta", "euro", "neutro"),
+)
+
+
+def precompila_workbook(
+    annuncio: "Annuncio",
+    percorso_workbook: str,
+    azzera_assenti: bool = True,
+) -> dict:
+    """Scrive nelle celle di input del workbook i dati di un annuncio a registro.
+
+    Toglie il passaggio piu' noioso e piu' pericoloso del percorso di lavoro.
+    Scelto l'immobile dalla graduatoria, i suoi dati stavano nel registro e
+    andavano ridigitati a mano nei fogli di input: un lavoro di due minuti che
+    introduce l'unica classe di errore contro cui il modello non ha difese, cioe'
+    la trascrizione. Un prezzo con una cifra in meno produce un'operazione che
+    sembra ottima, e nessuna cella va in errore per dirlo.
+
+    Due presidi rendono l'operazione sicura, e sono la ragione per cui questa
+    funzione e' piu' lunga di un ciclo di assegnazioni.
+
+    Il primo e' che si scrive per nome definito. Un nome che non esiste piu',
+    perche' il generatore e' cambiato, fa fallire la funzione con un messaggio
+    che dice quale nome manca; una coordinata sbagliata scriverebbe il valore in
+    una cella qualunque.
+
+    Il secondo e' che si rifiuta di scrivere in una cella che contiene una
+    formula. Le celle di input del workbook sono gialle e le calcolate grigie,
+    ma la distinzione vive nel colore e non nel tipo: niente impedisce a un nome
+    di puntare a una cella calcolata, e sovrascriverla romperebbe la catena in
+    silenzio. La funzione controlla il contenuto prima di scrivere e riporta le
+    celle che ha saltato, invece di fidarsi della convenzione.
+
+    Il terzo presidio riguarda cio' che il registro non ha, ed e' la ragione del
+    parametro `azzera_assenti`. Un workbook appena generato porta valori di
+    esempio in tutte le celle di input, che servono a mostrare il formato atteso
+    e a far funzionare il modello a vuoto. In un file dedicato a un immobile
+    reale quei valori diventano pericolosi: se il registro non ha la rendita
+    catastale, la cella conserva i 450 euro dell'esempio, il modello applica il
+    prezzo-valore su una base inventata, e i controlli di plausibilita' del
+    Cruscotto non se ne accorgono perche' guardano se il valore e' zero, non se
+    e' vero. Il risultato e' un numero plausibile calcolato su un dato falso, che
+    e' precisamente la classe di difetto contro cui il resto del progetto e'
+    costruito.
+
+    Con `azzera_assenti` attivo, che e' il default, i campi mancanti vengono
+    quindi azzerati invece di essere lasciati all'esempio. La conseguenza e'
+    voluta e va capita: il foglio mostrera' un modello visibilmente incompleto,
+    con rendimenti a zero e controlli non superati, invece di un modello
+    apparentemente sano. Fra le due, la prima e' l'unica onesta.
+
+    L'azzeramento riguarda solo i campi la cui assenza e' una lacuna. I due campi
+    del regime di acquisto e la base d'asta hanno un'assenza che significa
+    qualcosa, cioe' eredita dal foglio Immobile e non e' un'asta, e azzerarli
+    cambierebbe il modello invece di dichiararlo incompleto.
+
+    Restituisce un rapporto di cio' che ha scritto, cio' che ha azzerato, cio'
+    che ha saltato e cio' che ha rifiutato perche' la cella era calcolata. Il rapporto e' il valore di
+    ritorno e non un effetto collaterale stampato, cosi' che chi chiama decida
+    come mostrarlo, e distingue due tipi di assenza: quella che e' una lacuna da
+    colmare e quella che non lo e'. La distinzione non e' cosmetica: elencare
+    `prima_casa` fra i campi da chiedere sarebbe fuorviante due volte, perche'
+    il suo vuoto significa eredita dal foglio Immobile ed e' un comportamento
+    corretto, e perche' quel dato dipende da chi compra e non dall'immobile,
+    quindi non c'e' nessuno a cui chiederlo.
+    """
+    from openpyxl import load_workbook
+
+    wb = load_workbook(percorso_workbook)
+    scritti, assenti, rifiutati, azzerati = {}, [], [], []
+
+    for nome, campo, formato, natura_assenza in PRECOMPILAZIONE:
+        if nome not in wb.defined_names:
+            raise ValueError(
+                f"il nome definito {nome!r} non esiste nel workbook: il generatore e' "
+                "cambiato e la mappa PRECOMPILAZIONE va aggiornata"
+            )
+        if campo == "prezzo_da_usare":
+            valore = annuncio.prezzo_obiettivo or annuncio.prezzo_richiesto
+        else:
+            valore = getattr(annuncio, campo)
+
+        assente = valore in (None, "", 0, 0.0)
+        if assente:
+            assenti.append((nome, campo, natura_assenza))
+            if not (azzera_assenti and natura_assenza == "da_chiedere"):
+                continue
+
+        destinazioni = list(wb.defined_names[nome].destinations)
+        if len(destinazioni) != 1:
+            rifiutati.append((nome, "il nome non punta a una cella sola"))
+            continue
+        foglio, coordinata = destinazioni[0]
+        cella = wb[foglio][coordinata]
+        if isinstance(cella.value, str) and cella.value.startswith("="):
+            rifiutati.append((nome, f"{foglio}!{coordinata} contiene una formula"))
+            continue
+
+        if assente:
+            # Si azzera nel tipo della cella: una cella numerica va a zero, una
+            # testuale alla stringa vuota. Scrivere zero in una cella di testo
+            # farebbe comparire uno zero dove il controllo cerca il vuoto.
+            precedente = cella.value
+            cella.value = 0 if isinstance(precedente, (int, float)) else ""
+            azzerati.append((nome, f"{foglio}!{coordinata}", precedente))
+            continue
+
+        cella.value = valore
+        scritti[nome] = (f"{foglio}!{coordinata}", valore, formato)
+
+    wb.save(percorso_workbook)
+    return {
+        "scritti": scritti,
+        "assenti": assenti,
+        "azzerati": azzerati,
+        "rifiutati": rifiutati,
+    }
 
 
 def esporta_in_excel(registro: Registro, percorso_workbook: str) -> int:

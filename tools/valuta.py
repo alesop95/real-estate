@@ -62,10 +62,115 @@ def cmd_excel(args) -> int:
         registro = A.Registro(ARCHIVIO)
         scritti = A.esporta_in_excel(registro, str(destinazione))
         print(f"Annunci riversati nel foglio Annunci: {scritti}")
+
+    if args.da_annuncio:
+        if not ARCHIVIO.exists():
+            print(f"Nessun registro in {ARCHIVIO}: --da-annuncio non ha da dove leggere.")
+            return 1
+        registro = A.Registro(ARCHIVIO)
+        annuncio = next((a for a in registro.annunci if a.id == args.da_annuncio), None)
+        if annuncio is None:
+            disponibili = ", ".join(a.id for a in registro.annunci)
+            print(f"Annuncio {args.da_annuncio!r} non a registro. Disponibili: {disponibili}")
+            return 1
+        try:
+            esito = A.precompila_workbook(annuncio, str(destinazione))
+        except ValueError as e:
+            print(f"Precompilazione non possibile: {e}")
+            return 1
+
+        print()
+        print(f"PRECOMPILATO DA {annuncio.id}, {annuncio.comune or 'Comune non indicato'}")
+        for nome, (cella, valore, formato) in esito["scritti"].items():
+            if formato == "euro":
+                mostrato = euro(valore)
+            elif formato == "numero":
+                mostrato = f"{valore:,.0f}".replace(",", ".")
+            else:
+                mostrato = str(valore)
+            print(f"  {nome:<16}{cella:<26}{mostrato:>18}")
+
+        da_chiedere = [(n, c) for n, c, natura in esito["assenti"] if natura == "da_chiedere"]
+        neutri = [(n, c) for n, c, natura in esito["assenti"] if natura == "neutro"]
+        if da_chiedere:
+            print()
+            print("  Azzerati perche' il registro non li ha: sono i campi da chiedere. Le")
+            print("  celle sono state svuotate invece di lasciare il valore di esempio, cosi'")
+            print("  che il foglio mostri un modello visibilmente incompleto invece di uno")
+            print("  apparentemente sano calcolato su dati inventati. I controlli di")
+            print("  plausibilita' del Cruscotto li segnalano tutti.")
+            for nome, campo in da_chiedere:
+                precedente = next((p for n, _, p in esito["azzerati"] if n == nome), None)
+                nota = "" if precedente in (None, "") else f"   (l'esempio diceva {precedente})"
+                print(f"    {nome:<16}dal campo {campo}{nota}")
+        if neutri:
+            print()
+            print("  Lasciati vuoti a ragione, non sono lacune. I due campi del regime di")
+            print("  acquisto vuoti significano eredita dal foglio Immobile, e la base d'asta")
+            print("  riguarda solo le vendite giudiziarie.")
+            for nome, campo in neutri:
+                print(f"    {nome:<16}dal campo {campo}")
+        if esito["rifiutati"]:
+            print()
+            print("  Rifiutati per sicurezza:")
+            for nome, ragione in esito["rifiutati"]:
+                print(f"    {nome:<16}{ragione}")
+        print()
+        print("  Restano da compilare a mano le voci che il registro non porta e che")
+        print("  cambiano di piu' il risultato: aliquota IMU dalla delibera del Comune,")
+        print("  importo e tasso del mutuo dal preventivo, e la verifica che le spese")
+        print("  condominiali vengano dal consuntivo e non dalla stima dell'agenzia.")
+
     print()
     print("Parametri fiscali della revisione", P.REVISIONE.strftime("%d/%m/%Y"))
     print("Le celle gialle sono gli input. Verificare sempre l'aliquota IMU nella")
     print("delibera del Comune e le spese nel consuntivo condominiale.")
+    return 0
+
+
+def cmd_scheda(args) -> int:
+    """Scheda di una pagina per la trattativa, in LaTeX."""
+    if not ARCHIVIO.exists():
+        print(f"Nessun registro in {ARCHIVIO}.")
+        return 1
+    registro = A.Registro(ARCHIVIO)
+    annuncio = next((a for a in registro.annunci if a.id == args.id), None)
+    if annuncio is None:
+        disponibili = ", ".join(a.id for a in registro.annunci)
+        print(f"Annuncio {args.id!r} non a registro. Disponibili: {disponibili}")
+        return 1
+
+    from immobiliare import scheda as S
+
+    sorgente = S.costruisci(
+        annuncio,
+        mutuo=args.mutuo,
+        tasso=args.tasso,
+        durata=args.durata,
+        imu_aliquota=args.imu,
+        rendimento_obiettivo=args.obiettivo,
+    )
+
+    destinazione = Path(args.output) if args.output else RADICE / "output" / "schede" / f"{annuncio.id}.tex"
+    destinazione.parent.mkdir(parents=True, exist_ok=True)
+    destinazione.write_text(sorgente, encoding="utf-8")
+    print(f"Sorgente della scheda: {destinazione}")
+
+    mancanti = [c for c, _, _ in A.CAMPI_BLOCCANTI if not getattr(annuncio, c, None)]
+    if mancanti:
+        print()
+        print(f"La scheda e' marcata incompleta: mancano {len(mancanti)} dati bloccanti")
+        print(f"  {', '.join(mancanti)}")
+        print("I numeri restano calcolati su cio' che c'e', e la scheda lo dichiara in testa.")
+
+    print()
+    print("Per ottenere il PDF:")
+    relativo = destinazione.relative_to(RADICE) if destinazione.is_relative_to(RADICE) else destinazione
+    print(f"  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\build.ps1 -Main {relativo}")
+    print(f"  bash scripts/build.sh --main {str(relativo).replace(chr(92), '/')}")
+    print()
+    print("La cartella output non e' versionata, ed e' voluto: la scheda porta il prezzo")
+    print("obiettivo, che e' la propria strategia di acquisto.")
     return 0
 
 
@@ -206,6 +311,93 @@ def cmd_riepilogo(args) -> int:
 
 def cmd_annunci(args) -> int:
     registro = A.Registro(ARCHIVIO)
+
+    if args.azione == "mancanti":
+        """Che cosa manca su ogni immobile, e che cosa quel dato blocca.
+
+        Il registro accetta un immobile col solo link, ed e' giusto, perche'
+        altrimenti non si registrerebbe nulla. La conseguenza e' che a meta'
+        percorso non si sa piu' quale immobile sia pronto per la valutazione e
+        quale aspetti un dato, e la domanda non ha una risposta a vista: le
+        celle vuote di un CSV di trentacinque colonne non si contano a occhio.
+        Questo comando la risponde, e non elenca i campi vuoti ma quelli che
+        bloccano un calcolo, dicendo quale.
+        """
+        # La mappa vive in `annunci.CAMPI_BLOCCANTI`, perche' la usa anche la
+        # scheda di trattativa: due copie divergerebbero, e la divergenza non
+        # produrrebbe un errore ma una scheda che dice di chiedere una cosa
+        # diversa da quella che questo comando segnala.
+        BLOCCHI = A.CAMPI_BLOCCANTI
+
+        if not registro.annunci:
+            print("Registro vuoto.")
+            return 0
+
+        pronti, incompleti = [], []
+        for a in sorted(registro.annunci, key=lambda x: (-x.punteggio, x.id)):
+            mancano = [(campo, blocca, come) for campo, blocca, come in BLOCCHI
+                       if not getattr(a, campo)]
+            if mancano:
+                incompleti.append((a, mancano))
+            else:
+                pronti.append(a)
+
+        # Una riga per immobile. L'informazione su cosa blocca un campo e come si
+        # ottiene e' per campo e non per immobile, quindi sta nella legenda in
+        # fondo e non ripetuta quattordici volte: ripeterla trasformerebbe una
+        # risposta da dieci secondi in centoventisei righe da leggere.
+        print("CHE COSA MANCA, un immobile per riga")
+        print()
+        print(f"  {'ID':<10}{'prio':>4}  {'comune':<20}{'manca':>6}  campi da chiedere")
+        print("  " + "-" * 96)
+        for a, mancano in incompleti:
+            nomi = ", ".join(campo for campo, _, _ in mancano)
+            for indice, riga in enumerate(_a_capo(nomi, 52)):
+                if indice == 0:
+                    print(f"  {a.id:<10}{a.punteggio:>4}  {a.comune[:19]:<20}{len(mancano):>6}  {riga}")
+                else:
+                    print(f"  {'':<10}{'':>4}  {'':<20}{'':>6}  {riga}")
+        for a in pronti:
+            print(f"  {a.id:<10}{a.punteggio:>4}  {a.comune[:19]:<20}{0:>6}  pronto per la valutazione completa")
+
+        # La legenda: solo i campi che mancano davvero a qualcuno, perche' una
+        # legenda che spiega campi che nessuno deve chiedere e' rumore.
+        da_chiedere = {campo for _, mancano in incompleti for campo, _, _ in mancano}
+        if da_chiedere:
+            print()
+            print("CHE COSA BLOCCA CIASCUN CAMPO, e come si ottiene")
+            print()
+            for campo, blocca, come in BLOCCHI:
+                if campo not in da_chiedere:
+                    continue
+                quanti = sum(1 for _, mancano in incompleti
+                             if campo in {c for c, _, _ in mancano})
+                print(f"  {campo}   manca su {quanti} immobili")
+                for riga in _a_capo(f"blocca {blocca}", 92):
+                    print(f"    {riga}")
+                for riga in _a_capo(f"come: {come}", 92):
+                    print(f"    {riga}")
+                print()
+
+        print(f"{len(pronti)} pronti su {len(registro.annunci)} a registro.")
+        if pronti:
+            print()
+            print("Su uno dei pronti si genera il workbook precompilato con:")
+            print(f"  python tools/valuta.py excel --con-annunci --da-annuncio {pronti[0].id}")
+        else:
+            print("Il lavoro utile adesso e' chiedere i dati mancanti, non rifare i conti.")
+            comuni = sorted({a.comune for a, _ in incompleti if a.comune})
+            senza_rendita = [a.id for a, m in incompleti
+                             if "rendita_catastale" in {c for c, _, _ in m}]
+            if senza_rendita:
+                print()
+                print(f"La rendita catastale manca su {len(senza_rendita)} immobili e si chiede")
+                print("con una mail sola all'agenzia, insieme alla superficie calpestabile e al")
+                print("consuntivo condominiale: sono i tre dati che sbloccano tutto il resto.")
+            if comuni:
+                print()
+                print("Comuni coinvolti, per la delibera IMU da cercare: " + ", ".join(comuni))
+        return 0
 
     if args.azione == "confronta":
         """Graduatoria degli immobili a registro, ordinata per scarto sulla zona.
@@ -803,7 +995,18 @@ def principale(argomenti=None) -> int:
     p = sub.add_parser("excel", help="genera il workbook di valutazione")
     p.add_argument("--output", help="percorso di destinazione")
     p.add_argument("--con-annunci", action="store_true", help="riversa anche l'archivio annunci")
+    p.add_argument("--da-annuncio", metavar="ID", help="precompila le celle di input coi dati di un immobile a registro, per esempio house_6")
     p.set_defaults(funzione=cmd_excel)
+
+    p = sub.add_parser("scheda", help="scheda di una pagina per la trattativa, in LaTeX")
+    p.add_argument("--id", required=True, help="identificativo dell'immobile a registro, per esempio house_6")
+    p.add_argument("--output", help="percorso del .tex; default output/schede/<id>.tex")
+    p.add_argument("--mutuo", type=float, default=0.0, help="importo del mutuo dal preventivo")
+    p.add_argument("--tasso", type=float, default=0.032, help="TAN in forma decimale")
+    p.add_argument("--durata", type=int, default=25)
+    p.add_argument("--imu", type=float, help="aliquota IMU dalla delibera del Comune; default il valore base di legge, e la scheda lo dichiara")
+    p.add_argument("--obiettivo", type=float, default=0.04, help="rendimento netto obiettivo, per il prezzo massimo")
+    p.set_defaults(funzione=cmd_scheda)
 
     p = sub.add_parser("riepilogo", help="calcolo rapido a video, senza Excel")
     p.add_argument("--prezzo", type=float, required=True)
@@ -834,7 +1037,7 @@ def principale(argomenti=None) -> int:
     p.set_defaults(funzione=cmd_riepilogo)
 
     p = sub.add_parser("annunci", help="registro degli immobili in valutazione")
-    p.add_argument("azione", choices=["elenca", "confronta", "aggiungi", "modifica", "importa", "esporta", "rimuovi", "omi"])
+    p.add_argument("azione", choices=["elenca", "confronta", "mancanti", "aggiungi", "modifica", "importa", "esporta", "rimuovi", "omi"])
     p.add_argument("--id")
     p.add_argument("--link")
     p.add_argument("--file", help="file di testo con l'annuncio copiato dal browser")

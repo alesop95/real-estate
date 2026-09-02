@@ -6,19 +6,20 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: a0b3420, righe catturate e prezzo massimo esatto
-Ultimo aggiornamento:  2026-09-01
+Commit di riferimento: 744639a, catena dei tassi e trattazione matematica
+Ultimo aggiornamento:  2026-09-02
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
 Trattazione LaTeX:     23 pagine, compilata senza avvisi il 2026-09-02
 Registro annunci:      14 immobili, non versionato
-Test:                  65 verdi, 44 sul motore e 21 sulla struttura
+Pronti alla valutazione: 0 su 14, manca la rendita catastale su tutti
+Test:                  68 verdi, 45 sul motore e 23 sulla struttura
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
 ```
 
-Committato fino a `7fe9747`. Del 2 settembre non e' committato nulla: la catena dei tassi in `tassi.py` con l'opzione del comando, l'analisi dell'effetto inflazione nel motore e nel foglio Metriche, il pacchetto LaTeX istanziato con la trattazione `docs/matematica-finanziaria.tex`, i due annunci nuovi a registro, due test, l'allineamento della documentazione, ADR-018 e la voce di work-log. Resta inoltre non committato il lavoro del 1 settembre sull'indice navigabile e sul manuale operativo, elencato sotto. Non committato: l'indice navigabile del workbook, cioe' il foglio Guida ricostruito con i collegamenti a tutti i fogli, il ritorno all'indice su ogni foglio, l'helper dei collegamenti interni in `stile.py`, l'unificazione degli stati ammessi per un annuncio, due test nuovi, il manuale operativo `docs/manuale-operativo.md`, i rimandi ad esso nelle guide e nel README, ADR-017 e la voce 12 dello studio didattico con l'approfondimento `refactor-12`. I frontmatter delle schede restano ancorati ad `a0b3420`, che e' il commit del codice che descrivono.
+Committato fino a `744639a`, che porta la catena dei tassi, l'effetto dell'inflazione e la trattazione matematica in LaTeX. Non committato il solo lavoro sull'usabilita' del 2 settembre: la precompilazione del workbook da una riga del registro con l'azzeramento dei campi assenti, il comando `annunci mancanti`, gli otto controlli di plausibilita' nel Cruscotto, il modulo `scheda.py` con il comando omonimo, tre test nuovi, l'allineamento del manuale operativo e di `CLAUDE.md`, ADR-019 e la voce di work-log.
 
-Resta fuori dal versionamento, per scelta, il solo `data/annunci.csv` con i dodici immobili a registro, perche' porta i link alle trattative e la colonna del prezzo obiettivo.
+I frontmatter delle schede di contesto restano ancorati ad `a0b3420`: e' il commit del codice di calcolo che descrivono, e il lavoro successivo ha aggiunto strumenti attorno al modello senza cambiare il modello.
 
 ## Stato delle schede
 

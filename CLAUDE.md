@@ -40,6 +40,9 @@ python tools/valuta.py excel --con-annunci        genera il workbook e vi rivers
 python tools/valuta.py riepilogo --prezzo ...      calcolo rapido a video, senza Excel
 python tools/valuta.py annunci elenca              registro degli immobili in valutazione
 python tools/valuta.py annunci confronta            graduatoria per scarto sulla zona OMI
+python tools/valuta.py annunci mancanti             che cosa manca su ogni immobile, e cosa blocca
+python tools/valuta.py excel --da-annuncio ID      workbook precompilato coi dati di un immobile
+python tools/valuta.py scheda --id ID              scheda LaTeX di una pagina per la trattativa
 python tools/valuta.py annunci importa --file ...  struttura un annuncio col modello locale
 python tools/valuta.py tassi --tasso 0.032        tassi correnti di mercato e confronto
 python tools/valuta.py tassi --risalita             peggiori risalite storiche dell'Euribor

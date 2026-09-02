@@ -58,6 +58,10 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'e' una feature ap
 - [x] Catena dei tassi: dall'overnight della BCE al preventivo, con gli scarti che la scompongono
 - [x] Effetto dell'inflazione: Fisher esatto, scomposizione per componente, costo dell'indicizzazione rinunciata
 - [x] Trattazione LaTeX della matematica del modello, con la tavola simbolo-cella-funzione
+- [x] Workbook precompilato da una riga del registro, con l'azzeramento dei campi assenti
+- [x] Comando che dice che cosa manca su ogni immobile e che cosa quel dato blocca
+- [x] Controlli di plausibilita' sugli input, nel Cruscotto, con il contatore in testa
+- [x] Scheda di trattativa di una pagina in LaTeX, con il rifiuto di stampare cio' che non e' calcolabile
 - [ ] Commit del lavoro del 1 e del 2 settembre, che spetta all'utente
 
 ## Riconciliazione

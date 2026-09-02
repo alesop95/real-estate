@@ -614,6 +614,146 @@ def test_confronto_immobili_porta_il_blocco_omi():
     assert testate["Esito"] == max(testate.values()), "l'esito non e' piu' l'ultima colonna"
 
 
+def test_precompilazione_scrive_per_nome_e_azzera_solo_le_lacune():
+    """Precompila un workbook da un annuncio e verifica le tre garanzie.
+
+    La precompilazione toglie il passaggio piu' pericoloso del percorso, cioe' la
+    ridigitazione a mano dei dati dell'immobile scelto nei fogli di input: un
+    prezzo con una cifra in meno produce un'operazione che sembra ottima e
+    nessuna cella va in errore per dirlo. Le garanzie da presidiare sono tre.
+
+    La prima e' che si scriva per nome definito e non per coordinata, secondo
+    ADR-013. La seconda e' che non si scriva mai in una cella che contiene una
+    formula: la distinzione fra input e calcolo vive nel colore e non nel tipo,
+    quindi niente impedirebbe a un nome di puntare a una cella calcolata e
+    sovrascriverla romperebbe la catena in silenzio. La terza, la meno ovvia, e'
+    che i campi assenti dal registro vengano azzerati e non lasciati al valore di
+    esempio: un workbook appena generato porta una rendita catastale di 450 euro
+    che serve a mostrare il formato, e in un file dedicato a un immobile reale
+    quel valore farebbe applicare il prezzo-valore su una base inventata senza
+    che alcun controllo se ne accorga.
+
+    L'azzeramento non tocca i campi la cui assenza significa qualcosa, cioe' i
+    due del regime di acquisto, dove il vuoto e' il terzo stato di ADR-014, e la
+    base d'asta, dove il vuoto significa che non e' un'asta.
+    """
+    cartella = Path(tempfile.mkdtemp())
+    destinazione = cartella / "precompilato.xlsx"
+    E.genera(str(destinazione))
+
+    # Un annuncio con alcuni campi e non altri: il prezzo obiettivo deve vincere
+    # sul richiesto, come fa il foglio di confronto.
+    annuncio = A.Annuncio(
+        id="house_prova", comune="Comune di prova", mq=62,
+        prezzo_richiesto=159_000, prezzo_obiettivo=150_000,
+        canone_atteso_mese=600,
+    )
+    esito = A.precompila_workbook(annuncio, str(destinazione))
+
+    wb = load_workbook(destinazione)
+
+    def per_nome(nome):
+        foglio, coordinata = list(wb.defined_names[nome].destinations)[0]
+        return wb[foglio][coordinata].value
+
+    # Scritti: il prezzo obiettivo e non il richiesto.
+    assert per_nome("prezzo") == 150_000, per_nome("prezzo")
+    assert per_nome("mq") == 62
+    assert per_nome("comune") == "Comune di prova"
+    assert per_nome("canone_mese") == 600
+    assert set(esito["scritti"]) == {"prezzo", "mq", "comune", "canone_mese"}, esito["scritti"]
+
+    # Azzerati: le lacune, e solo quelle. La rendita e' il caso che conta.
+    azzerati = {nome for nome, _, _ in esito["azzerati"]}
+    assert "rendita" in azzerati, "la rendita mancante non e' stata azzerata"
+    assert "condominio" in azzerati
+    assert per_nome("rendita") == 0, "la rendita ha conservato il valore di esempio"
+    assert per_nome("condominio") == 0
+
+    # Non azzerati: i campi la cui assenza significa qualcosa.
+    for nome in ("prima_casa", "da_impresa", "asta_base"):
+        assert nome not in azzerati, (
+            f"{nome} e' stato azzerato: il suo vuoto significa eredita o non pertinente, "
+            "e azzerarlo cambia il modello invece di dichiararlo incompleto"
+        )
+
+    # Nessuna cella di formula toccata, e nessun rifiuto: se ci fossero rifiuti
+    # significherebbe che un nome della mappa punta a una cella calcolata.
+    assert esito["rifiutati"] == [], esito["rifiutati"]
+
+    # La mappa e i nomi del workbook non devono divergere: un nome scomparso
+    # deve far fallire la funzione, non passare in silenzio.
+    for nome, _, _, _ in A.PRECOMPILAZIONE:
+        assert nome in wb.defined_names, f"il nome {nome!r} della mappa non esiste nel workbook"
+
+
+def test_controlli_di_plausibilita_contano_solo_i_non_superati():
+    """Il Cruscotto porta i controlli, e il contatore conta i messaggi.
+
+    I controlli non verificano che un input sia giusto, cosa che il modello non
+    puo' sapere, ma che non sia ancora quello di esempio, che non sia a zero dove
+    uno zero non e' plausibile, o che non sia incoerente con un'altra scelta.
+    Ciascuno restituisce la stringa vuota quando e' superato, e non la parola ok,
+    perche' una colonna di ok diventa rumore che si impara a ignorare mentre una
+    colonna quasi vuota rende visibile cio' che resta.
+
+    Il contatore deve usare un criterio sulle stringhe non vuote e non sulle
+    celle non vuote: una formula che restituisce la stringa vuota produce una
+    cella tecnicamente non vuota, quindi COUNTA li conterebbe tutti.
+    """
+    wb = load_workbook(workbook())
+    ws = wb["Cruscotto"]
+
+    intestazione = None
+    for riga in range(1, 140):
+        if ws.cell(row=riga, column=1).value == "Controllo" and ws.cell(row=riga, column=2).value == "Esito":
+            intestazione = riga
+            break
+    assert intestazione is not None, "la sezione dei controlli non si trova nel Cruscotto"
+
+    attesi = ["Rendita catastale contro prezzo-valore", "Aliquota IMU deliberata dal Comune",
+              "Spese condominiali", "Canone atteso", "Superficie", "Comune",
+              "Assicurazione del fabbricato", "Patrimonio complessivo"]
+    for scostamento, etichetta in enumerate(attesi, start=1):
+        effettiva = ws.cell(row=intestazione + scostamento, column=1).value
+        assert effettiva == etichetta, (
+            f"riga {intestazione + scostamento}: atteso {etichetta!r}, trovato {effettiva!r}"
+        )
+        formula = ws.cell(row=intestazione + scostamento, column=2).value
+        assert isinstance(formula, str) and formula.startswith("=IF("), (
+            f"il controllo {etichetta!r} non e' una formula condizionale: {formula!r}"
+        )
+        assert formula.endswith('"")'), (
+            f"il controllo {etichetta!r} non restituisce la stringa vuota quando e' superato: {formula!r}"
+        )
+
+    # Il contatore, e il criterio che usa.
+    assert "controlli_falliti" in wb.defined_names
+    foglio, coordinata = list(wb.defined_names["controlli_falliti"].destinations)[0]
+    contatore = wb[foglio][coordinata].value
+    assert 'COUNTIF(controlli_esiti,"?*")' in contatore, (
+        f"il contatore non conta le stringhe non vuote: {contatore!r}. "
+        "COUNTA conterebbe anche le celle che contengono la stringa vuota."
+    )
+
+    # L'intervallo contato deve coprire esattamente le righe dei controlli.
+    foglio_int, riferimento = list(wb.defined_names["controlli_esiti"].destinations)[0]
+    import re
+    numeri = [int(n) for n in re.findall(r"\d+", riferimento)]
+    assert numeri == [intestazione + 1, intestazione + len(attesi)], (
+        f"l'intervallo dei controlli e' {riferimento}, atteso da {intestazione + 1} a {intestazione + len(attesi)}"
+    )
+
+    # E il Cruscotto deve mostrarlo in testa, non solo in fondo.
+    in_testa = False
+    for riga in range(1, intestazione):
+        if ws.cell(row=riga, column=1).value == "Controlli di plausibilita' non superati":
+            assert ws.cell(row=riga, column=2).value == "=controlli_falliti"
+            in_testa = True
+            break
+    assert in_testa, "il contatore dei controlli non compare fra i numeri in testa al Cruscotto"
+
+
 def test_piano_ammortamento_copre_quaranta_anni():
     wb = load_workbook(workbook())
     ws = wb["Ammortamento"]
