@@ -139,6 +139,8 @@ python tools/valuta.py annunci omi --id house_3
 
 Le opzioni dei campi sono `--id`, `--link`, `--comune`, `--provincia`, `--indirizzo`, `--tipologia`, `--destinazione` per la destinazione d'uso, `--fonte`, `--agenzia`, `--contatto`, `--nuova` per la nuova costruzione, `--consegna` per la data prevista o la parola pronto, `--mq`, `--prezzo` per il richiesto, `--obiettivo` per il prezzo che si vuole mettere in proposta, `--canone` mensile atteso, `--note`, `--stato`, `--punteggio` da zero a dieci, `--zona` per la zona OMI e `--tipologia-omi` per la tipologia edilizia dell'Osservatorio.
 
+A queste si aggiungono le opzioni dei campi che `mancanti` segnala come bloccanti, e che fino al 2 settembre 2026 non erano scrivibili se non aprendo il CSV a mano: `--rendita` per la rendita catastale, che è quella che sblocca il prezzo-valore, `--categoria` per la categoria catastale, `--condominio` per le spese condominiali annue dal consuntivo, `--piano`, `--classe` per la classe energetica, `--prima-casa` e `--impresa` per i due campi del regime di acquisto, che accettano SI o NO e che omessi lasciano il terzo stato, e `--quotazione-min` con `--quotazione-max`, che di norma scrive `annunci omi` e che si passano a mano solo se si legge la quotazione dal sito invece di ingerire la fornitura. Un comando che chiede un dato e non lo accetta è un percorso interrotto a metà, ed è la ragione per cui queste opzioni esistono.
+
 ### omi, le quotazioni dell'Osservatorio
 
 ```

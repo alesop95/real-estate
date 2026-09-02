@@ -571,6 +571,12 @@ def cmd_annunci(args) -> int:
             nuova_costruzione="SI" if args.nuova else "NO",
             data_consegna=args.consegna or "", note=args.note or "",
             punteggio=args.punteggio or 0, zona_omi=args.zona_omi or "",
+            rendita_catastale=args.rendita or 0.0, categoria=args.categoria or "",
+            spese_condominio_anno=args.condominio or 0.0, piano=args.piano or "",
+            classe_energetica=args.classe_energetica or "",
+            prima_casa=args.prima_casa or "", venditore_impresa=args.venditore_impresa or "",
+            quotazione_omi_min=args.quotazione_omi_min or 0.0,
+            quotazione_omi_max=args.quotazione_omi_max or 0.0,
         )
         try:
             registro.aggiungi(annuncio)
@@ -595,6 +601,14 @@ def cmd_annunci(args) -> int:
             "tipologia": args.tipologia, "mq": args.mq, "prezzo_richiesto": args.prezzo,
             "prezzo_obiettivo": args.obiettivo, "canone_atteso_mese": args.canone,
             "agenzia": args.agenzia, "contatto": args.contatto, "note": args.note,
+            # I campi bloccanti, aggiunti perche' senza di loro il percorso si
+            # interrompeva: `annunci mancanti` li chiedeva e nulla li accettava.
+            "rendita_catastale": args.rendita, "categoria": args.categoria,
+            "spese_condominio_anno": args.condominio, "piano": args.piano,
+            "classe_energetica": args.classe_energetica,
+            "prima_casa": args.prima_casa, "venditore_impresa": args.venditore_impresa,
+            "quotazione_omi_min": args.quotazione_omi_min,
+            "quotazione_omi_max": args.quotazione_omi_max,
         }
         applicate = []
         for campo, valore in modifiche.items():
@@ -1059,6 +1073,20 @@ def principale(argomenti=None) -> int:
     p.add_argument("--stato", help="uno fra: " + ", ".join(A.STATI_ANNUNCIO))
     p.add_argument("--punteggio", type=int, help="priorita' da 0 a 10, 10 e' la massima")
     p.add_argument("--zona", dest="zona_omi", help="zona OMI, per agganciare la quotazione giusta")
+    # I campi che `annunci mancanti` indica come bloccanti devono essere
+    # scrivibili da qui: fino al 2 settembre 2026 il comando diceva di
+    # procurarsi rendita catastale, categoria e spese condominiali, e poi non
+    # c'era modo di scriverle se non aprendo il CSV a mano. Un comando che
+    # chiede un dato e non lo accetta e' un percorso interrotto a meta'.
+    p.add_argument("--rendita", type=float, help="rendita catastale in euro, dalla visura: sblocca il prezzo-valore")
+    p.add_argument("--categoria", help="categoria catastale, per esempio A/2 o A/3")
+    p.add_argument("--condominio", type=float, help="spese condominiali annue, dal consuntivo")
+    p.add_argument("--piano")
+    p.add_argument("--classe", dest="classe_energetica", help="classe energetica, una lettera fra A4 e G")
+    p.add_argument("--prima-casa", dest="prima_casa", choices=["SI", "NO"], help="regime della riga; se omesso eredita dal foglio Immobile")
+    p.add_argument("--impresa", dest="venditore_impresa", choices=["SI", "NO"], help="venditore impresa con IVA; se omesso eredita dal foglio Immobile")
+    p.add_argument("--quotazione-min", dest="quotazione_omi_min", type=float, help="quotazione OMI minima, di norma scritta da `annunci omi`")
+    p.add_argument("--quotazione-max", dest="quotazione_omi_max", type=float, help="quotazione OMI massima")
     p.add_argument("--tipologia-omi", dest="tipologia_omi", default="", help="tipologia edilizia OMI, per l'azione omi")
     p.set_defaults(funzione=cmd_annunci)
 
