@@ -55,7 +55,7 @@ flowchart LR
     REG --> MOTORE
     MOTORE --> XLSX["Workbook di ventun fogli<br/>con formule vive"]
     MOTORE --> SCH["Scheda di trattativa<br/>una pagina PDF"]
-    PARAM --> TRATT["Trattazione matematica<br/>ventitré pagine PDF"]
+    PARAM --> TRATT["Trattazione matematica<br/>trentadue pagine PDF"]
     XLSX --> DEC(["La decisione"])
     SCH --> DEC
 ```
@@ -89,30 +89,40 @@ python tests/test_workbook.py
 ## La cartella, che cosa c'è dove
 
 ```
-src/immobiliare/     il codice: parametri, calcoli, generatore del workbook, registro, OMI, tassi, indicatori, modello locale
-tools/               la riga di comando e lo script di verifica del workbook
+src/immobiliare/     la libreria: parametri, calcoli, generatore del workbook, registro,
+                     OMI, tassi, indicatori, modello locale, scheda di trattativa
+tools/               i due eseguibili: valuta.py, che e' la riga di comando, e
+                     verifica-excel.ps1, che apre il workbook con Excel
+scripts/             build e setup dell'ambiente LaTeX, quattro script
 tests/               i due file di test
-docs/                le schede di dominio e le guide, compreso questo file
-data/                il registro degli annunci in CSV e la cache delle quotazioni OMI, non versionati
-output/              il workbook generato, non versionato
+docs/                le schede di dominio e le guide in Markdown, compreso questo file
+docs/matematica/     la trattazione LaTeX e il PDF che ne esce
+data/annunci.csv     il registro degli immobili, non versionato
+data/omi/            la fornitura delle quotazioni OMI, da aggiornare a semestre
+output/              tutto cio' che il progetto genera, non versionato
+  Valutazione-Immobile.xlsx    il workbook-modello, con i valori di esempio
+  immobili/<id>/               una cartella per immobile: il workbook precompilato,
+                               il sorgente della scheda e il suo PDF
 _notes/              materiale personale, non versionato, con la mappa in INDICE-MATERIALE.md
 .claude/             memoria di progetto, decisioni, schede di contesto, regole
 ```
+
+Sulla divisione fra `src/` e `tools/` vale una riga, perche' e' una domanda ricorrente. Sotto `src/immobiliare/` sta la libreria, cioe' moduli che si importano e non si eseguono: e' il layout `src`, adottato perche' impedisce di importare per sbaglio il pacchetto dalla cartella di lavoro invece che da quello installato, che e' la causa piu' comune di test che passano in locale e falliscono altrove. Sotto `tools/` stanno invece i due eseguibili, cioe' cio' che si lancia: `valuta.py`, che e' l'unica interfaccia del progetto, e `verifica-excel.ps1`, che non e' nemmeno Python. Mettere `tools/` dentro `src/` mescolerebbe le due nature, e renderebbe `verifica-excel.ps1` un file PowerShell dentro un pacchetto Python.
 
 Le cartelle `data/` e `output/` non stanno in git per ragioni diverse. `output/` perché si rigenera da un comando e peserebbe sulla storia. `data/annunci.csv` perché porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che è la propria strategia di acquisto e non ha ragione di stare in una repository pubblica; chi lavora in un repository privato può togliere la riga dal `.gitignore`.
 
 ## La trattazione matematica
 
-La matematica del modello e' formalizzata in `docs/matematica-finanziaria.tex`, che si compila in un PDF di ventitre pagine con gli script del progetto. Serve la prima volta un passaggio di preparazione dell'ambiente, che installa TinyTeX e i pacchetti del manifesto `tex-packages.txt`.
+La matematica del modello e' formalizzata in `docs/matematica/matematica-finanziaria.tex`, che si compila in un PDF di trentadue pagine con gli script del progetto. Serve la prima volta un passaggio di preparazione dell'ambiente, che installa TinyTeX e i pacchetti del manifesto `tex-packages.txt`.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-tex.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build.ps1 -Main docs\matematica-finanziaria.tex
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build.ps1 -Main docs\matematica\matematica-finanziaria.tex
 ```
 
 ```bash
 bash scripts/setup-tex.sh
-bash scripts/build.sh --main docs/matematica-finanziaria.tex
+bash scripts/build.sh --main docs/matematica/matematica-finanziaria.tex
 ```
 
 Il PDF finisce accanto al sorgente e non e' versionato, perche' e' un artefatto derivato. L'ambiente LaTeX serve soltanto a questo documento: il resto del progetto non ne dipende, e chi non lo compila non perde nulla del funzionamento dello strumento. La procedura e' incapsulata nella skill `latex-build` sotto `.claude/skills/`.
@@ -254,7 +264,7 @@ Dice se l'istanza Ollama configurata risponde e quali modelli espone. Va usato q
 ```
 python tools/valuta.py scheda --id house_6
 python tools/valuta.py scheda --id house_6 --mutuo 110000 --tasso 0.031 --durata 25 --imu 0.0106
-python tools/valuta.py scheda --id house_6 --obiettivo 0.05 --output "output/schede/mia.tex"
+python tools/valuta.py scheda --id house_6 --obiettivo 0.05 --output "output/immobili/house_6/con-mutuo-piu-alto.tex"
 ```
 
 Produce il sorgente LaTeX di una scheda di una pagina, da compilare con gli script del progetto e da portare in agenzia. Serve a un momento preciso: quando si telefona al venditore o si entra in agenzia, e servono in mano quattro numeri e un elenco. I numeri sono il costo reale dell'operazione, che non è il prezzo, il rendimento netto reale, il prezzo massimo che l'immobile giustifica ai propri criteri e lo sconto che ne consegue. L'elenco è quello dei dati che mancano, perché la telefonata serve anche a chiederli.
@@ -263,7 +273,7 @@ Le opzioni sono i dati che il registro non porta e che cambiano il risultato: `-
 
 Due comportamenti sono voluti. La scheda calcola col motore Python e non legge il workbook, quindi è un terzo riscontro della stessa matematica e non una copia. E i numeri che dipendono da un dato assente non vengono stampati: senza canone atteso, per esempio, il prezzo massimo non è calcolabile e la casella lo dice invece di contenere una cifra. La prima versione la conteneva, e su un immobile senza canone annunciava uno sconto da ottenere del centoquattro per cento del prezzo: aritmeticamente corretto, operativamente assurdo.
 
-Il file finisce in `output/schede/`, che non è versionato, ed è voluto: la scheda porta il prezzo obiettivo, che è la propria strategia di acquisto.
+Il file finisce in `output/immobili/<id>/`, insieme al workbook precompilato dello stesso immobile, così che tutto ciò che riguarda una casa stia in una cartella sola. Quella cartella non è versionata, ed è voluto: la scheda porta il prezzo obiettivo, che è la propria strategia di acquisto.
 
 ### verifica-excel.ps1, il controllo del workbook
 
@@ -316,6 +326,16 @@ I valori dei campi a tre stati si normalizzano in ingresso, quindi `si`, `s`, `y
 
 Tre colonne del foglio Annunci non vanno mai scritte, perché contengono formule: il prezzo al metro quadro, lo scarto sulla quotazione OMI e il rendimento lordo. L'esportazione le salta, e un test verifica che continui a saltarle.
 
+## Come il registro parla con il workbook, e in che direzione
+
+È la domanda che si pone chiunque veda due posti dove stanno gli stessi dati, e la risposta ha una direzione sola.
+
+Il registro `data/annunci.csv` è la sorgente. Il comando `excel --con-annunci`, e il suo equivalente `annunci esporta` che non rigenera il file, copiano il registro nel foglio Annunci del workbook, una riga per immobile, saltando le tre colonne che contengono formule. Il foglio Confronto immobili non contiene dati: ogni sua cella è una formula che legge la riga corrispondente del foglio Annunci, quindi si popola da sé man mano che il registro si riempie.
+
+Il passaggio inverso non esiste. Scrivere nel foglio Annunci del workbook non aggiorna il CSV, e alla successiva esportazione quelle modifiche vengono sovrascritte. È una scelta e non una mancanza: il registro è l'archivio, il workbook è una vista dell'archivio, e avere due sorgenti che si scrivono a vicenda produrrebbe conflitti che nessuno riesce a districare. Se si vuole correggere un dato, si corregge nel registro.
+
+Sul come si scrive nel registro ci sono due vie. La riga di comando, con `annunci aggiungi` e `annunci modifica`, ed è quella prevista: assegna l'identificativo progressivo, rifiuta i doppioni riconoscendo il link normalizzato, normalizza i campi a tre stati e non permette di scrivere in una colonna sbagliata. Oppure il CSV a mano, aprendolo con un editor di testo o con Excel: funziona, il separatore è il punto e virgola, e nessuno lo vieta, ma si perdono i quattro controlli di cui sopra e si rischia di spostare una colonna. Per un dato singolo su un immobile esistente la riga di comando è più rapida di aprire il file.
+
 ## Il workbook, foglio per foglio
 
 Il primo foglio è l'indice e riporta questa stessa informazione in forma navigabile. La tabella qui sotto la ripete per chi lavora da terminale.
@@ -360,6 +380,14 @@ I colori dicono cosa toccare. Il giallo è un input da compilare, il grigio è u
 I riferimenti fra fogli passano per nomi definiti e non per coordinate di cella. La conseguenza pratica per chi usa il file è che inserire o cancellare righe nei fogli di input è più sicuro di quanto sarebbe altrimenti, ma resta sconsigliato: le tabelle lunghe, come il piano di ammortamento e le estrazioni, hanno intervalli nominati che coprono un numero fisso di righe.
 
 Le due voci da non lasciare mai al valore predefinito sono l'aliquota IMU, che va letta nella delibera del Comune per l'anno in corso, e le spese condominiali, che vanno prese dal consuntivo degli ultimi due esercizi e non dalla stima dell'agenzia. Insieme al consuntivo vanno letti i verbali delle assemblee, perché i lavori deliberati e non ancora fatti sono un costo che arriva dopo il rogito.
+
+## Le due cartelle sotto data, e cosa ci si fa
+
+`data/annunci.csv` è il registro: un immobile per riga, trentacinque colonne, separatore punto e virgola. Non è versionato, perché porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che è la propria strategia di acquisto.
+
+`data/omi/` è la cache delle quotazioni dell'Osservatorio, ed è la cartella da aggiornare due volte l'anno. Al 2 settembre 2026 contiene tre cose. La fornitura ufficiale del secondo semestre 2025, cioè `QI_1422845_1_20252_VALORI.csv` e il suo file delle zone, che è il dato corrente da cui il modello legge. Il mirror open data del secondo semestre 2018, i due file con il suffisso `utf8`, che resta soltanto per la serie storica e non va usato per valutare. E l'archivio zip da cui la fornitura è stata estratta, che si può cancellare senza conseguenze.
+
+L'aggiornamento è manuale per una ragione che non è tecnica: la fornitura vive dietro un'autenticazione personale con SPID, CIE, Entratel o Fisconline, e le condizioni che si accettano usando quel servizio rendono l'utente responsabile dell'uso improprio, con l'inibizione dell'accesso come sanzione. Uno script non deve simulare quell'autenticazione. Si scarica a mano l'archivio e lo si ingerisce con `omi importa --file`, che accetta lo zip così come arriva.
 
 ## Manutenzione ricorrente
 

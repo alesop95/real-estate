@@ -6,20 +6,20 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: ffa0c57, precompilazione e scheda di trattativa
+Commit di riferimento: 9b47088, cinque colori e fascia d'uso per foglio
 Ultimo aggiornamento:  2026-09-02
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
-Trattazione LaTeX:     23 pagine, compilata senza avvisi il 2026-09-02
+Trattazione LaTeX:     32 pagine, compilata senza avvisi il 2026-09-02
 Registro annunci:      14 immobili, non versionato
 Pronti alla valutazione: 0 su 14, manca la rendita catastale su tutti
 Test:                  71 verdi, 45 sul motore e 26 sulla struttura
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
 ```
 
-Committato fino a `ffa0c57`, che porta la precompilazione del workbook, il comando `mancanti`, i controlli di plausibilita', la scheda di trattativa e le nove opzioni nuove del comando `annunci`. Non committato il solo lavoro sulla leggibilita' del workbook: il colore proprio delle celle da scegliere con l'helper che lo assegna, la fascia d'uso in testa a ogni foglio, i primi passi e la legenda dei colori nell'indice, l'esclusione delle colonne con tendina dal riempimento generico del foglio Annunci, tre test nuovi, i due diagrammi del manuale operativo, l'allineamento delle due guide, ADR-020 e la voce di work-log.
+Committato fino a `9b47088`, che porta i cinque colori con la legenda, la fascia d'uso su ogni foglio e i due diagrammi del percorso. Non committato il riordino delle cartelle e l'ampliamento della trattazione: `output/` diventa una cartella per immobile sotto `output/immobili/<id>/`, il LaTeX passa sotto `docs/matematica/`, il workbook precompilato non sovrascrive piu' il file-modello, la trattazione sale a trentadue pagine con il capitolo sulla notazione e ventisette letture a parole, piu' due sezioni nuove nel manuale operativo e la voce di work-log.
 
-I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che e' il commit del codice di calcolo che descrivono: il lavoro successivo ha aggiunto strumenti e leggibilita' attorno al modello, senza cambiare il modello.
+I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che e' il commit del codice di calcolo che descrivono: nulla di quanto e' seguito ha cambiato il modello.
 
 ## Stato delle schede
 
@@ -33,7 +33,7 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che e' il 
 | `.claude/context/roadmap.md` | direzione | aggiornata al 1 settembre, sezione "Prossimo" chiusa |
 | `.claude/context/studio-didattico-master.md` e i dodici `refactor-NN` | evoluzioni strutturali del progetto | dodici voci, allineate al codice corrente |
 | `docs/manuale-operativo.md` | `tools/valuta.py`, registro, workbook | ogni comando, ogni campo, ogni foglio, diagnostica; include la catena dei tassi e la build LaTeX |
-| `docs/matematica-finanziaria.tex` | tutte le formule del modello | nuova il 2 settembre: 23 pagine, derivazioni, tavola simbolo-cella-funzione, caso svolto |
+| `docs/matematica/matematica-finanziaria.tex` | tutte le formule del modello | 32 pagine: capitolo sulla notazione per chi parte da zero, 27 paragrafi In parole, derivazioni, tavola simbolo-cella-funzione, caso svolto |
 | `docs/da-zero.md` | avvio, `tools/valuta.py` | allineata, include `tassi --risalita` e l'indice navigabile |
 | `docs/fiscalita-acquisto.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
 | `docs/fiscalita-locazione.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |

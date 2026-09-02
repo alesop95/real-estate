@@ -89,11 +89,11 @@ docs/comprare-in-piu-persone.md
                               scioglimento, fisco pro quota, quando serve una societa'
 docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il significato
                               di ogni voce spiegato in linguaggio comune
-docs/matematica-finanziaria.tex
+docs/matematica/matematica-finanziaria.tex
                               trattazione LaTeX: ogni formula del modello derivata da zero,
                               dalla capitalizzazione alla graduatoria, con la tavola che lega
                               simbolo, cella del workbook e funzione Python. Si compila con
-                              scripts/build.ps1 -Main docs\matematica-finanziaria.tex
+                              scripts/build.ps1 -Main docs\matematica\matematica-finanziaria.tex
 docs/manuale-operativo.md    guida d'uso completa: installazione, ogni comando con ogni
                               opzione, ogni campo del registro, ogni foglio, manutenzione
                               ricorrente, diagnostica degli errori

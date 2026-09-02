@@ -66,6 +66,9 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'e' una feature ap
 - [x] Fascia in testa a ogni foglio: qui si scrive oppure qui si legge
 - [x] Opzioni della riga di comando per i campi che il comando mancanti chiede
 - [x] Il percorso operativo e la mappa delle fonti in due diagrammi
+- [x] Riordino di output in una cartella per immobile, e del LaTeX sotto docs/matematica
+- [x] Il workbook precompilato non sovrascrive piu' il file-modello
+- [x] Trattazione leggibile da zero: capitolo sulla notazione e 27 letture a parole
 - [ ] Commit del lavoro del 1 e del 2 settembre, che spetta all'utente
 
 ## Riconciliazione

@@ -2,6 +2,28 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-09-02, riordino delle cartelle, e la trattazione diventa leggibile da zero
+
+File toccati: `tools/valuta.py`, `docs/matematica/matematica-finanziaria.tex` spostato e ampliato, `docs/manuale-operativo.md`, `CLAUDE.md`, `README.md`, memoria e schede. Struttura di `output/` e di `docs/` cambiata. Nessuna modifica al calcolo, quindi i test restano settantuno.
+
+Le domande dell'utente erano nove e tutte sulla struttura, il che e' esso stesso un dato: chi ha seguito il progetto non riusciva a dire a che serve un file. Vale registrare le risposte, perche' sono la mappa del progetto.
+
+Cartelle riordinate. `output/_x` era una cartella vuota del 28 agosto, residuo di una prova, rimossa. `output/schede/` divideva per formato cio' che si consulta per immobile: i sorgenti LaTeX di tutti gli immobili in una cartella e i workbook precompilati in un'altra. Ora esiste `output/immobili/<id>/`, che raccoglie il workbook precompilato, il sorgente della scheda e il suo PDF di quell'immobile, e la funzione `cartella_immobile` in `valuta.py` e' l'unico posto che decide quel percorso, usata sia dal comando `excel` sia dal comando `scheda`.
+
+Dal riordino e' emerso un difetto vero, e non da un test. Il comando `excel --da-annuncio house_6` senza `--output` scriveva sul file-modello `output/Valutazione-Immobile.xlsx`, sostituendolo con un file dedicato a quell'immobile: il modello da cui partire per il successivo non c'era piu', e chi lo rigenerava perdeva le celle compilate a mano nel frattempo. Ora la destinazione predefinita, quando c'e' `--da-annuncio`, e' la cartella dell'immobile, e il modello resta intatto. Verificato sul timestamp del file.
+
+La cartella `docs/` mescolava dodici schede in Markdown con il sorgente LaTeX e i suoi otto file di compilazione, cioe' aux, log, fls, fdb_latexmk, out, toc, synctex e il PDF. Il sorgente e' andato in `docs/matematica/`, dove i suoi artefatti restano confinati; sono tutti ignorati da git per estensione, quindi la cartella nuova non aggiunge nulla al repository. Aggiornati i sei riferimenti al percorso in `CLAUDE.md`, `README.md`, nel manuale e nella riga di aiuto del comando.
+
+La trattazione da ventitre a trentadue pagine. La richiesta era di renderla leggibile da zero, e l'ho interpretata in due mosse. La prima e' un capitolo nuovo, il primo del documento, che spiega i segni e non la finanza: che una lettera e' il nome di un numero, che il pedice e' un'etichetta e non una moltiplicazione, che l'esponente e' una moltiplicazione ripetuta e perche' e' il fenomeno principale su venticinque anni, come si legge il segno di somma con un esempio svolto su quattro addendi, che la graffa e' un SE di foglio di calcolo, che f di x non e' un prodotto, cosa sono massimo, minimo e valore assoluto, e a cosa servono una proposizione e una dimostrazione in un documento operativo. La seconda mossa sono ventisette paragrafi intitolati In parole, uno per ogni formula principale, che la rileggono come una frase italiana e la chiudono con un numero concreto preso dal caso di riferimento: la rata che viene 436,21 euro, il debito che a meta' piano e' ancora al sessanta per cento, i cinquantadue euro di imposta risparmiati dal prezzo-valore, i venticinquemila euro di canone rinunciato dalla cedolare.
+
+Compilata: trentadue pagine, zero riferimenti non risolti. Va segnalato un attrito dell'ambiente: lo script di build restituisce codice 255 pur avendo prodotto il PDF, perche' PowerShell tratta come errore lo scrivere su stderr di un comando nativo, e latexmk vi scrive la riga sul ripristino delle code page della console. Il PDF va verificato dal file e non dal codice di uscita.
+
+Le altre risposte, che non hanno richiesto modifiche. `tools/` resta in radice perche' sotto `src/immobiliare/` sta la libreria che si importa, secondo il layout src che impedisce di importare per sbaglio il pacchetto dalla cartella di lavoro, mentre sotto `tools/` stanno i due eseguibili che si lanciano, di cui uno non e' nemmeno Python. `data/annunci.csv` si puo' modificare a mano ma la via prevista e' la riga di comando, che assegna l'identificativo, rifiuta i doppioni, normalizza i campi a tre stati e non permette di sbagliare colonna. Il registro parla col workbook in una direzione sola, dal CSV al foglio Annunci, e il foglio Confronto immobili legge quel foglio per formula: il percorso inverso non esiste, ed e' una scelta, perche' due sorgenti che si scrivono a vicenda producono conflitti che nessuno districa. `data/omi/` e' la cartella da aggiornare a semestre, e contiene la fornitura 2025/2 che e' il dato corrente, il mirror 2018/2 che serve solo alla serie storica, e lo zip di origine che si puo' cancellare.
+
+Le due SVG che l'utente ha messo sotto `_notes/`, ricavate dai diagrammi dell'ultimo messaggio, sono state controllate estraendo tutti i nodi di testo: comandi, decisioni e rami corrispondono, e i file sono UTF-8 valido, quindi gli accenti che sembravano rotti erano un artefatto della mia estrazione e non del file. Nessuna correzione necessaria.
+
+Verifica: settantuno test verdi, workbook rigenerato e verificato con Excel senza celle in errore, workbook precompilato e scheda rigenerati nella cartella nuova, trattazione compilata in trentadue pagine, convenzione Markdown rispettata su tutti i file tracciati.
+
 ## 2026-09-02, leggibilita' del workbook: cinque colori, la fascia d'uso, il diagramma
 
 File toccati: `src/immobiliare/stile.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py`, `docs/manuale-operativo.md`, `docs/guida-non-tecnica.md`, `docs/guida-tecnica.md`, memoria e schede. Test da sessantotto a settantuno. Nuova ADR: 020.

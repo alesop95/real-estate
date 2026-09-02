@@ -53,8 +53,32 @@ def pct(x: float) -> str:
 
 # ---------------------------------------------------------------------------
 
+def cartella_immobile(identificativo: str):
+    """La cartella che raccoglie tutto cio' che riguarda un immobile.
+
+    Esiste perche' un immobile produce piu' di un file: il workbook
+    precompilato, il sorgente della scheda, il PDF della scheda e gli ausiliari
+    di compilazione. Tenerli in cartelle diverse per tipo, come si faceva
+    all'inizio con un `output/schede/` separato, ha il difetto di dividere per
+    formato cio' che si consulta per immobile: chi apre la cartella di house_6
+    vuole vedere tutto di house_6, non i sorgenti LaTeX di quattordici immobili
+    mescolati.
+    """
+    return RADICE / "output" / "immobili" / identificativo
+
+
 def cmd_excel(args) -> int:
-    destinazione = Path(args.output) if args.output else WORKBOOK
+    # Con `--da-annuncio` la destinazione predefinita e' la cartella
+    # dell'immobile e non il file-modello. La versione precedente scriveva sul
+    # modello, quindi un `excel --da-annuncio house_6` senza `--output` lo
+    # sostituiva con un file dedicato a quell'immobile, e il modello da cui
+    # partire per il successivo non c'era piu'.
+    if args.output:
+        destinazione = Path(args.output)
+    elif args.da_annuncio:
+        destinazione = cartella_immobile(args.da_annuncio) / f"{args.da_annuncio}.xlsx"
+    else:
+        destinazione = WORKBOOK
     destinazione.parent.mkdir(parents=True, exist_ok=True)
     E.genera(str(destinazione))
     print(f"Workbook generato: {destinazione}")
@@ -151,7 +175,7 @@ def cmd_scheda(args) -> int:
         rendimento_obiettivo=args.obiettivo,
     )
 
-    destinazione = Path(args.output) if args.output else RADICE / "output" / "schede" / f"{annuncio.id}.tex"
+    destinazione = Path(args.output) if args.output else cartella_immobile(annuncio.id) / f"{annuncio.id}.tex"
     destinazione.parent.mkdir(parents=True, exist_ok=True)
     destinazione.write_text(sorgente, encoding="utf-8")
     print(f"Sorgente della scheda: {destinazione}")
@@ -1014,7 +1038,7 @@ def principale(argomenti=None) -> int:
 
     p = sub.add_parser("scheda", help="scheda di una pagina per la trattativa, in LaTeX")
     p.add_argument("--id", required=True, help="identificativo dell'immobile a registro, per esempio house_6")
-    p.add_argument("--output", help="percorso del .tex; default output/schede/<id>.tex")
+    p.add_argument("--output", help="percorso del .tex; default output/immobili/<id>/<id>.tex")
     p.add_argument("--mutuo", type=float, default=0.0, help="importo del mutuo dal preventivo")
     p.add_argument("--tasso", type=float, default=0.032, help="TAN in forma decimale")
     p.add_argument("--durata", type=int, default=25)
