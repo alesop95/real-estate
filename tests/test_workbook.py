@@ -48,6 +48,115 @@ def test_il_workbook_si_genera_con_tutti_i_fogli():
     assert wb.sheetnames == attesi
 
 
+def test_ogni_cella_a_tendina_ha_il_colore_della_scelta():
+    """Una cella dove si sceglie non deve avere l'aspetto di una dove si digita.
+
+    E' la correzione di una segnalazione d'uso, e la segnalazione veniva da chi
+    ha seguito il progetto: le celle a tendina erano gialle come quelle da
+    digitare, quindi a video nulla distingueva una cella dove si scrive un numero
+    da una dove si sceglie fra valori ammessi. Chi non conosce il file ci scrive
+    dentro, la validazione rifiuta il valore, e il messaggio di Excel non spiega
+    perche'.
+
+    Il presidio e' che l'unico modo previsto di applicare una tendina sia
+    `stile.scelta`, che aggancia la cella e la colora insieme. Il test verifica
+    la conseguenza osservabile: ogni cella coperta da una validazione a elenco
+    porta il riempimento della scelta e non quello dell'input.
+    """
+    wb = load_workbook(workbook())
+    atteso = E.S.AZZURRO
+    controllate = 0
+    for ws in wb.worksheets:
+        for validazione in ws.data_validations.dataValidation:
+            if validazione.type != "list":
+                continue
+            for intervallo in validazione.sqref.ranges:
+                for riga in ws.iter_rows(min_row=intervallo.min_row, max_row=intervallo.max_row,
+                                         min_col=intervallo.min_col, max_col=intervallo.max_col):
+                    for cella in riga:
+                        colore = cella.fill.fgColor.rgb if cella.fill and cella.fill.fgColor else None
+                        assert colore and colore.endswith(atteso), (
+                            f"{ws.title}!{cella.coordinate} ha una tendina ma il riempimento e' "
+                            f"{colore!r} invece di {atteso}: chi la guarda non sa che c'e' un elenco"
+                        )
+                        controllate += 1
+    # Se il conteggio crollasse a zero il test passerebbe a vuoto, quindi la
+    # soglia e' un presidio del test stesso e non del workbook.
+    assert controllate > 200, f"solo {controllate} celle a tendina trovate: il test non sta verificando nulla"
+
+
+def test_ogni_foglio_dichiara_in_testa_se_si_scrive_o_si_legge():
+    """La fascia in riga tre dice a chi apre il foglio che cosa farci.
+
+    Nasce dalla stessa segnalazione: l'indice diceva per ogni foglio se si
+    compila o si legge, ma quell'informazione stava solo nell'indice, e chi
+    arrivava su un foglio dalle linguette in basso non la vedeva. La fascia la
+    ripete dove serve, e non e' una duplicazione da mantenere a mano perche' viene
+    dalla stessa tupla da cui nasce l'indice.
+
+    Il test verifica anche la coerenza fra le due: un foglio dichiarato di sola
+    lettura nell'indice non puo' avere in testa una fascia che invita a scrivere.
+    """
+    wb = load_workbook(workbook())
+    indice = E.S.FOGLIO_INDICE
+    usi = {nome: azione for _, fogli in E.Costruttore.PERCORSO for nome, azione, _, _ in fogli}
+
+    for ws in wb.worksheets:
+        if ws.title == indice or ws.sheet_state != "visible":
+            continue
+        fascia = ws.cell(row=3, column=2).value
+        assert isinstance(fascia, str) and fascia, (
+            f"il foglio {ws.title!r} non ha la fascia d'uso in riga 3, colonna B"
+        )
+        azione = usi[ws.title]
+        if azione == "Si legge":
+            assert fascia.startswith("QUI NON SI SCRIVE NULLA"), (
+                f"{ws.title} e' dichiarato di sola lettura nell'indice ma la fascia dice: {fascia[:60]!r}"
+            )
+        elif azione == "Si consulta":
+            assert fascia.startswith("QUI SI CONSULTA"), fascia[:60]
+        else:
+            assert fascia.startswith("QUI SI SCRIVE"), (
+                f"{ws.title} e' dichiarato da compilare nell'indice ma la fascia dice: {fascia[:60]!r}"
+            )
+
+
+def test_indice_porta_la_legenda_dei_colori_mostrandoli():
+    """La legenda mostra i colori invece di descriverli a parole.
+
+    Descriverli richiederebbe a chi legge di ricordare un'associazione fra un
+    nome e un colore, e la segnalazione da cui nasce questa sezione era proprio
+    che quell'associazione non era chiara. Ogni riga della legenda porta quindi
+    il riempimento che spiega, e il test verifica che il riempimento ci sia e sia
+    quello giusto, perche' una legenda con i colori sbagliati e' peggio di
+    nessuna legenda.
+    """
+    wb = load_workbook(workbook())
+    ws = wb[E.S.FOGLIO_INDICE]
+    attesi = {
+        "Gialla": E.S.GIALLO,
+        "Azzurra": E.S.AZZURRO,
+        "Grigia": E.S.GRIGIO,
+        "Verde": E.S.VERDE,
+        "Rossa": E.S.ROSSO,
+    }
+    trovati = {}
+    for riga in range(1, 40):
+        cella = ws.cell(row=riga, column=2)
+        if cella.value in attesi:
+            colore = cella.fill.fgColor.rgb if cella.fill and cella.fill.fgColor else None
+            trovati[cella.value] = colore
+            spiegazione = ws.cell(row=riga, column=3).value
+            assert isinstance(spiegazione, str) and len(spiegazione) > 40, (
+                f"la voce {cella.value!r} della legenda non ha una spiegazione: {spiegazione!r}"
+            )
+    assert set(trovati) == set(attesi), f"legenda incompleta: {sorted(trovati)}"
+    for nome, colore in trovati.items():
+        assert colore and colore.endswith(attesi[nome]), (
+            f"la voce {nome!r} della legenda e' riempita di {colore!r} invece di {attesi[nome]}"
+        )
+
+
 def test_indice_copre_tutti_i_fogli_e_i_collegamenti_esistono():
     """Ogni foglio visibile sta nell'indice una volta sola, e ogni link porta a un foglio vero.
 

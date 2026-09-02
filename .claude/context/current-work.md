@@ -62,6 +62,10 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'e' una feature ap
 - [x] Comando che dice che cosa manca su ogni immobile e che cosa quel dato blocca
 - [x] Controlli di plausibilita' sugli input, nel Cruscotto, con il contatore in testa
 - [x] Scheda di trattativa di una pagina in LaTeX, con il rifiuto di stampare cio' che non e' calcolabile
+- [x] Cinque colori con la legenda che li mostra, e colore proprio per le celle da scegliere
+- [x] Fascia in testa a ogni foglio: qui si scrive oppure qui si legge
+- [x] Opzioni della riga di comando per i campi che il comando mancanti chiede
+- [x] Il percorso operativo e la mappa delle fonti in due diagrammi
 - [ ] Commit del lavoro del 1 e del 2 settembre, che spetta all'utente
 
 ## Riconciliazione

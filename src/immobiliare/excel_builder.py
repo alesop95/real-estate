@@ -60,6 +60,16 @@ class Costruttore:
     # -- fogli -------------------------------------------------------------
 
     def costruisci(self) -> None:
+        # Il registro degli usi va riempito prima di creare i fogli, perche' e'
+        # `stile.titolo` a leggerlo per scrivere la fascia in testa a ciascuno, ed
+        # e' la prima cosa che ogni foglio chiama. La sorgente e' la stessa tupla
+        # da cui nasce l'indice: cosi' la fascia di un foglio e la sua riga
+        # nell'indice non possono dire cose diverse.
+        S.USI = {
+            nome: (azione, quando, esito)
+            for _, fogli in self.PERCORSO
+            for nome, azione, quando, esito in fogli
+        }
         self.foglio_guida()
         self.foglio_cruscotto()
         self.foglio_parametri()
@@ -173,10 +183,52 @@ class Costruttore:
             1,
             "Valutazione di un investimento immobiliare",
             f"Modello aggiornato al {P.REVISIONE.strftime('%d/%m/%Y')} con i parametri fiscali {P.ANNO_IMPOSTA}. "
-            "Le celle gialle sono gli input da compilare, le grigie sono calcolate, le verdi sono i risultati di sintesi. "
-            "Ogni nome di foglio in questa pagina e' un collegamento, e da ogni foglio si torna qui col collegamento in alto a destra.",
+            "Se non lo hai mai aperto, le cinque righe qui sotto e la legenda dei colori sono tutto quello che serve per cominciare.",
             5,
         )
+
+        r = S.sezione(ws, r, "Se apri questo file per la prima volta, leggi queste cinque righe", 5)
+        for testo in [
+            "Uno. In questo file si scrive soltanto nelle celle colorate di giallo e di azzurro. Tutto il resto e' calcolato: se ci scrivi sopra, il calcolo si rompe e nessuno te lo dice, perche' il foglio continua a mostrare un numero.",
+            "Due. Ogni foglio, in alto, ti dice in una riga se lui e' un foglio dove si scrive oppure uno dove si legge, quando conviene aprirlo e che cosa ne esce. Se la riga in alto e' gialla si compila, se e' grigia si legge.",
+            "Tre. Non serve compilare tutto. Se non metti l'immobile a reddito, il foglio Locazione non ti riguarda; se non compri in piu' persone, Comproprieta' non ti riguarda; se non e' un'asta, Asta non ti riguarda. La tabella qui sotto lo dice foglio per foglio nella colonna Quando si apre.",
+            "Quattro. I numeri che decidono stanno tutti nel Cruscotto, che e' il secondo foglio. Se hai poco tempo, compila i tre fogli gialli del percorso minimo e poi leggi solo quello.",
+            "Cinque. Ogni nome di foglio in questa pagina e' un collegamento: clicci e ci vai. Da ogni foglio torni qui col collegamento in alto a sinistra, quello che dice Indice.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 5)
+        r += 1
+
+        r = S.sezione(ws, r, "I colori delle celle, che sono la cosa piu' importante", 5)
+        # I colori si mostrano, non si descrivono: la cella della legenda porta il
+        # riempimento che spiega. Descriverli a parole avrebbe richiesto a chi
+        # legge di ricordare un'associazione fra un nome e un colore, e la
+        # segnalazione d'uso da cui nasce questa sezione era esattamente che quella
+        # associazione non era chiara nemmeno a chi ha seguito il progetto.
+        legenda = [
+            ("Gialla", S.FILL_INPUT,
+             "Ci scrivi tu, un numero o un testo. Sono le uniche celle da compilare, e sono poche per foglio."),
+            ("Azzurra", S.FILL_SCELTA,
+             "Ci scegli da un elenco: clicca la cella e a destra compare una freccia. Un valore scritto a mano fuori dall'elenco viene rifiutato, ed e' voluto."),
+            ("Grigia", S.FILL_CALCOLO,
+             "La calcola il foglio. Non ci si scrive: sovrascriverla rompe la catena di calcolo in silenzio, cioe' senza alcun messaggio di errore."),
+            ("Verde", S.FILL_RISULTATO,
+             "Risultato di sintesi. E' quello che sei venuto a leggere, e viene sempre da celle gialle e azzurre compilate altrove."),
+            ("Rossa", S.FILL_ATTENZIONE,
+             "Attenzione. Un valore ha superato una soglia oltre la quale e' un problema, oppure un controllo di plausibilita' non e' superato."),
+        ]
+        for nome, riempimento, spiegazione in legenda:
+            c = ws.cell(row=r, column=2, value=nome)
+            c.fill = riempimento
+            c.border = S.BORDO
+            c.font = S.ETICHETTA_BOLD
+            c.alignment = S.CENTRO
+            d = ws.cell(row=r, column=3, value=spiegazione)
+            d.font = S.ETICHETTA
+            d.alignment = S.SINISTRA
+            ws.merge_cells(start_row=r, start_column=3, end_row=r, end_column=5)
+            ws.row_dimensions[r].height = 30
+            r += 1
+        r += 1
 
         r = S.sezione(ws, r, "Indice dei fogli, in ordine di lettura", 5)
         r = S.intestazioni(ws, r, ["N", "Foglio", "Che cosa si fa qui", "Quando si apre", "Che cosa ne esce"], [5, 24, 20, 44, 76])
@@ -607,7 +659,7 @@ class Costruttore:
         self.nome("mq", ws, f"B{riga_mq}")
         riga_cat = r
         r = S.campo(ws, r, "Categoria catastale", "A/3", input_utente=True, nota="A/1, A/8 e A/9 sono escluse dall'agevolazione prima casa e scontano IVA al ventidue per cento.")
-        categorie.add(ws.cell(row=riga_cat, column=2))
+        S.scelta(categorie, ws.cell(row=riga_cat, column=2))
         self.nome("categoria", ws, f"B{riga_cat}")
         riga_rendita = r
         r = S.campo(ws, r, "Rendita catastale", 450, S.EURO_DEC, input_utente=True, nota="Si legge nella visura catastale. Serve al prezzo-valore e all'IMU.")
@@ -623,26 +675,26 @@ class Costruttore:
         self.nome("prezzo", ws, f"B{riga_prezzo}")
         riga_impresa = r
         r = S.campo(ws, r, "Venditore impresa con IVA", "NO", input_utente=True, nota="SI se si compra da impresa costruttrice entro cinque anni dall'ultimazione, o con opzione per l'imponibilita'.")
-        si_no.add(ws.cell(row=riga_impresa, column=2))
+        S.scelta(si_no, ws.cell(row=riga_impresa, column=2))
         self.nome("da_impresa", ws, f"B{riga_impresa}")
         riga_nuova = r
         r = S.campo(ws, r, "Nuova costruzione", "NO", input_utente=True, nota="Attiva le verifiche del decreto legislativo 122/2005 nella checklist: fideiussione e polizza decennale postuma.")
-        si_no.add(ws.cell(row=riga_nuova, column=2))
+        S.scelta(si_no, ws.cell(row=riga_nuova, column=2))
         self.nome("nuova_costruzione", ws, f"B{riga_nuova}")
         riga_prima = r
         r = S.campo(ws, r, "Agevolazione prima casa", "SI", input_utente=True, nota="Richiede residenza nel Comune entro diciotto mesi e assenza di altra prima casa agevolata, salvo rivendita entro due anni.")
-        si_no.add(ws.cell(row=riga_prima, column=2))
+        S.scelta(si_no, ws.cell(row=riga_prima, column=2))
         self.nome("prima_casa", ws, f"B{riga_prima}")
         riga_pv = r
         r = S.campo(ws, r, "Opzione prezzo-valore", "SI", input_utente=True, nota="Da chiedere al notaio in atto. Non si applica se si compra da impresa con IVA.")
-        si_no.add(ws.cell(row=riga_pv, column=2))
+        S.scelta(si_no, ws.cell(row=riga_pv, column=2))
         self.nome("usa_prezzo_valore", ws, f"B{riga_pv}")
         riga_quota = r
         r = S.campo(ws, r, "Quota di acquisto", 1.0, S.PERC, input_utente=True, nota="Cinquanta per cento se si compra in due. Incide sul massimale della detrazione degli interessi.")
         self.nome("quota", ws, f"B{riga_quota}")
         riga_abit = r
         r = S.campo(ws, r, "Destinato ad abitazione principale", "NO", input_utente=True, nota="SI se ci si va a vivere: abilita la detrazione degli interessi e l'esenzione IMU. NO se si compra per affittarlo.")
-        si_no.add(ws.cell(row=riga_abit, column=2))
+        S.scelta(si_no, ws.cell(row=riga_abit, column=2))
         self.nome("abitazione_principale", ws, f"B{riga_abit}")
         r += 1
 
@@ -783,7 +835,7 @@ class Costruttore:
         r = S.campo(ws, r, "Polizza incendio, forma del premio", "annuo", input_utente=True, nota="annuo per il premio ricorrente, unico per il premio anticipato in un'unica soluzione, che le banche propongono spesso finanziandolo dentro il mutuo.")
         modo_pol = DataValidation(type="list", formula1='"annuo,unico"', allow_blank=False)
         ws.add_data_validation(modo_pol)
-        modo_pol.add(ws.cell(row=riga_pol_modo, column=2))
+        S.scelta(modo_pol, ws.cell(row=riga_pol_modo, column=2))
         self.nome("polizza_forma", ws, f"B{riga_pol_modo}")
         riga_pol_imp = r
         r = S.campo(ws, r, "Polizza incendio e scoppio, importo", 180, S.EURO, input_utente=True, nota="Se la forma e' annua e' il premio di ogni anno; se e' unica e' il totale per l'intera durata, che sul mercato si osserva attorno a cinque euro ogni mille di capitale.")
@@ -934,7 +986,7 @@ class Costruttore:
         r = S.campo(ws, r, "Conversione del tasso mensile", "banca", input_utente=True, nota="banca per la divisione per dodici, che e' la convenzione dei contratti italiani; composta per il tasso equivalente finanziariamente esatto.")
         conv = DataValidation(type="list", formula1='"banca,composta"', allow_blank=False)
         ws.add_data_validation(conv)
-        conv.add(ws.cell(row=riga, column=2))
+        S.scelta(conv, ws.cell(row=riga, column=2))
         self.nome("sim_convenzione", ws, f"B{riga}")
         r += 1
 
@@ -986,7 +1038,7 @@ class Costruttore:
         r = S.campo(ws, r, "Effetto del rimborso", "riduci durata", input_utente=True, nota="riduci durata tiene ferma la rata e accorcia il piano; riduci rata tiene ferma la scadenza e abbassa la rata. Va dichiarato alla banca: non lo sceglie il foglio.")
         eff = DataValidation(type="list", formula1='"riduci durata,riduci rata"', allow_blank=False)
         ws.add_data_validation(eff)
-        eff.add(ws.cell(row=riga, column=2))
+        S.scelta(eff, ws.cell(row=riga, column=2))
         self.nome("sim_effetto", ws, f"B{riga}")
         r = S.nota_riga(ws, r, "Sul se convenga rimborsare in anticipo la regola e' una sola, e non e' quella che si sente ripetere. Non conta che all'inizio si paghino soprattutto interessi: il denaro e' fungibile e ogni mese la scelta e' la stessa, cioe' estinguere adesso oppure pagare gli interessi per rimandare la decisione. Conviene rimborsare se non si trova un impiego che renda, al netto delle imposte, almeno quanto il tasso del mutuo. Restano due argomenti non finanziari: non avere debiti fa dormire meglio, e un mutuo estinto oggi non si riottiene domani.")
         r += 1
@@ -1317,7 +1369,7 @@ class Costruttore:
         )
         dv = DataValidation(type="list", formula1='"cedolare_libero,cedolare_concordato,irpef_ordinario,breve"', allow_blank=False)
         ws.add_data_validation(dv)
-        dv.add(ws.cell(row=riga_scelta, column=2))
+        S.scelta(dv, ws.cell(row=riga_scelta, column=2))
         self.nome("regime_scelto", ws, f"B{riga_scelta}")
 
         riga_sel_noi = r
@@ -2256,8 +2308,8 @@ class Costruttore:
                 ws.cell(row=r, column=3).number_format = S.PERC_1
             for col in range(1, 6):
                 ws.cell(row=r, column=col).fill = S.FILL_INPUT
-            regimi.add(ws.cell(row=r, column=4))
-            si_no.add(ws.cell(row=r, column=5))
+            S.scelta(regimi, ws.cell(row=r, column=4))
+            S.scelta(si_no, ws.cell(row=r, column=5))
 
             ws.cell(row=r, column=6, value=f'=IF({vuoto},"",prezzo*$B{r})').number_format = S.EURO
             ws.cell(row=r, column=7, value=f'=IF({vuoto},"",imposte_totali*$B{r})').number_format = S.EURO
@@ -2451,7 +2503,7 @@ class Costruttore:
             c = ws.cell(row=r, column=6, value=st)
             c.fill = S.FILL_INPUT
             c.alignment = S.CENTRO
-            stato.add(c)
+            S.scelta(stato, c)
             ws.cell(row=r, column=7, value=note).fill = S.FILL_INPUT
             for col in range(1, 8):
                 ws.cell(row=r, column=col).border = S.BORDO
@@ -2967,7 +3019,7 @@ class Costruttore:
             s = ws.cell(row=r, column=8, value="da chiedere")
             s.fill = S.FILL_INPUT
             s.alignment = S.CENTRO
-            stato.add(s)
+            S.scelta(stato, s)
             for col in (9, 10, 11):
                 ws.cell(row=r, column=col).fill = S.FILL_INPUT
             for col in range(1, 12):
@@ -3055,6 +3107,11 @@ class Costruttore:
             ("Prima casa", 12), ("Venditore impresa", 16),
         ]
         CALCOLATE = (19, 22, 29)   # prezzo al mq, scarto su OMI, rendimento lordo
+        # Le colonne con una tendina. Il riempimento generico delle righe, piu'
+        # sotto, le salta: senza questa esclusione le colorava di giallo dopo che
+        # `S.scelta` le aveva colorate di azzurro, e la cella tornava a somigliare
+        # a una dove si digita. Il test lo ha trovato prima di me.
+        A_SCELTA = (3, 13, 14, 37, 38)   # stato, destinazione d'uso, nuova, prima casa, impresa
         TOTALE = len(colonne)
         r = S.intestazioni(ws, r, [c[0] for c in colonne], [c[1] for c in colonne])
         prima = r
@@ -3102,15 +3159,17 @@ class Costruttore:
                 row=riga, column=29,
                 value=f'=IFERROR(IF(N($Q{riga})>0,$AB{riga}*12/$Q{riga},""),"")',
             ).number_format = S.PERC
-            stato.add(ws.cell(row=riga, column=3))
-            nuova.add(ws.cell(row=riga, column=14))
-            uso.add(ws.cell(row=riga, column=13))
+            S.scelta(stato, ws.cell(row=riga, column=3))
+            S.scelta(nuova, ws.cell(row=riga, column=14))
+            S.scelta(uso, ws.cell(row=riga, column=13))
             # Il vuoto e' ammesso e significa "eredita dal foglio Immobile": la
             # validazione non lo vieta, percio' le due colonne restano a tre stati.
-            nuova.add(ws.cell(row=riga, column=37))
-            nuova.add(ws.cell(row=riga, column=38))
+            S.scelta(nuova, ws.cell(row=riga, column=37))
+            S.scelta(nuova, ws.cell(row=riga, column=38))
             for col in range(1, TOTALE + 1):
                 ws.cell(row=riga, column=col).border = S.BORDO
+                if col in A_SCELTA:
+                    continue
                 if col in CALCOLATE:
                     ws.cell(row=riga, column=col).fill = S.FILL_CALCOLO
                 elif riga >= prima + len(esempi):

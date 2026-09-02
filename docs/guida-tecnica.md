@@ -18,6 +18,16 @@ L'invariante conta perché il difetto che presidia è invisibile. Un foglio rino
 
 Il ritorno all'indice lo scrive `stile.titolo`, nella riga che quella funzione lasciava vuota fra il titolo e il primo contenuto, in colonna A. La posizione sta lì e non accanto al titolo perché il titolo occupa da quattro a ventisei colonne a seconda del foglio, e un ritorno posizionato dopo di esso sarebbe finito fuori dalla vista sui fogli larghi. E sta in `titolo` e non nei singoli fogli perché ogni foglio comincia chiamando quella funzione, quindi un foglio nuovo non può nascere senza via di ritorno.
 
+## Leggibilità del workbook: i tre presidi
+
+Il file è un artefatto che qualcuno apre senza averlo costruito, e questo pone requisiti d'uso che nessun test di correttezza cattura. Tre presidi li coprono, e tutti tre nascono da una segnalazione d'uso e non da un'analisi a priori.
+
+Il primo è il colore delle celle da scegliere. Le celle con una validazione a elenco erano gialle come quelle da digitare, quindi a video niente distingueva una cella dove si scrive un numero da una dove si sceglie fra valori ammessi: chi non conosce il file ci scrive dentro, la validazione rifiuta il valore, e il messaggio di Excel non spiega perché. L'unico modo previsto di applicare una tendina è ora `stile.scelta`, che aggancia la cella alla validazione e le assegna `FILL_SCELTA` nello stesso passaggio, così che una cella con tendina non possa avere il colore sbagliato. Un test percorre tutte le validazioni di tipo elenco di tutti i fogli e verifica il riempimento di ogni cella coperta: ha trovato subito un difetto reale, cioè il riempimento generico delle righe del foglio Annunci che sovrascriveva l'azzurro dopo che era stato assegnato.
+
+Il secondo è la fascia d'uso in riga tre. Ogni foglio dichiara in una frase se lì si scrive o si legge, quando si apre e che cosa ne esce. La scrive `stile.titolo`, nella riga che quella funzione lasciava vuota fra il titolo e il primo contenuto, leggendo il dizionario di modulo `stile.USI` che il costruttore riempie dalla tupla `PERCORSO` prima di creare i fogli. Il dizionario di modulo, invece di un parametro di `titolo`, evita venti modifiche con venti occasioni di dimenticarne una, e fa comparire la fascia su ogni foglio dichiarato nell'indice e su nessun altro. Poiché la sorgente è la stessa dell'indice, la fascia di un foglio e la sua riga nell'indice non possono divergere, e un test verifica anche la coerenza fra le due.
+
+Il terzo è la legenda in testa all'indice, che mostra i cinque colori invece di descriverli: ogni voce porta il riempimento che spiega. Descriverli a parole avrebbe richiesto a chi legge di ricordare un'associazione fra un nome e un colore, e la segnalazione da cui la sezione nasce era proprio che quell'associazione non era chiara nemmeno a chi ha seguito il progetto.
+
 ## Comandi
 
 ```

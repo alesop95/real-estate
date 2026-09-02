@@ -18,7 +18,15 @@ python tools/valuta.py excel --con-annunci
 
 Una cosa da sapere subito, perché evita un dispiacere. Ogni volta che si esegue quel comando il file viene **riscritto da zero**. Quello che hai digitato dentro va perso. Se ci hai lavorato e vuoi tenerlo, salvalo con un altro nome, per esempio `Valutazione-via-Roma-12.xlsx`, e lavora su quello.
 
-## I colori dicono cosa toccare
+## I colori dicono cosa toccare, e la riga in alto dice che cosa fare
+
+Prima di tutto il resto, due cose che rendono il file navigabile senza sapere niente.
+
+I colori delle celle sono cinque e significano cinque cose diverse. **Giallo**: ci scrivi tu, un numero o un testo, e sono le uniche celle da compilare. **Azzurro**: ci scegli da un elenco, clicchi la cella e compare una freccia a destra; un valore scritto a mano fuori dall'elenco viene rifiutato, ed è voluto. **Grigio**: la calcola il foglio, e se ci scrivi rompi il calcolo senza che nessun messaggio te lo dica. **Verde**: risultato di sintesi, è quello che sei venuto a leggere. **Rosso**: attenzione, un valore ha superato una soglia oppure un controllo non è superato. La legenda con i colori mostrati sta in testa al primo foglio.
+
+Ogni foglio, in alto, ha una riga che dice in una frase se quello è un foglio dove si scrive o uno dove si legge, quando conviene aprirlo e che cosa ne esce. Se quella riga è gialla si compila, se è grigia si legge e non si tocca niente. Accanto, a sinistra, c'è il collegamento che riporta all'indice.
+
+## I colori nel dettaglio
 
 C'è una sola regola e vale in tutto il file. Le celle **gialle** sono le tue: quelle le compili tu. Le celle **grigie** sono calcolate: se ci scrivi dentro rompi la formula e il numero smette di aggiornarsi. Le celle **verdi** sono i risultati, quelli che devi guardare.
 

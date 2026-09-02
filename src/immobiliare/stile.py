@@ -16,6 +16,7 @@ from openpyxl.utils import get_column_letter
 BLU = "1F3864"
 BLU_CHIARO = "2E5395"
 GIALLO = "FFF2CC"
+AZZURRO = "DDEBF7"
 VERDE = "E2EFDA"
 GRIGIO = "F2F2F2"
 ROSSO = "FCE4EC"
@@ -34,6 +35,7 @@ KPI = Font(name="Calibri", size=14, bold=True, color=BLU)
 FILL_SEZIONE = PatternFill("solid", fgColor=BLU)
 FILL_SEZIONE_2 = PatternFill("solid", fgColor=BLU_CHIARO)
 FILL_INPUT = PatternFill("solid", fgColor=GIALLO)
+FILL_SCELTA = PatternFill("solid", fgColor=AZZURRO)
 FILL_RISULTATO = PatternFill("solid", fgColor=VERDE)
 FILL_CALCOLO = PatternFill("solid", fgColor=GRIGIO)
 FILL_ATTENZIONE = PatternFill("solid", fgColor=ROSSO)
@@ -56,6 +58,34 @@ CENTRO = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
 FOGLIO_INDICE = "Guida"
 """Nome del foglio che fa da indice. Vive qui perche' `titolo` scrive il ritorno."""
+
+USI: dict = {}
+"""Che cosa si fa in ciascun foglio, per nome del foglio.
+
+Lo riempie il costruttore prima di creare i fogli, dalla stessa tupla da cui
+nasce l'indice, e lo legge `titolo` per scrivere la fascia d'uso in testa a ogni
+foglio. La forma e' un dizionario di modulo e non un parametro di `titolo` per
+una ragione pratica: `titolo` e' chiamata da venti metodi diversi, e passare
+l'informazione a ciascuno avrebbe richiesto venti modifiche con venti occasioni
+di dimenticarne una, mentre il registro fa comparire la fascia su ogni foglio che
+sia dichiarato nell'indice, e su nessun altro.
+"""
+
+
+def scelta(validazione, cella):
+    """Aggancia una cella a un elenco di valori ammessi e la colora di conseguenza.
+
+    E' l'unico modo previsto di applicare una tendina, e la ragione e' una
+    segnalazione d'uso: prima le celle da scegliere erano gialle come quelle da
+    digitare, quindi a video non c'era nulla che distinguesse una cella dove si
+    scrive un numero da una dove si sceglie fra valori ammessi. Chi non conosce il
+    file ci scriveva dentro, la validazione rifiutava il valore e il messaggio di
+    Excel non spiegava perche'. Passando sempre da qui, una cella con tendina non
+    puo' avere il colore sbagliato.
+    """
+    validazione.add(cella)
+    cella.fill = FILL_SCELTA
+    return cella
 
 
 def collegamento(ws, riga: int, colonna: int, testo: str, foglio: str, cella: str = "A1"):
@@ -104,13 +134,38 @@ def titolo(ws, riga: int, testo: str, sottotitolo: str = "", larghezza: int = 8)
         ws.merge_cells(start_row=riga, start_column=1, end_row=riga, end_column=larghezza)
         ws.row_dimensions[riga].height = 30
         riga += 1
-    # Il ritorno all'indice occupa la riga che questa funzione lasciava vuota fra
-    # il titolo e il primo contenuto, in colonna A. La posizione e' scelta perche'
-    # sia la stessa su tutti i fogli: metterlo accanto al titolo lo avrebbe
-    # spostato a destra di tante colonne quante ne occupa il titolo, che varia da
-    # quattro a ventisei, e su un foglio largo sarebbe finito fuori dalla vista.
+    # La riga che questa funzione lasciava vuota fra il titolo e il primo
+    # contenuto porta due cose: il ritorno all'indice in colonna A, e da colonna B
+    # la fascia che dice se in questo foglio si scrive o si legge. La posizione e'
+    # la stessa su tutti i fogli: metterle accanto al titolo le avrebbe spostate a
+    # destra di tante colonne quante ne occupa il titolo, che varia da quattro a
+    # ventisei, e su un foglio largo sarebbero finite fuori dalla vista.
     if ws.title != FOGLIO_INDICE:
         collegamento(ws, riga, 1, "<< Indice", FOGLIO_INDICE)
+        uso = USI.get(ws.title)
+        if uso:
+            azione, quando, esito = uso
+            if azione == "Si legge":
+                testo = ("QUI NON SI SCRIVE NULLA: tutto quello che vedi e' calcolato negli altri fogli. "
+                         f"Si apre {quando.lower()}. Ne esce: {esito.lower()}.")
+                riempimento = FILL_CALCOLO
+            elif azione == "Si consulta":
+                testo = ("QUI SI CONSULTA: si apre per capire da dove viene un numero, e si modifica solo "
+                         f"per un aggiornamento normativo. Si apre {quando.lower()}. Contiene: {esito.lower()}.")
+                riempimento = FILL_CALCOLO
+            else:
+                testo = ("QUI SI SCRIVE: compila le celle GIALLE, scegli dall'elenco nelle celle AZZURRE, "
+                         "non toccare le grigie e le verdi che sono calcolate. "
+                         f"Si apre {quando.lower()}. Ne esce: {esito.lower()}.")
+                riempimento = FILL_INPUT
+            c = ws.cell(row=riga, column=2, value=testo)
+            c.font = ETICHETTA_BOLD
+            c.alignment = SINISTRA
+            for col in range(2, max(larghezza, 3) + 1):
+                ws.cell(row=riga, column=col).fill = riempimento
+                ws.cell(row=riga, column=col).border = BORDO
+            ws.merge_cells(start_row=riga, start_column=2, end_row=riga, end_column=max(larghezza, 3))
+            ws.row_dimensions[riga].height = 30
     return riga + 1
 
 

@@ -8,6 +8,60 @@ Questo file risponde alle domande operative: quale comando eseguire, quale opzio
 
 Per il perché di un numero si va nelle schede di dominio. Le imposte di trasferimento, il prezzo-valore, la prima casa, la detrazione degli interessi e l'IMU stanno in `fiscalita-acquisto.md`. I quattro regimi di tassazione del canone e le novità 2026 sulle locazioni brevi stanno in `fiscalita-locazione.md`. Le verifiche legali e urbanistiche stanno in `due-diligence.md`, i documenti da farsi consegnare in `perizia-pre-acquisto.md`, le vendite giudiziarie in `aste-immobiliari.md`, l'acquisto in più persone in `comprare-in-piu-persone.md`. Le scelte metodologiche, cioè quale denominatore usa un rendimento e perché, stanno in `metodo-e-metriche.md`. L'architettura del codice sta in `guida-tecnica.md`, la spiegazione senza gergo di ogni voce sta in `guida-non-tecnica.md`, il percorso rapido per la prima valutazione sta in `da-zero.md`, e la provenienza di ogni dato sta in `fonti.md`.
 
+## Il percorso in un diagramma
+
+Il primo diagramma è la sequenza operativa: che comando si lancia, in che ordine, e dove si esce dal terminale per entrare nel workbook. Si legge dall'alto.
+
+```mermaid
+flowchart TD
+    START(["Hai visto un annuncio"]) --> ADD["annunci aggiungi --link ..."]
+    ADD --> PREL{"Il portale consente<br/>il prelievo?"}
+    PREL -- "no, risponde 403" --> FILE["copi il testo in un file<br/>annunci importa --file"]
+    PREL -- "sì" --> LINK["annunci importa --link"]
+    FILE --> ZONA
+    LINK --> ZONA["omi zone --comune<br/>poi annunci modifica --zona"]
+    ZONA --> QUOT["annunci omi --id<br/>aggancia le quotazioni di zona"]
+    QUOT --> CONFR["annunci confronta<br/>graduatoria per scarto sulla zona"]
+    CONFR --> MANC["annunci mancanti<br/>che cosa manca, e che cosa blocca"]
+    MANC --> PRONTO{"Ci sono i dati<br/>bloccanti?"}
+    PRONTO -- "no" --> CHIEDI["Una mail all'agenzia:<br/>rendita catastale, superficie calpestabile,<br/>consuntivo condominiale e verbale"]
+    CHIEDI --> SCRIVI["annunci modifica --rendita --categoria<br/>--condominio --canone"]
+    SCRIVI --> MANC
+    PRONTO -- "sì" --> XLS["excel --con-annunci --da-annuncio ID<br/>workbook già compilato per quell'immobile"]
+    XLS --> COMPILA["Nel workbook: celle GIALLE da scrivere,<br/>AZZURRE da scegliere.<br/>IMU dalla delibera, mutuo dal preventivo"]
+    COMPILA --> CTRL{"Controlli di plausibilità<br/>tutti superati?"}
+    CTRL -- "no" --> COMPILA
+    CTRL -- "sì" --> LEGGI["Cruscotto: i cinque numeri.<br/>Poi Scenari e Rischio per lo scenario sfavorevole"]
+    LEGGI --> DECIDI{"Regge ai tuoi criteri?"}
+    DECIDI -- "no" --> SCARTA(["annunci modifica --stato scartato"])
+    DECIDI -- "sì" --> SCHEDA["scheda --id ID<br/>una pagina da portare in agenzia"]
+    SCHEDA --> VERIF["Checklist e Dossier tecnico:<br/>le verifiche si chiudono PRIMA della proposta"]
+    VERIF --> FINE(["Proposta"])
+```
+
+Il secondo diagramma non è una sequenza ma una mappa: dice da dove viene ogni numero e dove finisce. Serve a rispondere alla domanda che si pone quando un risultato sorprende, cioè quale dato lo ha prodotto.
+
+```mermaid
+flowchart LR
+    BCE[("Banca centrale europea:<br/>tassi sui mutui, Euribor,<br/>euro short-term rate")] --> CMD1["tassi<br/>indicatori"]
+    ISTAT[("ISTAT:<br/>prezzi al consumo NIC")] --> CMD1
+    AE[("Agenzia delle Entrate:<br/>fornitura OMI, scaricata a mano")] --> CMD2["omi importa"]
+    NORMA[("Leggi e circolari:<br/>aliquote, moltiplicatori, soglie")] --> PARAM["parametri.py<br/>ogni valore datato,<br/>con la fonte accanto"]
+    CMD1 --> PARAM
+    CMD2 --> CACHE[("data/omi/<br/>cache locale")]
+    CACHE --> REG[("data/annunci.csv<br/>il registro, non versionato")]
+    PORT[("Portali:<br/>testo dell'annuncio")] --> REG
+    PARAM --> MOTORE["calcoli.py<br/>il motore di calcolo"]
+    REG --> MOTORE
+    MOTORE --> XLSX["Workbook di ventun fogli<br/>con formule vive"]
+    MOTORE --> SCH["Scheda di trattativa<br/>una pagina PDF"]
+    PARAM --> TRATT["Trattazione matematica<br/>ventitré pagine PDF"]
+    XLSX --> DEC(["La decisione"])
+    SCH --> DEC
+```
+
+Due cose che i diagrammi rendono visibili e che vale enunciare. La prima è che ci sono due punti in cui il percorso esce dall'automatico e richiede una persona, e sono entrambi voluti: il prelievo di un annuncio quando il portale lo nega, e la fornitura OMI che vive dietro un'autenticazione personale. La seconda è che il motore di calcolo è uno solo e alimenta tre uscite diverse, il workbook, la scheda e la trattazione: è la ragione per cui un numero letto in uno dei tre deve coincidere con lo stesso numero letto negli altri due, e per cui questa coincidenza è verificata dai test invece di essere sperata.
+
 ## Installazione, una volta sola
 
 Serve Python della serie 3.13 e una sola dipendenza, `openpyxl`. Tutto il resto è libreria standard.
