@@ -24,6 +24,12 @@ C'è una sola regola e vale in tutto il file. Le celle **gialle** sono le tue: q
 
 Quando un numero diventa rosso, o una cella si colora di rosa, è un avviso: qualcosa è sopra soglia, o negativo, e vale la pena capire perché.
 
+## L'indice, e come si gira fra i fogli
+
+Il primo foglio del file è un indice. Elenca tutti gli altri in ordine di lettura, raggruppati per fase, e per ognuno dice tre cose: se lì si scrive o si legge, quando lo si apre nel percorso, e che cosa ne esce. Ogni nome è un collegamento: ci si clicca e si va. Da ogni foglio si torna all'indice cliccando **<< Indice** in alto a sinistra, appena sotto il titolo.
+
+Serve perché venti fogli sono troppi da tenere a mente, e le linguette in basso non dicono in che ordine leggerli né quali riguardano il tuo caso. Diversi fogli, per esempio Asta o Comproprietà, servono solo in situazioni particolari, e l'indice lo dice riga per riga così non li apri per curiosità e poi ti chiedi se avresti dovuto compilarli.
+
 ## L'ordine in cui si lavora
 
 Il file ha sedici schede in fondo alla finestra. Non servono tutte insieme e non si leggono da sinistra a destra. L'ordine giusto è questo.

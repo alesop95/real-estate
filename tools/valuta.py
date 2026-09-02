@@ -813,7 +813,7 @@ def principale(argomenti=None) -> int:
     p.add_argument("--obiettivo", type=float, help="prezzo obiettivo da mettere in proposta")
     p.add_argument("--canone", type=float)
     p.add_argument("--note")
-    p.add_argument("--stato", help="da contattare, contattata, visitata, scartata, in trattativa")
+    p.add_argument("--stato", help="uno fra: " + ", ".join(A.STATI_ANNUNCIO))
     p.add_argument("--punteggio", type=int, help="priorita' da 0 a 10, 10 e' la massima")
     p.add_argument("--zona", dest="zona_omi", help="zona OMI, per agganciare la quotazione giusta")
     p.add_argument("--tipologia-omi", dest="tipologia_omi", default="", help="tipologia edilizia OMI, per l'azione omi")

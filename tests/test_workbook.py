@@ -48,6 +48,89 @@ def test_il_workbook_si_genera_con_tutti_i_fogli():
     assert wb.sheetnames == attesi
 
 
+def test_indice_copre_tutti_i_fogli_e_i_collegamenti_esistono():
+    """Ogni foglio visibile sta nell'indice una volta sola, e ogni link porta a un foglio vero.
+
+    E' il presidio contro un difetto che Excel non segnala: un foglio rinominato
+    lascia nell'indice un collegamento sintatticamente valido verso una
+    destinazione che non esiste piu', e Excel lo apre senza errore visibile,
+    semplicemente non andando da nessuna parte. Il test confronta la tupla
+    `PERCORSO`, che e' la sorgente da cui l'indice si costruisce, con i fogli
+    davvero presenti nel workbook, e verifica che le due cose coincidano
+    esattamente: nessun foglio dimenticato nell'indice, nessuna voce dell'indice
+    senza foglio.
+    """
+    wb = load_workbook(workbook())
+    visibili = {ws.title for ws in wb.worksheets if ws.sheet_state == "visible"}
+    indice = E.S.FOGLIO_INDICE
+    assert indice in visibili, f"il foglio indice {indice!r} non esiste"
+
+    # Cio' che la sorgente dichiara.
+    dichiarati = [nome for _, fogli in E.Costruttore.PERCORSO for nome, *_ in fogli]
+    assert len(dichiarati) == len(set(dichiarati)), (
+        f"un foglio compare due volte nell'indice: {sorted(dichiarati)}"
+    )
+    attesi = visibili - {indice}
+    assert set(dichiarati) == attesi, (
+        f"indice e workbook divergono. Nell'indice e non nel workbook: "
+        f"{sorted(set(dichiarati) - attesi)}. Nel workbook e non nell'indice: "
+        f"{sorted(attesi - set(dichiarati))}"
+    )
+
+    # Cio' che il foglio contiene davvero, letto dalle celle.
+    ws = wb[indice]
+    collegati = {}
+    for riga in range(1, 120):
+        c = ws.cell(row=riga, column=2)
+        if c.hyperlink is None:
+            continue
+        collegati[c.value] = c.hyperlink
+    assert set(collegati) == attesi, (
+        f"le celle dell'indice non coincidono con i fogli: mancano "
+        f"{sorted(attesi - set(collegati))}, in eccesso {sorted(set(collegati) - attesi)}"
+    )
+
+    for nome, link in collegati.items():
+        # Deve essere un collegamento interno, cioe' con `location` e senza
+        # destinazione esterna: la forma esterna finisce fra le relazioni verso
+        # l'esterno del file e Excel la tratta come tale.
+        assert link.location == f"'{nome}'!A1", (
+            f"il collegamento a {nome!r} non e' interno o non punta ad A1: "
+            f"location={link.location!r}, target={link.target!r}"
+        )
+        assert not link.target, f"il collegamento a {nome!r} ha una destinazione esterna: {link.target!r}"
+
+
+def test_ogni_foglio_visibile_torna_all_indice():
+    """Da ogni foglio si torna all'indice, e il ritorno sta sempre nello stesso posto.
+
+    La posizione fissa in colonna A non e' un vezzo grafico: il ritorno lo scrive
+    `stile.titolo`, che ogni foglio chiama come prima cosa, quindi un foglio nuovo
+    non puo' nascere senza via di ritorno. Metterlo accanto al titolo lo avrebbe
+    spostato a destra di tante colonne quante ne occupa il titolo, che in questo
+    workbook varia da quattro a ventisei, e su un foglio largo sarebbe finito
+    fuori dalla vista.
+    """
+    wb = load_workbook(workbook())
+    indice = E.S.FOGLIO_INDICE
+    for ws in wb.worksheets:
+        if ws.title == indice or ws.sheet_state != "visible":
+            continue
+        trovato = None
+        for riga in range(1, 8):
+            c = ws.cell(row=riga, column=1)
+            if c.value == "<< Indice":
+                trovato = c
+                break
+        assert trovato is not None, (
+            f"il foglio {ws.title!r} non ha il ritorno all'indice nelle prime righe della colonna A"
+        )
+        assert trovato.hyperlink is not None, f"il ritorno del foglio {ws.title!r} non e' un collegamento"
+        assert trovato.hyperlink.location == f"'{indice}'!A1", (
+            f"il ritorno del foglio {ws.title!r} punta a {trovato.hyperlink.location!r}"
+        )
+
+
 def test_nomi_definiti_essenziali_presenti():
     """I nomi definiti sono il collante fra i fogli: se ne sparisce uno, le formule
     che lo usano diventano #NOME? in silenzio fino all'apertura del file."""

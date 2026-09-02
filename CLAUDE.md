@@ -83,6 +83,9 @@ docs/comprare-in-piu-persone.md
                               scioglimento, fisco pro quota, quando serve una societa'
 docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il significato
                               di ogni voce spiegato in linguaggio comune
+docs/manuale-operativo.md    guida d'uso completa: installazione, ogni comando con ogni
+                              opzione, ogni campo del registro, ogni foglio, manutenzione
+                              ricorrente, diagnostica degli errori
 docs/guida-tecnica.md        architettura, catena di calcolo, riferimento di ogni voce con
                               formula e norma, punti di intervento, verifica
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
@@ -112,7 +115,7 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 Pacchetto `studio-didattico`, sotto `.claude/context/`. E' il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perche' era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perche' una scelta e' fatta cosi', prima di rifarla diversamente.
 
 ```
-studio-didattico-master.md                  indice narrativo, undici voci numerate
+studio-didattico-master.md                  indice narrativo, dodici voci numerate
 refactor-01-formule-vive.md                 workbook come modello, non come rapporto
 refactor-02-denominatore.md                 il denominatore dei rendimenti
 refactor-03-verifica-con-excel.md           automazione COM e locale italiano
@@ -124,6 +127,7 @@ refactor-08-riferimenti-per-nome.md         nomi definiti invece di coordinate f
 refactor-09-regime-per-riga.md              il regime di acquisto e il terzo stato
 refactor-10-prezzo-massimo-esatto.md        soluzione chiusa invece di proporzione
 refactor-11-scenario-misurato.md            il rialzo del tasso preso dalla serie storica
+refactor-12-indice-navigabile.md            l'indice del workbook e i collegamenti interni
 ```
 
 Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.

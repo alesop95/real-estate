@@ -414,6 +414,31 @@ def testo_da_html(html: str) -> str:
     return "\n".join(r for r in righe if r)
 
 
+STATI_ANNUNCIO = (
+    "da contattare",
+    "contattato",
+    "visita fissata",
+    "visitata",
+    "proposta fatta",
+    "scartato",
+    "acquistato",
+)
+"""Gli stati ammessi per un annuncio, in ordine di avanzamento della trattativa.
+
+Sono una sorgente unica per due consumatori che prima ne tenevano due copie
+divergenti: il menu a tendina della colonna Stato nel foglio Annunci e l'aiuto
+dell'opzione `--stato` della riga di comando. Le due copie dicevano cose diverse,
+la seconda offriva "contattata", "scartata" e "in trattativa", che nel foglio non
+esistono, e la conseguenza era concreta: un valore scritto dalla riga di comando
+finiva nella cella senza passare per la validazione, quindi restava li' senza
+errore, ma il menu a tendina non lo conteneva e un filtro per stato non lo
+trovava dove chi lo aveva scritto lo cercava.
+
+L'ordine e' quello dell'avanzamento e non alfabetico, perche' e' l'ordine in cui
+il menu li presenta e in cui una trattativa li attraversa.
+"""
+
+
 CAMPI_ESTRAIBILI = {
     "comune": "il Comune in cui si trova l'immobile",
     "indirizzo": "via e numero civico, o la zona se il civico non c'e'",

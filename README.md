@@ -73,6 +73,10 @@ Sull'acquisto in piu' persone c'e' una scheda dedicata, `docs/comprare-in-piu-pe
 
 Chi parte da zero, senza Python installato e senza sapere quali documenti servano, legge `docs/da-zero.md`: sette passi dall'ambiente vuoto alla prima valutazione completa. Chi vuole solo usare il file legge `docs/guida-non-tecnica.md`, che accompagna foglio per foglio spiegando ogni voce in linguaggio comune. Chi interviene sul modello legge `docs/guida-tecnica.md`, che riporta architettura, catena di calcolo e il riferimento di ogni voce con formula, nome definito e norma di riferimento.
 
+Chi cerca la risposta a una domanda operativa precisa, cioe' quale comando lanciare, che cosa fa una sua opzione, che cosa si scrive in un campo del registro, che cosa significa un errore che e' comparso, legge `docs/manuale-operativo.md`. E' il documento del come: copre installazione, tutti i comandi con tutte le opzioni, i trentacinque campi del registro uno per uno con cosa dipende da ciascuno, i ventun fogli con cosa si compila e cosa si legge, le tre scadenze di manutenzione e una sezione di diagnostica degli errori che si incontrano davvero.
+
+Dentro il workbook la navigazione parte dal primo foglio, che e' un indice: porta i venti fogli in ordine di lettura, raggruppati per fase del percorso, con un collegamento a ciascuno e tre informazioni per riga, cioe' se si compila o si legge, quando lo si apre e che cosa ne esce. Da ogni foglio si torna all'indice con il collegamento in alto a sinistra. In un file di venti fogli la navigazione via linguette funziona solo per chi lo ha costruito, ed era il difetto d'uso piu' evidente prima di questa aggiunta.
+
 ## Requisiti
 
 Python 3.11 o superiore con `openpyxl`, che e' l'unica dipendenza obbligatoria. Excel installato serve solo per la verifica automatica del workbook, non per usarlo: il file si apre anche con LibreOffice o Google Sheets, dove pero' la validazione a tendina e la formattazione condizionale possono rendere in modo diverso.

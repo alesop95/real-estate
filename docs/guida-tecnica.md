@@ -10,6 +10,14 @@ Le regole quindi esistono due volte, e questo è voluto: far girare lo stesso ca
 
 I riferimenti fra fogli passano sempre per nomi definiti, mai per indirizzi di cella, così una formula si legge come `prezzo * reg_prima` e non come `Immobile!$B$15`, e resta valida se una riga si sposta.
 
+## L'indice navigabile, e il suo invariante
+
+Il primo foglio del workbook è l'indice. Non è una pagina di presentazione: è costruito dalla tupla `Costruttore.PERCORSO`, che raggruppa i venti fogli visibili per fase del percorso e per ciascuno dichiara se si compila o si legge, quando lo si apre e che cosa ne esce. La stessa tupla è la sorgente unica: la usa il foglio per scrivere le righe, e un test la confronta con i fogli davvero presenti nel workbook, in entrambe le direzioni.
+
+L'invariante conta perché il difetto che presidia è invisibile. Un foglio rinominato lascia nell'indice un collegamento sintatticamente valido verso una destinazione che non esiste più, e Excel lo apre senza errore: semplicemente non va da nessuna parte. Il test verifica anche la forma del collegamento, cioè che sia interno: `openpyxl` registra come destinazione esterna un collegamento assegnato come stringa a `cell.hyperlink`, e la forma corretta è un oggetto `Hyperlink` con `location`, costruito dall'helper `stile.collegamento`. La differenza si vede nel file, dove la forma esterna finisce fra le relazioni verso l'esterno, e a seconda della versione Excel la apre chiedendo conferma o la segnala come non attendibile.
+
+Il ritorno all'indice lo scrive `stile.titolo`, nella riga che quella funzione lasciava vuota fra il titolo e il primo contenuto, in colonna A. La posizione sta lì e non accanto al titolo perché il titolo occupa da quattro a ventisei colonne a seconda del foglio, e un ritorno posizionato dopo di esso sarebbe finito fuori dalla vista sui fogli larghi. E sta in `titolo` e non nei singoli fogli perché ogni foglio comincia chiamando quella funzione, quindi un foglio nuovo non può nascere senza via di ritorno.
+
 ## Comandi
 
 ```

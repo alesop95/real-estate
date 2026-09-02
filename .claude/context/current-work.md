@@ -16,7 +16,7 @@ stato: strumento completo e verificato; nessuna feature attiva, nessun lavoro pe
 
 Cosa fa. Genera un workbook Excel interattivo di ventun fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
 
-Stato al 1 settembre 2026: non c'e' una feature aperta. Tutte le voci della definizione di completamento sono chiuse, le tre voci di "Prossimo" della roadmap sono chiuse, i quattro limiti dichiarati che avevano una correzione delimitata sono stati corretti, e il lavoro e' committato con l'albero pulito. Le schede di questa cartella sono ancorate al commit `a0b3420`.
+Stato al 1 settembre 2026, seconda parte della giornata: non c'e' una feature aperta sul modello. L'ultima aggiunta non riguarda il calcolo ma l'uso, cioe' l'indice navigabile del workbook e il manuale operativo, nati da una segnalazione d'uso e non da un difetto di numeri. Tutte le voci della definizione di completamento sono chiuse, le tre voci di "Prossimo" della roadmap sono chiuse, i quattro limiti dichiarati che avevano una correzione delimitata sono stati corretti, e il lavoro e' committato con l'albero pulito. Le schede di questa cartella sono ancorate al commit `a0b3420`.
 
 ## Definizione di completamento
 
@@ -53,6 +53,9 @@ Stato al 1 settembre 2026: non c'e' una feature aperta. Tutte le voci della defi
 - [x] Percorso del tasso a sei gradini, con la misura del rialzo dalla serie storica dell'Euribor
 - [x] Segnale di chiusura del piano nel Simulatore mutuo
 - [x] Commit del lavoro del 1 settembre e ancoraggio dei frontmatter
+- [x] Indice navigabile come primo foglio, con collegamento a ogni foglio e ritorno da ogni foglio
+- [x] Manuale operativo: ogni comando con ogni opzione, ogni campo del registro, ogni foglio, diagnostica
+- [ ] Commit dell'indice navigabile e del manuale operativo, che spetta all'utente
 
 ## Riconciliazione
 

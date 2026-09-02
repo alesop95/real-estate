@@ -112,6 +112,8 @@ Il contatore in fondo al foglio dice quante verifiche restano aperte, e compare 
 
 Si parte dall'altra estremità. Nel foglio **Annunci** si mettono tutti gli immobili che si stanno guardando, anche solo con link, Comune, metri quadri e prezzo. Il foglio **Confronto immobili** si popola da solo e applica a ciascuno il calcolo completo, imposte comprese.
 
+Per orientarsi fra i venti fogli non serve ricordarli: il primo foglio del workbook è un indice con un collegamento a ciascuno, e per ognuno dice se si compila o si legge, quando lo si apre e che cosa ne esce. Da ogni foglio si torna all'indice col collegamento in alto a sinistra. Questo documento resta il percorso rapido; la guida completa a ogni comando e a ogni campo è `manuale-operativo.md`.
+
 Da lì esce il candidato su cui vale la pena spendere l'ora del passo 5. Gli altri restano in lista.
 
 Il registro si può popolare anche dalla riga di comando, che è più rapido:
