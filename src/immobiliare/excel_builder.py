@@ -21,6 +21,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.worksheet.datavalidation import DataValidation
 
+from . import annunci as A
 from . import parametri as P
 from . import stile as S
 
@@ -84,60 +85,151 @@ class Costruttore:
         self.foglio_estrazioni()
 
     # ------------------------------------------------------------------ guida
+    # L'indice dei fogli. La tupla e' la sorgente unica: la usa il foglio Guida per
+    # costruire la tabella navigabile, e il test la confronta con i fogli davvero
+    # presenti nel workbook. Il rischio che presidia non e' teorico: un foglio
+    # rinominato lascerebbe un collegamento ipertestuale che Excel apre senza
+    # errore visibile, portando su una destinazione che non esiste piu'.
+    #
+    # L'ordine e' quello di lettura consigliata e non quello delle linguette, che
+    # coincide quasi sempre ma non del tutto: i due fogli di riferimento, Parametri
+    # e Fonti, stanno fra le prime linguette per comodita' di consultazione e in
+    # fondo al percorso, perche' si aprono quando serve e non all'inizio.
+    PERCORSO = (
+        ("Da dove si comincia", (
+            ("Cruscotto", "Si legge", "Sempre, per primo e per ultimo",
+             "I numeri che decidono, con accanto la soglia oltre la quale sono un problema, e il conto di cosa manca ancora"),
+        )),
+        ("I dati dell'operazione, cioe' le celle gialle", (
+            ("Immobile", "Si compila", "Quando c'e' un immobile candidato",
+             "Imposte di trasferimento, costo totale dell'operazione, cassa necessaria al rogito"),
+            ("Mutuo", "Si compila", "Subito dopo Immobile",
+             "Rata, imposta sostitutiva, oneri accessori, detrazione degli interessi anno per anno"),
+            ("Locazione", "Si compila", "Solo se l'immobile si mette a reddito",
+             "I quattro regimi fiscali a confronto sullo stesso canone, e il regime scelto che alimenta la proiezione"),
+            ("Comproprieta", "Si compila", "Solo se si compra in piu' di uno",
+             "Ripartizione per quote di esborso, rata e imposte, e l'avvertenza su cosa serve mettere per iscritto"),
+        )),
+        ("Come si comporta nel tempo", (
+            ("Ammortamento", "Si legge", "Dopo aver compilato Mutuo",
+             "Il piano rata per rata, fino a quarant'anni, con quota capitale e quota interessi separate"),
+            ("Simulatore mutuo", "Si compila e si legge", "Prima di firmare un mutuo, soprattutto a tasso variabile",
+             "Effetto dei rimborsi volontari e di un percorso del tasso a gradini, con la rata massima raggiunta e il segnale se il piano si chiude"),
+            ("Cash flow", "Si legge", "Dopo Locazione",
+             "La proiezione annuale sull'orizzonte scelto, con l'uscita finale"),
+        )),
+        ("L'esito, e quanto e' fragile", (
+            ("Metriche", "Si legge", "Quando gli input sono completi",
+             "Rendimento lordo e netto, cap rate, cash on cash, debt service coverage ratio, tasso interno di rendimento, valore attuale netto"),
+            ("Confronto affitto", "Si legge", "Solo per l'abitazione propria",
+             "Comprare con mutuo oppure restare in affitto investendo la differenza, a parita' di esborso"),
+            ("Scenari", "Si compila e si legge", "Prima di decidere, mai dopo",
+             "Tre ipotesi impostabili a mano, le tabelle di sensibilita', e il prezzo massimo che l'immobile giustifica al rendimento obiettivo"),
+            ("Rischio", "Si legge", "Insieme a Scenari",
+             "Mille scenari con estrazioni fisse, le probabilita' di cash flow negativo e di perdita, e il tornado che dice quale variabile pesa"),
+        )),
+        ("Prima di firmare", (
+            ("Checklist", "Si compila", "Dal momento in cui si passa dalla valutazione alla proposta",
+             "Le verifiche legali, urbanistiche, catastali e condominiali da chiudere, con la fase in cui vanno chiuse"),
+            ("Dossier tecnico", "Si compila", "Prima della proposta, non dopo",
+             "I documenti da farsi consegnare in trattativa, con chi li rilascia, la norma che li rende dovuti e il costo"),
+        )),
+        ("Casi speciali", (
+            ("Asta", "Si compila e si legge", "Solo se l'immobile viene da una vendita giudiziaria",
+             "Costo reale dell'aggiudicazione, sconto effettivo sul mercato, prezzo massimo a cui fermarsi in gara"),
+        )),
+        ("La ricerca, cioe' il passo che viene prima di tutti", (
+            ("Annunci", "Si compila", "Da subito, appena si inizia a guardare",
+             "Il registro degli immobili in valutazione, con prezzo al metro quadro, rendimento lordo e scarto sulla zona OMI calcolati"),
+            ("Confronto immobili", "Si legge", "Quando a registro c'e' piu' di un immobile",
+             "Tutti gli annunci in fila con lo stesso modello, imposte comprese, per scegliere quale approfondire"),
+        )),
+        ("Riferimento, si apre quando serve", (
+            ("Parametri", "Si consulta", "All'aggiornamento fiscale annuale, o per capire da dove viene un numero",
+             "Ogni aliquota e ogni assunzione del modello, con la fonte accanto e la data di revisione"),
+            ("Fonti", "Si consulta", "Prima di fidarsi di un numero",
+             "Da dove viene ciascun dato, con il collegamento alla fonte istituzionale"),
+        )),
+    )
+
     def foglio_guida(self) -> None:
-        ws = self.wb.create_sheet("Guida")
+        """Indice navigabile del workbook.
+
+        Il foglio esisteva gia' come pagina di presentazione con un elenco
+        descrittivo di undici voci su venti fogli, il che lo rendeva una guida
+        parziale e non un indice. La differenza conta piu' di quanto sembri: in un
+        file di venti fogli la navigazione via linguette in basso funziona solo per
+        chi conosce a memoria dove sta cosa, e chi lo apre la prima volta, o lo
+        riapre dopo un mese, non sa in che ordine leggere ne' quali fogli lo
+        riguardano. La tabella qui sotto risponde a tre domande per ogni foglio,
+        cioe' se si compila o si legge, quando lo si apre nel percorso, e cosa ne
+        esce, e ogni nome e' un collegamento.
+        """
+        ws = self.wb.create_sheet(S.FOGLIO_INDICE)
         ws.sheet_view.showGridLines = False
-        S.larghezze_colonne(ws, {"A": 34, "B": 22, "C": 62, "D": 18, "E": 18, "F": 18, "G": 18, "H": 18})
+        S.larghezze_colonne(ws, {"A": 5, "B": 24, "C": 20, "D": 44, "E": 76})
         r = S.titolo(
             ws,
             1,
             "Valutazione di un investimento immobiliare",
             f"Modello aggiornato al {P.REVISIONE.strftime('%d/%m/%Y')} con i parametri fiscali {P.ANNO_IMPOSTA}. "
-            "Le celle gialle sono gli input da compilare, le grigie sono calcolate, le verdi sono i risultati di sintesi.",
+            "Le celle gialle sono gli input da compilare, le grigie sono calcolate, le verdi sono i risultati di sintesi. "
+            "Ogni nome di foglio in questa pagina e' un collegamento, e da ogni foglio si torna qui col collegamento in alto a destra.",
+            5,
         )
 
-        r = S.sezione(ws, r, "Come si usa")
-        passi = [
-            ("1. Immobile", "Prezzo, rendita catastale, tipo di venditore e agevolazione. Da qui escono le imposte di trasferimento e il costo totale dell'operazione."),
-            ("2. Mutuo", "Importo, tasso e durata. Genera il piano di ammortamento e la detrazione degli interessi anno per anno."),
-            ("3. Locazione", "Canone atteso e regime fiscale. Confronta cedolare secca, canone concordato, IRPEF ordinaria e locazione breve sullo stesso immobile."),
-            ("4. Cash flow", "Proiezione annuale su un orizzonte scelto, con rivalutazione, sfitto, manutenzione e uscita finale."),
-            ("5. Metriche", "Rendimento lordo e netto, cap rate, cash on cash, DSCR, TIR e valore attuale netto."),
-            ("6. Confronto affitto", "Comprare con mutuo oppure restare in affitto investendo la differenza, a parita' di esborso."),
-            ("7. Scenari", "Sensibilita' del cash flow al tasso e al canone, e del rendimento al prezzo."),
-            ("8. Checklist", "Verifiche legali, urbanistiche, catastali e condominiali da chiudere prima della proposta e prima del rogito."),
-            ("9. Asta", "Solo per le vendite giudiziarie: costo reale dell'aggiudicazione, sconto effettivo sul mercato e prezzo massimo a cui fermarsi in gara."),
-            ("10. Dossier tecnico", "I documenti da farsi consegnare dall'agenzia o dal venditore in trattativa, con chi li rilascia, la norma che li impone e il costo."),
-            ("11. Annunci", "Registro degli immobili in valutazione, con link, prezzo al metro quadro e rendimento lordo calcolati."),
-        ]
-        for etichetta, testo in passi:
-            c = ws.cell(row=r, column=1, value=etichetta)
-            c.font = S.ETICHETTA_BOLD
-            c.alignment = S.SINISTRA
-            d = ws.cell(row=r, column=2, value=testo)
-            d.font = S.ETICHETTA
-            d.alignment = S.SINISTRA
-            ws.merge_cells(start_row=r, start_column=2, end_row=r, end_column=8)
-            ws.row_dimensions[r].height = 30
-            r += 1
+        r = S.sezione(ws, r, "Indice dei fogli, in ordine di lettura", 5)
+        r = S.intestazioni(ws, r, ["N", "Foglio", "Che cosa si fa qui", "Quando si apre", "Che cosa ne esce"], [5, 24, 20, 44, 76])
+        numero = 0
+        for fase, fogli in self.PERCORSO:
+            r = S.sezione(ws, r, fase, 5, secondaria=True)
+            for nome, azione, quando, esito in fogli:
+                numero += 1
+                c = ws.cell(row=r, column=1, value=numero)
+                c.number_format = S.NUMERO
+                c.alignment = S.CENTRO
+                S.collegamento(ws, r, 2, nome, nome)
+                a = ws.cell(row=r, column=3, value=azione)
+                a.font = S.ETICHETTA_BOLD if azione.startswith("Si compila") else S.ETICHETTA
+                a.alignment = S.SINISTRA
+                for colonna, testo in ((4, quando), (5, esito)):
+                    d = ws.cell(row=r, column=colonna, value=testo)
+                    d.font = S.ETICHETTA
+                    d.alignment = S.SINISTRA
+                for colonna in range(1, 6):
+                    ws.cell(row=r, column=colonna).border = S.BORDO
+                ws.row_dimensions[r].height = 30
+                r += 1
+        ws.freeze_panes = ws.cell(row=r - numero, column=1)
         r += 1
 
-        r = S.sezione(ws, r, "Le tre domande a cui il modello risponde")
+        r = S.sezione(ws, r, "Il percorso minimo, se si ha mezz'ora", 5)
+        for testo in [
+            "Primo, foglio Annunci: si mettono gli immobili che si stanno guardando, anche solo con link, Comune, metri quadri e prezzo. Il foglio Confronto immobili li mette in fila da solo e dice quale merita tempo.",
+            "Secondo, foglio Immobile, sul candidato scelto: prezzo, rendita catastale, chi vende, prima casa. Ne escono imposte e costo reale. Poi foglio Mutuo, e foglio Locazione se l'immobile si affitta.",
+            "Terzo, si torna al Cruscotto e si leggono i cinque numeri. Se il cash flow e' negativo, si va nel foglio Scenari e si guarda quanto lo diventa nell'ipotesi pessimistica: e' quella la cifra che si deve poter sostenere ogni mese.",
+            "Quarto, prima di fare una proposta si aprono Checklist e Dossier tecnico. Una proposta accettata e' gia' un contratto, quindi le verifiche si chiudono prima, o diventano condizioni scritte nella proposta.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 5)
+        r += 1
+
+        r = S.sezione(ws, r, "Le tre domande a cui il modello risponde", 5)
         for testo in [
             "Quanta cassa serve davvero per chiudere l'operazione, contando imposte, notaio, provvigione e oneri del mutuo, e non solo il prezzo.",
             "Quanto rende l'immobile al netto di tutto, e come si confronta con l'alternativa di non comprarlo.",
             "Quali verifiche legali e tecniche vanno chiuse prima di firmare, perche' una proposta accettata e' gia' un contratto.",
         ]:
-            r = S.nota_riga(ws, r, testo)
+            r = S.nota_riga(ws, r, testo, 5)
         r += 1
 
-        r = S.sezione(ws, r, "Avvertenza")
+        r = S.sezione(ws, r, "Avvertenza", 5)
         for testo in [
             "Questo file e' uno strumento di analisi personale, non una consulenza fiscale, legale o finanziaria. Le aliquote sono quelle vigenti alla data di revisione indicata sopra e cambiano con ogni legge di bilancio: prima di firmare qualunque cosa vanno riverificate sulle fonti elencate nel foglio Fonti, e le posizioni soggettive vanno confermate da un notaio e da un commercialista.",
             "Il modello ignora deliberatamente la ristrutturazione come voce di progetto, secondo il perimetro con cui e' stato costruito. La ristrutturazione periodica di fine ciclo, invece, resta come costo ricorrente ammortizzato, perche' un immobile che si tiene quarant'anni va rifatto almeno una volta e ignorarlo falsa il rendimento.",
             "L'aliquota IMU e le spese condominiali sono le due voci che cambiano di piu' da un immobile all'altro: l'aliquota va letta nella delibera del Comune dell'anno in corso, le spese nel consuntivo condominiale degli ultimi due esercizi.",
+            "La guida operativa completa, con ogni comando e ogni voce spiegati uno per uno, sta nel file docs/manuale-operativo.md dentro il progetto che ha generato questo workbook.",
         ]:
-            r = S.nota_riga(ws, r, testo)
+            r = S.nota_riga(ws, r, testo, 5)
 
     # -------------------------------------------------------------- cruscotto
     def foglio_cruscotto(self) -> None:
@@ -2779,7 +2871,10 @@ class Costruttore:
         r = S.intestazioni(ws, r, [c[0] for c in colonne], [c[1] for c in colonne])
         prima = r
 
-        stato = DataValidation(type="list", formula1='"da contattare,contattato,visita fissata,visitata,proposta fatta,scartato,acquistato"', allow_blank=True)
+        # L'elenco arriva da `annunci.STATI_ANNUNCIO`, che e' la sorgente unica
+        # condivisa con l'aiuto della riga di comando: due copie di un elenco di
+        # valori ammessi divergono, e queste due erano gia' divergenti.
+        stato = DataValidation(type="list", formula1='"' + ",".join(A.STATI_ANNUNCIO) + '"', allow_blank=True)
         ws.add_data_validation(stato)
         nuova = DataValidation(type="list", formula1='"SI,NO"', allow_blank=True)
         ws.add_data_validation(nuova)

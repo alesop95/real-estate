@@ -8,6 +8,7 @@ ogni foglio e rende il cambio di palette un'operazione in un punto solo.
 from __future__ import annotations
 
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.worksheet.hyperlink import Hyperlink
 from openpyxl.utils import get_column_letter
 
 # Palette: blu profondo per le intestazioni, giallo tenue per cio' che si edita,
@@ -53,8 +54,44 @@ DESTRA = Alignment(horizontal="right", vertical="center")
 CENTRO = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
 
+FOGLIO_INDICE = "Guida"
+"""Nome del foglio che fa da indice. Vive qui perche' `titolo` scrive il ritorno."""
+
+
+def collegamento(ws, riga: int, colonna: int, testo: str, foglio: str, cella: str = "A1"):
+    """Scrive una cella che porta a un altro foglio dello stesso workbook.
+
+    Il collegamento va costruito come `Hyperlink` con `location` e non assegnando
+    una stringa a `cell.hyperlink`, perche' quella scorciatoia lo registra come
+    destinazione esterna: nel file finisce fra le relazioni verso l'esterno, e a
+    seconda della versione Excel lo apre chiedendo conferma o lo segnala come
+    riferimento non attendibile. Un collegamento interno non ha una destinazione
+    esterna, ha una posizione dentro il file, ed e' esattamente cio' che
+    `location` esprime.
+
+    Il nome del foglio va fra apici singoli perche' diversi fogli di questo
+    workbook hanno uno spazio nel nome, e senza apici la destinazione non si
+    risolve. E si punta a una cella e non al foglio nudo, perche' un collegamento
+    senza cella lascia il foglio dove era stato lasciato scrollato, che su un
+    piano di ammortamento di 480 righe significa arrivarci in fondo.
+    """
+    c = ws.cell(row=riga, column=colonna, value=testo)
+    c.font = LINK
+    c.alignment = SINISTRA
+    c.hyperlink = Hyperlink(ref=c.coordinate, location=f"'{foglio}'!{cella}")
+    return c
+
+
 def titolo(ws, riga: int, testo: str, sottotitolo: str = "", larghezza: int = 8) -> int:
-    """Scrive il titolo del foglio e restituisce la prima riga libera."""
+    """Scrive il titolo del foglio e restituisce la prima riga libera.
+
+    Scrive anche, appena a destra del titolo, il collegamento di ritorno
+    all'indice. Sta qui e non nei singoli fogli per una ragione di manutenzione:
+    ogni foglio del workbook comincia chiamando questa funzione, quindi metterlo
+    qui garantisce che nessun foglio nuovo nasca senza via di ritorno. Un
+    workbook di venti fogli in cui la navigazione dipende dalla linguetta in
+    basso e' navigabile solo da chi lo ha costruito.
+    """
     c = ws.cell(row=riga, column=1, value=testo)
     c.font = TITOLO
     ws.merge_cells(start_row=riga, start_column=1, end_row=riga, end_column=larghezza)
@@ -67,6 +104,13 @@ def titolo(ws, riga: int, testo: str, sottotitolo: str = "", larghezza: int = 8)
         ws.merge_cells(start_row=riga, start_column=1, end_row=riga, end_column=larghezza)
         ws.row_dimensions[riga].height = 30
         riga += 1
+    # Il ritorno all'indice occupa la riga che questa funzione lasciava vuota fra
+    # il titolo e il primo contenuto, in colonna A. La posizione e' scelta perche'
+    # sia la stessa su tutti i fogli: metterlo accanto al titolo lo avrebbe
+    # spostato a destra di tante colonne quante ne occupa il titolo, che varia da
+    # quattro a ventisei, e su un foglio largo sarebbe finito fuori dalla vista.
+    if ws.title != FOGLIO_INDICE:
+        collegamento(ws, riga, 1, "<< Indice", FOGLIO_INDICE)
     return riga + 1
 
 
