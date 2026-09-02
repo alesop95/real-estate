@@ -1406,6 +1406,107 @@ class Costruttore:
         r = S.campo(ws, r, "Anni per rientrare del capitale proprio", "=IF(cash_flow_primo_anno>0,esborso/cash_flow_primo_anno,\"mai, con questo cash flow\")", S.NUMERO_DEC)
         r += 1
 
+        r = S.sezione(ws, r, "Effetto dell'inflazione: dal nominale al reale", secondaria=True)
+        r = S.nota_riga(ws, r, "Tutti i rendimenti sopra sono nominali, cioe' espressi in euro del futuro. Il rendimento che conta e' quello reale, perche' un investimento non serve a possedere piu' euro ma a comprare piu' cose. La conversione non e' una sottrazione: e' il rapporto fra il potere d'acquisto finale e quello iniziale, e le due forme divergono in modo misurabile.", 3)
+        riga_infl_r = r
+        r = S.campo(ws, r, "Inflazione attesa", "=infl", S.PERC, nota="Dal foglio Parametri. Si tara sui dati correnti con: python tools/valuta.py indicatori")
+        riga_rn = r
+        r = S.campo(ws, r, "Rendimento netto nominale", "=utile_locazione/costo_totale", S.PERC)
+        riga_rr = r
+        r = S.campo(ws, r, "Rendimento netto reale", f"=(1+B{riga_rn})/(1+infl)-1", S.PERC, risultato=True,
+                    nota="Equazione di Fisher in forma esatta: (1+r)/(1+i)-1. E' il rendimento in potere d'acquisto, cioe' quello che dice se l'operazione arricchisce o impoverisce.")
+        riga_err = r
+        r = S.campo(ws, r, "Errore della sottrazione r meno i", f"=(B{riga_rn}-infl)-B{riga_rr}", "0.0000%",
+                    nota="Quanto si sbaglia usando la forma approssimata invece di quella esatta. Piccolo su un anno, si compone sull'orizzonte.")
+        riga_tir_n = r
+        r = S.campo(ws, r, "Tasso interno di rendimento nominale", "=IFERROR(IRR(flussi_tir),\"non calcolabile\")", S.PERC)
+        r = S.campo(ws, r, "Tasso interno di rendimento reale", f"=IFERROR((1+B{riga_tir_n})/(1+infl)-1,\"non calcolabile\")", S.PERC, risultato=True,
+                    nota="E' il numero da confrontare con il rendimento reale di un portafoglio alternativo, non con quello nominale.")
+        r += 1
+
+        r = S.nota_riga(ws, r, "L'inflazione non agisce nello stesso verso su tutte le componenti dell'operazione, e in un acquisto a leva i versi si compensano solo in parte. Le quattro righe seguenti la scompongono voce per voce.", 3)
+        riga_can_r = r
+        r = S.campo(ws, r, "Variazione reale annua del canone", "=(1+indicizzazione)/(1+infl)-1", S.PERC,
+                    nota="Negativa quando l'indicizzazione non copre l'inflazione. Con la cedolare secca l'aggiornamento ISTAT non si puo' applicare, quindi l'indicizzazione e' zero e il canone perde in termini reali quanto l'inflazione intera.")
+        riga_riv_r = r
+        r = S.campo(ws, r, "Rivalutazione reale annua dell'immobile", "=(1+riv_immobile)/(1+infl)-1", S.PERC,
+                    nota="Zero se la rivalutazione nominale assunta e' pari all'inflazione, che e' esattamente cio' che il mercato residenziale italiano ha fatto negli ultimi vent'anni: rivalutazione nominale, nessuna reale.")
+        riga_deb_n = r
+        r = S.campo(ws, r, "Debito residuo a fine orizzonte, nominale", f"=IF(mutuo_importo>0,INDEX(debito_residuo_anno,MIN(orizzonte,{MAX_ANNI})),0)", S.EURO)
+        riga_deb_r = r
+        r = S.campo(ws, r, "Lo stesso debito in euro di oggi", f"=B{riga_deb_n}/(1+infl)^orizzonte", S.EURO)
+        riga_regalo = r
+        r = S.campo(ws, r, "Sconto che l'inflazione fa sul debito", f"=B{riga_deb_n}-B{riga_deb_r}", S.EURO, risultato=True,
+                    nota="Il debito e' un importo nominale: l'inflazione lo eroda a favore di chi lo ha contratto. E' un trasferimento reale di ricchezza dalla banca al mutuatario, e vale solo a tasso fisso.")
+        riga_rata_r = r
+        r = S.campo(ws, r, "Rata annua dell'ultimo anno, in euro di oggi", "=IF(mutuo_importo>0,rata_annua/(1+infl)^MIN(orizzonte,durata),0)", S.EURO,
+                    nota="La rata di un fisso e' un numero nominale fermo, quindi si alleggerisce ogni anno in termini reali. Confrontarla con la rata annua di oggi rende visibile l'effetto.")
+        r += 1
+
+        r = S.sezione(ws, r, "Potere d'acquisto a fine orizzonte", secondaria=True)
+        riga_val_n = r
+        r = S.campo(ws, r, "Valore dell'immobile a fine orizzonte, nominale", "=prezzo*(1+riv_immobile)^orizzonte", S.EURO)
+        r = S.campo(ws, r, "Lo stesso valore in euro di oggi", f"=B{riga_val_n}/(1+infl)^orizzonte", S.EURO, risultato=True,
+                    nota="Se coincide col prezzo pagato, la rivalutazione nominale ha solo tenuto il passo dell'inflazione e in termini reali l'immobile non ha guadagnato nulla.")
+        r = S.campo(ws, r, "Cassa cumulata a fine orizzonte, nominale", "=SUM(cash_flow_annuo_serie)", S.EURO)
+        r = S.campo(ws, r, "Patrimonio netto reale a fine orizzonte", f"=B{riga_val_n}/(1+infl)^orizzonte-B{riga_deb_r}", S.EURO, risultato=True,
+                    nota="Valore dell'immobile meno debito residuo, entrambi in potere d'acquisto di oggi. E' la grandezza da confrontare con il capitale proprio immobilizzato all'inizio.")
+        riga_conf_reale = r
+        r = S.campo(ws, r, "Confronto col capitale proprio immobilizzato", f"=B{riga_conf_reale-1}-esborso", S.EURO,
+                    nota="Positivo se, in potere d'acquisto, a fine orizzonte si ha piu' di quanto si e' messo. Non tiene conto della cassa versata o incassata nel frattempo, che sta nella riga sopra.")
+        r += 1
+
+        r = S.sezione(ws, r, "Il costo dell'indicizzazione rinunciata", secondaria=True)
+        r = S.nota_riga(ws, r, "La cedolare secca sostituisce l'IRPEF sul canone con un'aliquota fissa, ed e' quasi sempre conveniente guardando la sola aliquota. In cambio, per l'articolo 3 comma 11 del d.lgs. 23 del 2011, chi la opta rinuncia all'aggiornamento ISTAT del canone per la durata dell'opzione. Le righe seguenti quantificano i due lati, perche' la scelta si fa di solito guardando solo il primo.", 3)
+        # I due fattori di attualizzazione di una rendita crescente. Stanno in celle
+        # visibili e non dentro la formula finale, perche' un risultato di cui non si
+        # possono riconoscere i pezzi non si puo' contestare. La forma chiusa e'
+        # q(1-q^n)/((1+x)(1-q)) con q=(1+x)/(1+s), e il caso q=1, cioe' crescita pari
+        # al tasso di sconto, va trattato a parte perche' annullerebbe il denominatore.
+        riga_f_infl = r
+        r = S.campo(
+            ws, r, "Fattore di un canone indicizzato all'inflazione piena",
+            "=IF(ABS((1+infl)/(1+tasso_sconto)-1)<0.0000001,orizzonte/(1+infl),"
+            "((1+infl)/(1+tasso_sconto))*(1-((1+infl)/(1+tasso_sconto))^orizzonte)/((1+infl)*(1-(1+infl)/(1+tasso_sconto))))",
+            S.NUMERO_DEC,
+            nota="Valore attuale di una rendita unitaria che cresce all'inflazione, sull'orizzonte scelto.",
+        )
+        riga_f_ind = r
+        r = S.campo(
+            ws, r, "Fattore del canone indicizzato come dichiarato",
+            "=IF(ABS((1+indicizzazione)/(1+tasso_sconto)-1)<0.0000001,orizzonte/(1+indicizzazione),"
+            "((1+indicizzazione)/(1+tasso_sconto))*(1-((1+indicizzazione)/(1+tasso_sconto))^orizzonte)/((1+indicizzazione)*(1-(1+indicizzazione)/(1+tasso_sconto))))",
+            S.NUMERO_DEC,
+        )
+        riga_perso = r
+        r = S.campo(ws, r, "Canone rinunciato, valore attuale lordo", f"=ricavo_lordo*(B{riga_f_infl}-B{riga_f_ind})", S.EURO)
+        riga_perso_netto = r
+        r = S.campo(ws, r, "Lo stesso al netto dell'imposta sul canone", f"=B{riga_perso}*(1-ced_libero)", S.EURO, risultato=True,
+                    nota="Il canone in piu' sarebbe stato tassato, quindi il confronto va fatto al netto: e' questa la cifra comparabile col risparmio d'imposta.")
+        riga_risp = r
+        r = S.campo(
+            ws, r, "Risparmio d'imposta della cedolare, valore attuale",
+            "=(ricavo_effettivo*(1-abbatt_ord)*(irpef_marginale+addizionali)+MAX(ricavo_effettivo*reg_loc,reg_loc_min)/2-ricavo_effettivo*ced_libero)"
+            "*IF(tasso_sconto=0,orizzonte,(1-(1+tasso_sconto)^-orizzonte)/tasso_sconto)",
+            S.EURO, risultato=True,
+            nota="Differenza annua fra imposta in regime ordinario e cedolare, attualizzata sull'orizzonte. Positiva quando la cedolare conviene.",
+        )
+        riga_saldo = r
+        r = S.campo(ws, r, "Saldo della scelta cedolare", f"=B{riga_risp}-B{riga_perso_netto}", S.EURO, risultato=True,
+                    nota="Positivo se il risparmio d'imposta supera l'indicizzazione rinunciata, negativo se e' il contrario.")
+        ws.conditional_formatting.add(
+            f"B{riga_saldo}:B{riga_saldo}",
+            CellIsRule(operator="lessThan", formula=["0"], fill=S.FILL_ATTENZIONE),
+        )
+        for testo in [
+            "Tre avvertenze sul saldo, perche' e' un confronto fra due grandezze che non sono simmetriche e leggerlo come un verdetto sarebbe sbagliato. L'orizzonte usato e' quello del modello, tipicamente decenni, mentre l'opzione per la cedolare si esercita per contratto e si puo' riconsiderare a ogni rinnovo: la cifra e' quindi il caso peggiore, cioe' quello di chi la rinnova sempre senza ripensarci. Il risparmio d'imposta dipende dall'aliquota marginale personale, che qui e' un input e non un dato. E il canone concordato ha regole di aggiornamento proprie, fissate dall'accordo territoriale, che questa riga non modella.",
+            "Cio' che il saldo dice con certezza e' che la scelta ha due lati e che il secondo non e' trascurabile. Su un orizzonte lungo l'indicizzazione rinunciata puo' valere piu' del risparmio d'imposta che l'ha motivata, ed e' un confronto che quasi nessuno fa perche' il risparmio si vede subito nella dichiarazione e la mancata indicizzazione non si vede mai, essendo un canone che non e' stato chiesto.",
+            "Sul rendimento reale in generale: se e' negativo, l'operazione perde potere d'acquisto pur mostrando un utile in euro. Non e' di per se' una ragione per non comprare, perche' l'alternativa va confrontata anch'essa in termini reali e perche' l'abitazione propria produce un servizio abitativo che nessun rendimento cattura; e' una ragione per non chiamare investimento quello che e' consumo o copertura.",
+            "L'effetto dell'inflazione sul debito, quello favorevole, esiste solo a tasso fisso. Su un variabile l'inflazione fa salire il tasso di riferimento, la rata cresce, e lo sconto sul debito si paga in interessi: il foglio Simulatore mutuo mostra di quanto, e il percorso del tasso a gradini serve esattamente a questo.",
+        ]:
+            r = S.nota_riga(ws, r, testo, 3)
+        r += 1
+
         r = S.sezione(ws, r, "Concentrazione del patrimonio", secondaria=True)
         riga_patr = r
         r = S.campo(ws, r, "Patrimonio complessivo, immobili inclusi", 0, S.EURO, input_utente=True, nota="Somma di immobili gia' posseduti, liquidita' e investimenti finanziari, incluso questo acquisto. Zero per saltare il controllo.")

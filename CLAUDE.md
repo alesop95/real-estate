@@ -19,6 +19,9 @@ OS sviluppo:    Windows
 Python:         3.13, dipendenza unica openpyxl
 Verifica Excel: automazione COM tramite PowerShell, richiede Excel installato
 LLM locale:     Ollama, opzionale; host in OLLAMA_HOST, default http://localhost:11434
+LaTeX:          TinyTeX user-local, engine pdflatex; manifesto in tex-packages.txt,
+                script in scripts/, skill latex-build. Serve solo alla trattazione
+                matematica: il resto del progetto non dipende da esso
 Identita' git:  da impostare locale al repository, vedi CLAUDE.local.md
 ```
 
@@ -83,6 +86,11 @@ docs/comprare-in-piu-persone.md
                               scioglimento, fisco pro quota, quando serve una societa'
 docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il significato
                               di ogni voce spiegato in linguaggio comune
+docs/matematica-finanziaria.tex
+                              trattazione LaTeX: ogni formula del modello derivata da zero,
+                              dalla capitalizzazione alla graduatoria, con la tavola che lega
+                              simbolo, cella del workbook e funzione Python. Si compila con
+                              scripts/build.ps1 -Main docs\matematica-finanziaria.tex
 docs/manuale-operativo.md    guida d'uso completa: installazione, ogni comando con ogni
                               opzione, ogni campo del registro, ogni foglio, manutenzione
                               ricorrente, diagnostica degli errori

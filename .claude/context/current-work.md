@@ -55,7 +55,10 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'e' una feature ap
 - [x] Commit del lavoro del 1 settembre e ancoraggio dei frontmatter
 - [x] Indice navigabile come primo foglio, con collegamento a ogni foglio e ritorno da ogni foglio
 - [x] Manuale operativo: ogni comando con ogni opzione, ogni campo del registro, ogni foglio, diagnostica
-- [ ] Commit dell'indice navigabile e del manuale operativo, che spetta all'utente
+- [x] Catena dei tassi: dall'overnight della BCE al preventivo, con gli scarti che la scompongono
+- [x] Effetto dell'inflazione: Fisher esatto, scomposizione per componente, costo dell'indicizzazione rinunciata
+- [x] Trattazione LaTeX della matematica del modello, con la tavola simbolo-cella-funzione
+- [ ] Commit del lavoro del 1 e del 2 settembre, che spetta all'utente
 
 ## Riconciliazione
 

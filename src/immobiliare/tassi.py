@@ -206,6 +206,126 @@ def estremi_storici(chiave: str = "euribor_3m", osservazioni: int = 400) -> dict
     }
 
 
+@dataclass
+class Gradino:
+    """Un anello della catena che porta dal tasso di politica monetaria alla rata."""
+
+    nome: str
+    valore: float
+    periodo: str
+    spiegazione: str
+    scarto_dal_precedente: float | None = None
+
+
+def catena_dei_tassi(tasso_preventivo: float | None = None) -> list[Gradino]:
+    """Scompone il tasso di un mutuo negli anelli che lo determinano.
+
+    Serve a rispondere a una domanda che il singolo numero non fa vedere: quando
+    una banca offre il tre virgola due per cento, quanto di quel numero e'
+    politica monetaria, quanto e' prezzo del tempo e del rischio di credito fra
+    banche, e quanto e' margine della banca. Le tre componenti si muovono per
+    ragioni diverse e su tempi diversi, e distinguerle cambia il modo di trattare:
+    sul primo anello non si negozia, sul terzo si.
+
+    I quattro anelli, in ordine.
+
+    Il primo e' l'euro short-term rate, che la Banca centrale europea pubblica
+    ogni giorno lavorativo TARGET2 sulle operazioni non garantite a un giorno
+    concluse il giorno prima. E' un tasso a consuntivo calcolato su transazioni
+    davvero avvenute, non una quotazione dichiarata, ed e' il riferimento piu'
+    vicino al costo del denaro senza rischio di durata: al 1 settembre 2026 vale
+    il 2,188 per cento su 895 transazioni per 61 miliardi fra 47 banche.
+
+    Il secondo e' l'Euribor a tre mesi, cioe' lo stesso mercato ma su una durata
+    di tre mesi invece di uno giorno. Lo scarto fra i due e' il prezzo di
+    prestare per tre mesi invece che per una notte, e contiene sia l'attesa su
+    dove andra' la politica monetaria in quel trimestre sia il rischio che la
+    controparte non restituisca. In un ciclo di rialzi atteso l'Euribor sta sopra
+    l'overnight, in uno di ribassi puo' starci sotto: il segno di questo scarto e'
+    quindi una lettura di aspettativa, non una costante.
+
+    Il terzo e' il tasso medio che le banche italiane hanno davvero applicato
+    alle nuove erogazioni per acquisto di abitazione, dalle statistiche
+    armonizzate MIR. Lo scarto rispetto all'anello precedente e' il margine del
+    sistema bancario, e comprende costo del capitale di vigilanza, rischio di
+    credito del mutuatario, costi operativi e profitto.
+
+    Il quarto, se lo si passa, e' il tasso del proprio preventivo, e lo scarto
+    rispetto alla media dice se si sta trattando meglio o peggio del mercato.
+
+    Un'avvertenza sulla comparabilita' che va detta perche' la scomposizione la
+    suggerisce e i dati non la sostengono del tutto. Le due serie di mercato sono
+    giornaliera e mensile, la serie MIR e' mensile con uno o due mesi di ritardo,
+    quindi gli anelli non sono contemporanei e gli scarti si leggono come ordini
+    di grandezza. E un mutuo a tasso fisso non e' indicizzato all'Euribor ma
+    all'IRS di pari durata, che questo progetto non legge: sul fisso la catena
+    resta valida come scomposizione concettuale e non come identita' numerica.
+    """
+    anelli = []
+
+    from . import indicatori as N
+
+    try:
+        estr = N.estr()
+        anelli.append(
+            Gradino(
+                nome="Euro short-term rate, overnight",
+                valore=estr.valore,
+                periodo=estr.periodo,
+                spiegazione="Costo del denaro a un giorno fra banche, non garantito, calcolato dalla BCE sulle transazioni del giorno lavorativo precedente",
+            )
+        )
+    except Exception:
+        pass
+
+    try:
+        eur3 = ultimo("euribor_3m")
+        precedente = anelli[-1].valore if anelli else None
+        anelli.append(
+            Gradino(
+                nome="Euribor 3 mesi",
+                valore=eur3.valore,
+                periodo=eur3.periodo,
+                spiegazione="Lo stesso mercato su tre mesi invece di un giorno: lo scarto e' il prezzo della durata piu' il rischio di controparte, e riflette dove il mercato si aspetta che vada la politica monetaria",
+                scarto_dal_precedente=None if precedente is None else eur3.valore - precedente,
+            )
+        )
+    except (TassiNonDisponibili, ValueError):
+        pass
+
+    try:
+        mir = ultimo("variabile")
+        precedente = anelli[-1].valore if anelli else None
+        anelli.append(
+            Gradino(
+                nome="Mutui a tasso variabile, media Italia",
+                valore=mir.valore,
+                periodo=mir.periodo,
+                spiegazione="Quello che le banche italiane hanno davvero applicato: lo scarto sull'indice e' il margine del sistema, cioe' costo del capitale di vigilanza, rischio di credito, costi operativi e profitto",
+                scarto_dal_precedente=None if precedente is None else mir.valore - precedente,
+            )
+        )
+    except (TassiNonDisponibili, ValueError):
+        pass
+
+    if tasso_preventivo:
+        precedente = anelli[-1].valore if anelli else None
+        anelli.append(
+            Gradino(
+                nome="Il tuo preventivo",
+                valore=tasso_preventivo * 100,
+                periodo="oggi",
+                spiegazione="Lo scarto sulla media e' l'unico anello su cui si tratta, e vale la pena chiedere un secondo preventivo se e' positivo",
+                scarto_dal_precedente=None if precedente is None else tasso_preventivo * 100 - precedente,
+            )
+        )
+
+    return anelli
+
+
+FONTE_ESTR = "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html"
+
+
 def quadro_corrente() -> list[Osservazione]:
     """Tutte le serie in un colpo solo, saltando quelle che non rispondono."""
     esito = []

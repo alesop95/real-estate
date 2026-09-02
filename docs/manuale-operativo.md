@@ -47,6 +47,22 @@ _notes/              materiale personale, non versionato, con la mappa in INDICE
 
 Le cartelle `data/` e `output/` non stanno in git per ragioni diverse. `output/` perché si rigenera da un comando e peserebbe sulla storia. `data/annunci.csv` perché porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che è la propria strategia di acquisto e non ha ragione di stare in una repository pubblica; chi lavora in un repository privato può togliere la riga dal `.gitignore`.
 
+## La trattazione matematica
+
+La matematica del modello e' formalizzata in `docs/matematica-finanziaria.tex`, che si compila in un PDF di ventitre pagine con gli script del progetto. Serve la prima volta un passaggio di preparazione dell'ambiente, che installa TinyTeX e i pacchetti del manifesto `tex-packages.txt`.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-tex.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build.ps1 -Main docs\matematica-finanziaria.tex
+```
+
+```bash
+bash scripts/setup-tex.sh
+bash scripts/build.sh --main docs/matematica-finanziaria.tex
+```
+
+Il PDF finisce accanto al sorgente e non e' versionato, perche' e' un artefatto derivato. L'ambiente LaTeX serve soltanto a questo documento: il resto del progetto non ne dipende, e chi non lo compila non perde nulla del funzionamento dello strumento. La procedura e' incapsulata nella skill `latex-build` sotto `.claude/skills/`.
+
 ## Il ciclo di lavoro
 
 Il percorso, in ordine, è questo. Si registrano gli immobili che si stanno guardando, anche solo con un link. Si aggancia a ciascuno la zona OMI, per sapere se il prezzo è dentro o fuori mercato. Si guarda la graduatoria e si scelgono i due o tre che meritano tempo. Sul candidato si compilano i fogli di input del workbook, si leggono il Cruscotto e gli scenari sfavorevoli, e si decide se ha senso fare una proposta. Se ha senso, si aprono la checklist e il dossier tecnico e si chiudono le verifiche prima di firmare, perché una proposta accettata è già un contratto.
@@ -146,6 +162,8 @@ Senza opzioni stampa i tassi correnti sulle nuove erogazioni in Italia, presi da
 Con `--tasso` confronta il TAN di un preventivo con la media della sua tipologia e traduce lo scarto in euro di interessi sull'intera durata, che è l'unica forma in cui un decimo di punto diventa una cifra su cui trattare. Il tasso si passa in forma decimale. `--mutuo` e `--durata` servono a quantificare lo scarto, `--serie` sceglie la tipologia di riferimento fra media, variabile, rifissazione fra uno e cinque anni, fra cinque e dieci, e fisso oltre dieci: il confronto sensato si fa con la propria tipologia, non con la media generale.
 
 Con `--risalita` stampa quanto l'indice è salito nelle peggiori finestre della sua storia, dodici, ventiquattro e trentasei mesi, con il periodo in cui è avvenuto e i livelli di partenza e arrivo, e confronta il risultato con i valori congelati nel codice che alimentano le note del foglio Simulatore mutuo, dicendo se sono ancora quelli. È il numero da mettere nel percorso del tasso quando si valuta un mutuo a tasso variabile, e non va confuso con una previsione: è il peggio che i dati contengono.
+
+Il comando stampa sempre, anche senza opzioni, la sezione che scompone il tasso negli anelli che lo determinano: l'euro short-term rate, che è il costo del denaro a un giorno fra banche calcolato dalla BCE sulle transazioni davvero avvenute; l'Euribor a tre mesi, cioè lo stesso mercato su una durata di tre mesi, il cui scarto sull'overnight è il prezzo della durata più il rischio di controparte e riflette dove il mercato si aspetta che vada la politica monetaria; la media di quello che le banche italiane hanno davvero applicato alle nuove erogazioni, il cui scarto sull'indice è il margine del sistema bancario, cioè costo del capitale di vigilanza, rischio di credito, costi operativi e profitto; e infine, se si passa `--tasso`, il proprio preventivo, il cui scarto sulla media è l'unico anello su cui si tratta. Gli anelli non sono contemporanei, perché le tre serie hanno frequenze e ritardi diversi, quindi gli scarti si leggono come ordini di grandezza; e un mutuo a tasso fisso è indicizzato all'IRS di pari durata e non all'Euribor, quindi sul fisso la catena vale come scomposizione concettuale e non come somma esatta.
 
 ### indicatori, per tarare le assunzioni
 

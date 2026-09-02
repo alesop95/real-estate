@@ -577,6 +577,20 @@ def cmd_omi(args) -> int:
     return 2
 
 
+def _a_capo(testo: str, larghezza: int) -> list[str]:
+    """Manda a capo un testo lungo su piu' righe, senza spezzare le parole."""
+    righe, corrente = [], ""
+    for parola in testo.split():
+        if corrente and len(corrente) + 1 + len(parola) > larghezza:
+            righe.append(corrente)
+            corrente = parola
+        else:
+            corrente = f"{corrente} {parola}".strip()
+    if corrente:
+        righe.append(corrente)
+    return righe
+
+
 def cmd_tassi(args) -> int:
     """Tassi correnti di mercato, e confronto con il tasso di un preventivo."""
     try:
@@ -592,6 +606,32 @@ def cmd_tassi(args) -> int:
     print("  " + "-" * 60)
     for o in quadro:
         print(f"  {o.descrizione:<40}{o.periodo:>10}{o.valore:>9.2f}%")
+
+    # La catena. Sta prima del confronto col preventivo perche' risponde alla
+    # domanda che viene prima: di che cosa e' fatto il tasso che ti offrono.
+    catena = T.catena_dei_tassi(args.tasso)
+    if catena:
+        print()
+        print("DA DOVE VIENE IL TASSO, anello per anello")
+        print(f"  {'Anello':<44}{'Valore':>9}{'Periodo':>12}{'Scarto':>10}")
+        print("  " + "-" * 75)
+        for g in catena:
+            scarto = "" if g.scarto_dal_precedente is None else f"{g.scarto_dal_precedente:+.2f} p"
+            print(f"  {g.nome:<44}{g.valore:>8.3f}%{g.periodo:>12}{scarto:>10}")
+        print()
+        for g in catena:
+            print(f"  {g.nome}")
+            for riga in _a_capo(g.spiegazione, 88):
+                print(f"    {riga}")
+        print()
+        print("  Gli anelli non sono contemporanei: l'overnight e' del giorno lavorativo")
+        print("  precedente, l'Euribor e' mensile, la media dei mutui e' mensile con uno o due")
+        print("  mesi di ritardo. Gli scarti si leggono come ordini di grandezza, non come")
+        print("  identita' contabili. E un mutuo a tasso fisso non e' indicizzato all'Euribor")
+        print("  ma all'IRS di pari durata: sul fisso la catena vale come scomposizione")
+        print("  concettuale, non come somma esatta.")
+        print()
+        print(f"  Definizione e metodo dell'overnight: {T.FONTE_ESTR}")
 
     if args.tasso:
         try:

@@ -651,6 +651,122 @@ def test_risalite_congelate_coerenti_con_la_documentazione():
     assert r.risalita_12_mesi > 1.0, "le risalite vanno scritte in punti, non in frazione"
 
 
+def test_effetto_inflazione_usa_fisher_esatto_e_non_la_sottrazione():
+    """Il rendimento reale e' un rapporto di poteri d'acquisto, non una differenza.
+
+    La forma che si vede scritta quasi sempre e' r meno i, che e' l'approssimazione
+    al primo ordine della definizione. Il test fissa tre cose: che il modello usi
+    la forma esatta, che l'errore dell'approssimazione sia riportato e abbia il
+    segno giusto, e che le identita' che rendono la formula riconoscibile valgano,
+    cioe' che con inflazione nulla nominale e reale coincidano e che con
+    rivalutazione pari all'inflazione la rivalutazione reale sia esattamente zero.
+    """
+    # Definizione: (1+r)/(1+i)-1, e non r-i.
+    assert abs(C.tasso_reale(0.05, 0.02) - (1.05 / 1.02 - 1)) < 1e-15
+    assert abs(C.tasso_reale(0.05, 0.02) - 0.0294117647) < 1e-9
+
+    # La sottrazione sovrastima sempre, quando entrambi i tassi sono positivi.
+    assert (0.05 - 0.02) > C.tasso_reale(0.05, 0.02)
+
+    # Con inflazione nulla non c'e' niente da correggere. Il confronto e' con
+    # tolleranza e non esatto perche' la divisione per 1.0 in binario non e'
+    # l'identita' sui decimali che non hanno rappresentazione finita.
+    assert abs(C.tasso_reale(0.037, 0.0) - 0.037) < 1e-15
+
+    # Un'inflazione che annullerebbe il livello dei prezzi non e' ammissibile.
+    try:
+        C.tasso_reale(0.05, -1.0)
+        raise AssertionError("un'inflazione di meno cento per cento doveva essere rifiutata")
+    except ValueError:
+        pass
+
+    e = C.effetto_inflazione(
+        inflazione=0.02,
+        rendimento_netto_nominale=0.05,
+        tir_nominale=0.04,
+        prezzo=120_000,
+        rivalutazione_immobile=0.02,
+        debito_residuo_nominale=40_000,
+        rata_annua=5_200,
+        canone_annuo=6_000,
+        indicizzazione_canone=0.0,
+        orizzonte_anni=25,
+        tasso_sconto=0.03,
+    )
+
+    # Rivalutazione nominale pari all'inflazione: rivalutazione reale nulla, ed e'
+    # il caso del mercato residenziale italiano degli ultimi vent'anni.
+    assert abs(e.rivalutazione_reale_immobile) < 1e-15
+
+    # Il valore finale in euro di oggi torna quindi esattamente al prezzo pagato.
+    assert abs(e.valore_finale_reale - 120_000) < 1e-6
+
+    # Canone non indicizzato con inflazione al due per cento: perde il due per
+    # cento reale l'anno, nella forma esatta.
+    assert abs(e.erosione_reale_canone - (1 / 1.02 - 1)) < 1e-15
+
+    # L'errore dell'approssimazione e' positivo, perche' la sottrazione sovrastima.
+    assert e.errore_approssimazione > 0
+    assert abs(e.errore_approssimazione - ((0.05 - 0.02) - C.tasso_reale(0.05, 0.02))) < 1e-15
+
+    # Lo sconto che l'inflazione fa sul debito e' positivo con inflazione positiva,
+    # e vale la differenza fra il debito nominale e il suo valore in euro di oggi.
+    assert e.sconto_inflazione_sul_debito > 0
+    assert abs(e.debito_residuo_reale - 40_000 / 1.02 ** 25) < 1e-9
+    assert abs(e.sconto_inflazione_sul_debito - (40_000 - e.debito_residuo_reale)) < 1e-9
+
+
+def test_fattore_rendita_crescente_coincide_con_la_somma_esplicita():
+    """La forma chiusa usata nel workbook e la somma esplicita devono coincidere.
+
+    E' la doppia implementazione applicata a una formula. Il workbook non puo'
+    sommare n termini con n variabile in una cella singola e usa la forma chiusa
+    della serie geometrica; il motore tiene la somma esplicita, che e' leggibile
+    e verificabile a occhio. Se le due divergono, la formula del foglio e'
+    sbagliata e nessuna cella andrebbe in errore per dirlo.
+    """
+    def somma_esplicita(crescita, sconto, anni):
+        return sum((1 + crescita) ** (k - 1) / (1 + sconto) ** k for k in range(1, anni + 1))
+
+    casi = [
+        (0.02, 0.03, 25),   # il caso del modello
+        (0.0, 0.03, 25),    # crescita nulla: rendita costante
+        (0.05, 0.03, 30),   # crescita superiore al tasso di sconto
+        (0.03, 0.03, 25),   # il caso singolare, crescita pari al tasso di sconto
+        (0.02, 0.03, 1),    # un anno solo
+        (-0.01, 0.03, 10),  # crescita negativa
+    ]
+    for crescita, sconto, anni in casi:
+        chiusa = C.fattore_rendita_crescente(crescita, sconto, anni)
+        esplicita = somma_esplicita(crescita, sconto, anni)
+        assert abs(chiusa - esplicita) < 1e-9, (
+            f"crescita {crescita}, sconto {sconto}, anni {anni}: "
+            f"chiusa {chiusa}, esplicita {esplicita}"
+        )
+
+    # Il caso singolare non deve passare per il denominatore nullo.
+    assert abs(C.fattore_rendita_crescente(0.03, 0.03, 25) - 25 / 1.03) < 1e-12
+
+    # Rendita costante: il fattore e' l'annualita' ordinaria.
+    atteso = (1 - 1.03 ** -25) / 0.03
+    assert abs(C.fattore_rendita_crescente(0.0, 0.03, 25) - atteso) < 1e-12
+
+    # E il canone rinunciato del modello si ricostruisce dai due fattori.
+    e = C.effetto_inflazione(
+        inflazione=0.02, rendimento_netto_nominale=0.05, tir_nominale=0.04,
+        prezzo=120_000, rivalutazione_immobile=0.02, debito_residuo_nominale=0.0,
+        rata_annua=5_200, canone_annuo=6_000, indicizzazione_canone=0.0,
+        orizzonte_anni=25, tasso_sconto=0.03,
+    )
+    dai_fattori = 6_000 * (
+        C.fattore_rendita_crescente(0.02, 0.03, 25)
+        - C.fattore_rendita_crescente(0.0, 0.03, 25)
+    )
+    assert abs(e.canone_perso_per_mancata_indicizzazione - dai_fattori) < 1e-6, (
+        f"somma esplicita {e.canone_perso_per_mancata_indicizzazione}, dai fattori {dai_fattori}"
+    )
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

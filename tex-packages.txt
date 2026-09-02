@@ -1,0 +1,30 @@
+# Manifesto dei pacchetti LaTeX di questo progetto.
+# Una voce per riga col nome del pacchetto tlmgr; righe vuote e commenti ignorati.
+# tlmgr risolve le dipendenze, quindi qui stanno solo i pacchetti di primo livello.
+# Adattato al preambolo di docs/matematica-finanziaria.tex.
+
+# Strumento di build
+latexmk
+
+# Matematica e struttura
+amsmath
+amsfonts
+amscls
+geometry
+booktabs
+hyperref
+listings
+float
+xcolor
+caption
+enumitem
+
+# Font T1
+lm
+cm-super
+
+# Italiano: babel piu' i pattern di sillabazione, che in pdflatex stanno
+# nel pacchetto hyphen-<lingua> e senza i quali compare il warning
+# "No hyphenation patterns were preloaded" e le righe restano mal spezzate.
+babel-italian
+hyphen-italian

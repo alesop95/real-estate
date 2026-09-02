@@ -1,0 +1,970 @@
+% Matematica finanziaria applicata all'acquisto di un immobile residenziale.
+% Documento di accompagnamento al progetto real-estate: formalizza ogni calcolo
+% che il modello esegue, partendo dalle definizioni e senza passaggi impliciti.
+% Compilazione: scripts/build.ps1 -Main docs\matematica-finanziaria.tex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage[a4paper,margin=2.6cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{gray!50},
+  showstringspaces=false,
+  captionpos=b,
+}
+
+\theoremstyle{definition}
+\newtheorem{definizione}{Definizione}[section]
+\newtheorem{osservazione}[definizione]{Osservazione}
+\theoremstyle{plain}
+\newtheorem{proposizione}[definizione]{Proposizione}
+
+\newcommand{\euro}{\texteuro}
+\DeclareMathOperator{\VAN}{VAN}
+\DeclareMathOperator{\TIR}{TIR}
+
+\title{Matematica finanziaria dell'acquisto immobiliare\\[0.3em]
+\large Formalizzazione completa dei calcoli del modello}
+\author{Documento di accompagnamento al progetto \texttt{real-estate}}
+\date{Revisione del 2 settembre 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent Questo documento formalizza la matematica che il modello di valutazione immobiliare esegue, dalla definizione di capitalizzazione fino alla graduatoria fra immobili, senza dare per scontato alcun passaggio. Ogni formula implementata nel codice compare qui con la sua derivazione, la sua notazione, le sue ipotesi e i suoi limiti; ogni scelta fra due forme algebricamente vicine ma numericamente diverse è motivata. L'ultimo capitolo contiene una tavola di corrispondenza fra i simboli usati qui, i nomi definiti nel workbook Excel e le funzioni Python del motore, così che ogni numero del modello sia rintracciabile fino alla sua formula. Il caso di riferimento del progetto è svolto per intero in appendice, con tutti i valori intermedi.
+
+Il documento non è una dispensa di matematica finanziaria generale: è la matematica \emph{di questo problema}. Ciò che serve viene derivato, ciò che non serve non compare, e dove il dominio impone una complicazione — un'imposta a tratti, un'indicizzazione parziale, una convenzione contrattuale italiana — la complicazione è nel testo e non nascosta in una nota.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Notazione e convenzioni}
+
+Si fissano una volta per tutte i simboli, perché la letteratura ne usa di incompatibili e l'ambiguità in questo dominio costa cifre.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Simbolo & Significato & Unità \\
+\midrule
+$P$ & prezzo di acquisto trattato & \euro \\
+$R$ & rendita catastale & \euro \\
+$V_c$ & valore catastale, base del prezzo-valore & \euro \\
+$T_a$ & imposte sul trasferimento & \euro \\
+$A$ & costi accessori complessivi & \euro \\
+$C$ & costo totale dell'operazione, $C = P + A$ & \euro \\
+$M$ & capitale erogato dal mutuo & \euro \\
+$E$ & capitale proprio immobilizzato, $E = C - M$ & \euro \\
+$i$ & tasso annuo nominale del mutuo & adimensionale \\
+$j$ & tasso di periodo, mensile & adimensionale \\
+$n$ & numero di rate & conteggio \\
+$N$ & orizzonte di analisi in anni & conteggio \\
+$\Gamma$ & rata periodica del mutuo & \euro \\
+$D_k$ & debito residuo dopo la rata $k$ & \euro \\
+$L$ & canone annuo potenziale a pieno regime & \euro \\
+$L_e$ & ricavo effettivo, al netto di sfitto e morosità & \euro \\
+$\mathrm{NOI}$ & reddito operativo netto & \euro/anno \\
+$U$ & utile netto annuo, dopo imposta sul canone & \euro/anno \\
+$F_t$ & flusso di cassa dell'anno $t$ & \euro \\
+$\pi$ & tasso di inflazione atteso & adimensionale \\
+$g$ & tasso di indicizzazione del canone & adimensionale \\
+$\rho$ & rivalutazione nominale annua dell'immobile & adimensionale \\
+$s$ & tasso di sconto & adimensionale \\
+$\theta$ & aliquota d'imposta sul canone & adimensionale \\
+\bottomrule
+\end{tabular}
+\caption{Simboli usati nel documento.}
+\end{table}
+
+Tre convenzioni valgono in tutto il testo. I tassi sono espressi come frazioni, quindi il tre virgola due per cento è $0{,}032$ e non $3{,}2$; i flussi in uscita per chi compra sono negativi e quelli in entrata positivi, con l'unica eccezione dichiarata dei prospetti di costo, dove le voci di costo sono positive perché si sommano; e l'indice temporale $t=0$ indica il momento del rogito, non il primo anno di gestione.
+
+\section{Capitalizzazione, sconto, e la convenzione che cambia il risultato}
+
+\subsection{Le due operazioni elementari}
+
+\begin{definizione}[Montante]
+Un capitale $X$ investito per $m$ periodi a tasso di periodo $j$ costante, con reinvestimento degli interessi, produce il montante
+\begin{equation}
+X_m = X\,(1+j)^m .
+\end{equation}
+\end{definizione}
+
+La formula si ottiene per induzione dal solo fatto che gli interessi di un periodo entrano nella base del successivo: $X_1 = X(1+j)$, e se $X_m = X(1+j)^m$ allora $X_{m+1} = X_m(1+j) = X(1+j)^{m+1}$. Il regime alternativo, quello semplice, in cui gli interessi non entrano nella base e $X_m = X(1+jm)$, non compare in questo modello: nessuno dei contratti trattati lo usa.
+
+\begin{definizione}[Valore attuale]
+Il valore oggi di un importo $Y$ disponibile fra $m$ periodi, al tasso di sconto di periodo $j$, è
+\begin{equation}
+\VAN(Y) = \frac{Y}{(1+j)^m} .
+\end{equation}
+\end{definizione}
+
+Le due operazioni sono l'una l'inversa dell'altra, e questo è tutto ciò che serve: ogni formula che segue è una combinazione lineare di valori attuali.
+
+\subsection{Tassi equivalenti, e perché la convenzione italiana non è un dettaglio}
+
+Un tasso annuo $i$ si converte in un tasso mensile in due modi diversi, che danno numeri diversi.
+
+\begin{equation}
+j_{\text{lineare}} = \frac{i}{12}, \qquad
+j_{\text{composto}} = (1+i)^{1/12} - 1 .
+\label{eq:conversione}
+\end{equation}
+
+Il secondo è il tasso \emph{finanziariamente equivalente}, cioè quello che capitalizzato dodici volte restituisce esattamente $i$: $(1+j_{\text{composto}})^{12} = 1+i$. Il primo non ha questa proprietà, perché $(1+i/12)^{12} > 1+i$ per $i>0$: dividere per dodici e poi capitalizzare dodici volte produce più di quanto si è dichiarato.
+
+\begin{osservazione}
+Su $i = 0{,}032$ si ha $j_{\text{lineare}} = 0{,}0026667$ e $j_{\text{composto}} = 0{,}0026281$, cioè una differenza di circa il quattro per cento sul tasso di periodo. Capitalizzata su venticinque anni, la differenza fra i due regimi sposta gli interessi totali di alcune centinaia di euro. La convenzione dei contratti di mutuo italiani è la prima, cioè la divisione lineare, e il modello la adotta come predefinita perché deve riprodurre il piano che la banca calcola, non quello che sarebbe finanziariamente coerente. Il foglio \texttt{Simulatore mutuo} espone la scelta come cella, così che la differenza si veda invece di essere subita.
+\end{osservazione}
+
+Questo è il primo esempio di un criterio che ritorna in tutto il documento: fra due formule algebricamente vicine si sceglie quella che riproduce il contratto, non quella più elegante, e la scelta si dichiara.
+
+\section{Rendite: il valore di una successione di pagamenti}
+
+Il modello valuta successioni di pagamenti in tre forme: costanti, crescenti a tasso costante, e arbitrarie. Le prime due hanno una forma chiusa che vale derivare, perché il workbook la usa dentro celle singole.
+
+\subsection{Rendita costante posticipata}
+
+\begin{proposizione}[Fattore di annualità]
+Il valore attuale di $n$ pagamenti unitari, il primo alla fine del primo periodo, scontati al tasso di periodo $s>0$, vale
+\begin{equation}
+a_{n,s} \;=\; \sum_{k=1}^{n} \frac{1}{(1+s)^k} \;=\; \frac{1-(1+s)^{-n}}{s} .
+\label{eq:annualita}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+Si ponga $v = (1+s)^{-1}$, quindi $0<v<1$. La somma è geometrica di primo termine $v$ e ragione $v$:
+\[
+\sum_{k=1}^{n} v^k = v\,\frac{1-v^n}{1-v} .
+\]
+Sostituendo $1-v = 1-\frac{1}{1+s} = \frac{s}{1+s}$ si ottiene
+\[
+v\,\frac{1-v^n}{1-v} = \frac{1}{1+s}\cdot\frac{1-v^n}{s/(1+s)} = \frac{1-v^n}{s} = \frac{1-(1+s)^{-n}}{s},
+\]
+che è la tesi. Il caso $s=0$ va trattato a parte e dà $a_{n,0}=n$, come si vede direttamente dalla somma.
+\end{proof}
+
+\subsection{Rendita crescente a tasso costante}
+
+È la forma che serve per un canone indicizzato, e la sua derivazione è quella che il modello implementa in una cella.
+
+\begin{proposizione}[Fattore di una rendita crescente]
+Il valore attuale di $n$ pagamenti, il primo unitario e ciascuno successivo maggiore del precedente del fattore $(1+g)$, scontati al tasso $s$, vale
+\begin{equation}
+F(g,s,n) \;=\; \sum_{k=1}^{n} \frac{(1+g)^{k-1}}{(1+s)^k}
+\;=\;
+\begin{cases}
+\dfrac{q\,(1-q^{\,n})}{(1+g)\,(1-q)}, & q \neq 1,\\[1.2em]
+\dfrac{n}{1+g}, & q = 1,
+\end{cases}
+\qquad q := \frac{1+g}{1+s}.
+\label{eq:crescente}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+Si raccoglie $(1+g)^{-1}$ per allineare gli esponenti:
+\[
+\sum_{k=1}^{n} \frac{(1+g)^{k-1}}{(1+s)^k}
+= \frac{1}{1+g}\sum_{k=1}^{n} \frac{(1+g)^{k}}{(1+s)^k}
+= \frac{1}{1+g}\sum_{k=1}^{n} q^{k}.
+\]
+La somma geometrica di ragione $q$ vale $q(1-q^n)/(1-q)$ per $q\neq 1$, da cui la prima riga. Se $q=1$, cioè $g=s$, ogni addendo $q^k$ vale $1$ e la somma è $n$, da cui la seconda.
+\end{proof}
+
+\begin{osservazione}[Perché la forma chiusa, e perché il caso singolare]
+La somma esplicita è più leggibile e il motore Python la calcola così. Il workbook non può: una somma su $n$ termini con $n$ variabile richiede una formula matriciale oppure una colonna di appoggio, e nessuna delle due è ispezionabile come una cella singola. Il foglio usa quindi la \eqref{eq:crescente}, con il ramo $q=1$ selezionato da un confronto a tolleranza. Il caso singolare non è di scuola: assumere una crescita del canone pari al tasso di sconto è un'ipotesi che si incontra, e senza il ramo dedicato la cella darebbe una divisione per zero. Un test del progetto verifica che forma chiusa e somma esplicita coincidano su sei configurazioni, incluso $g=s$: è la doppia implementazione applicata a una formula invece che a un modello.
+\end{osservazione}
+
+\subsection{Serie di flussi arbitrari}
+
+Quando i pagamenti non hanno una legge, il valore attuale è la somma diretta
+\begin{equation}
+\VAN(s) \;=\; \sum_{t=0}^{N} \frac{F_t}{(1+s)^t},
+\label{eq:van}
+\end{equation}
+con $F_0$ tipicamente negativo, perché è l'esborso iniziale. Si noti che l'indice parte da zero e che $F_0$ non viene scontato: è già in euro di oggi. È una banalità che produce un errore ricorrente, cioè scontare anche il primo termine, con l'effetto di sottostimare l'esborso e sovrastimare il valore attuale netto.
+
+\section{Inflazione: dal nominale al reale}
+
+\subsection{L'equazione di Fisher, e l'errore della sottrazione}
+
+\begin{definizione}[Rendimento reale]
+Se un investimento rende $r$ in termini nominali su un periodo in cui il livello dei prezzi cresce di $\pi$, il rendimento reale $r^*$ è definito dal rapporto fra il potere d'acquisto finale e quello iniziale:
+\begin{equation}
+1 + r^* \;=\; \frac{1+r}{1+\pi}
+\qquad\Longleftrightarrow\qquad
+r^* \;=\; \frac{1+r}{1+\pi} - 1 \;=\; \frac{r-\pi}{1+\pi}.
+\label{eq:fisher}
+\end{equation}
+\end{definizione}
+
+La forma che si incontra quasi sempre, $r^* \approx r - \pi$, è l'approssimazione al primo ordine della \eqref{eq:fisher}. L'errore che si commette usandola è esattamente
+\begin{equation}
+(r-\pi) - r^* \;=\; (r-\pi) - \frac{r-\pi}{1+\pi} \;=\; (r-\pi)\,\frac{\pi}{1+\pi},
+\label{eq:errore-fisher}
+\end{equation}
+quindi è proporzionale al prodotto fra il rendimento reale approssimato e l'inflazione. È piccolo, non è nullo, ed è sempre dello stesso segno quando $r>\pi>0$: la sottrazione sovrastima il rendimento reale.
+
+\begin{osservazione}
+Con $r=0{,}05$ e $\pi=0{,}02$ si ha $r^*=0{,}029412$ contro $0{,}03$ della sottrazione: sei centesimi di punto, cioè il due per cento del rendimento reale stesso. Su un orizzonte lungo l'errore si compone: $1{,}03^{25}/1{,}029412^{25} = 1{,}0148$, cioè un uno e mezzo per cento di montante finale attribuito a una scelta di formula. Il modello usa sempre la \eqref{eq:fisher} e mostra accanto l'errore \eqref{eq:errore-fisher}, perché la sottrazione resta utile per il conto a mente e va saputa per quello che è.
+\end{osservazione}
+
+\subsection{Deflazione di un importo futuro}
+
+Un importo nominale $Y$ disponibile fra $N$ anni vale, in potere d'acquisto di oggi,
+\begin{equation}
+Y^* = \frac{Y}{(1+\pi)^N}.
+\label{eq:deflaziona}
+\end{equation}
+È la stessa operazione dello sconto, con l'inflazione al posto del tasso di sconto, e risponde a una domanda diversa: non quanto vale oggi quel denaro per me che potrei investirlo, ma quante cose comprerà quando lo avrò.
+
+\section{Il costo dell'operazione}
+
+\subsection{La base imponibile: una funzione a tratti}
+
+L'imposta di registro sul trasferimento non si applica al prezzo ma a una base imponibile che dipende da un'opzione dell'acquirente. Esercitando l'opzione prezzo-valore, ammessa per le persone fisiche che acquistano immobili a uso abitativo, la base diventa il valore catastale
+\begin{equation}
+V_c \;=\; R \cdot \kappa \cdot \mu(\alpha),
+\qquad
+\mu(\alpha) = \begin{cases}\mu_1 & \text{con agevolazione},\\ \mu_0 & \text{senza},\end{cases}
+\label{eq:catastale}
+\end{equation}
+dove $\kappa$ è il coefficiente di rivalutazione della rendita e $\mu$ il moltiplicatore di categoria. La base imponibile è quindi
+\begin{equation}
+B(P) \;=\;
+\begin{cases}
+V_c, & \text{se si opta per il prezzo-valore e } R>0,\\
+P, & \text{altrimenti.}
+\end{cases}
+\label{eq:base}
+\end{equation}
+
+Il punto cruciale, che ritorna nel capitolo sull'inversione, è che nel primo ramo $B$ \emph{non dipende da $P$}: l'imposta di registro diventa una costante rispetto al prezzo. È la leva fiscale più grossa dell'operazione, e la sua natura matematica è quella di rendere costante un termine che altrimenti sarebbe proporzionale.
+
+\subsection{Le imposte di trasferimento}
+
+Nei due regimi si ha
+\begin{equation}
+T_a(P) \;=\;
+\begin{cases}
+\max\big(B(P)\,\tau(\alpha),\; T_{\min}\big) + \iota + \gamma, & \text{venditore privato o esente,}\\[0.4em]
+P\,\upsilon(\alpha,\lambda) + 3\,\phi, & \text{venditore impresa con IVA,}
+\end{cases}
+\label{eq:imposte}
+\end{equation}
+dove $\tau$ è l'aliquota di registro, $T_{\min}$ il minimo di legge, $\iota$ e $\gamma$ le imposte ipotecaria e catastale in misura fissa, $\upsilon$ l'aliquota IVA che dipende dall'agevolazione e dalla qualifica di lusso $\lambda$, e $\phi$ l'imposta fissa che nel regime IVA si applica tre volte.
+
+Due non linearità vanno segnalate perché rompono la linearità che il capitolo sull'inversione sfrutta. La prima è il $\max$ con il minimo di legge, che rende $T_a$ costante per prezzi sufficientemente bassi. La seconda è la dipendenza di $\upsilon$ da $\lambda$, che è una variabile discreta e non un parametro continuo.
+
+\begin{osservazione}[Il salto fra i due regimi]
+Le due righe della \eqref{eq:imposte} non sono perturbazioni l'una dell'altra: su un prezzo di ottantamila euro con agevolazione, il regime privato con prezzo-valore produce circa millecinquecento euro di imposta, quello IVA circa tremilacinquecento. Il rapporto è maggiore di due e cresce col prezzo, perché l'IVA colpisce il prezzo intero mentre il registro con prezzo-valore resta ancorato alla rendita. È la ragione per cui una graduatoria che applichi lo stesso regime a un usato da privato e a un nuovo da costruttore non è imprecisa: è ordinata al contrario nella parte alta.
+\end{osservazione}
+
+\subsection{Il costo totale come funzione affine del prezzo}
+
+I costi accessori si compongono di imposte, provvigione, notaio, altri costi e oneri del mutuo:
+\begin{equation}
+A(P) \;=\; T_a(P) \;+\; P\,p\,(1+\upsilon_p) \;+\; \nu \;+\; \omega \;+\; \Omega_M,
+\label{eq:accessori}
+\end{equation}
+con $p$ aliquota di provvigione, $\upsilon_p$ IVA sulla provvigione, $\nu$ onorario notarile, $\omega$ altri costi, $\Omega_M$ oneri del mutuo. Il costo totale è $C(P) = P + A(P)$.
+
+\begin{proposizione}[Forma affine]
+Fuori dal tratto in cui il minimo di legge è vincolante, il costo totale è affine nel prezzo:
+\begin{equation}
+C(P) \;=\; P\,(1+k) + c,
+\label{eq:costo-affine}
+\end{equation}
+con i coefficienti
+\begin{align}
+k &= \underbrace{\begin{cases}
+\upsilon(\alpha,\lambda) & \text{regime IVA},\\
+0 & \text{registro con prezzo-valore},\\
+\tau(\alpha) & \text{registro senza prezzo-valore},
+\end{cases}}_{\text{quota fiscale marginale}}
+\;+\; p\,(1+\upsilon_p),
+\label{eq:k}\\[0.6em]
+c &= \begin{cases}
+3\phi & \text{regime IVA},\\
+\max(V_c\,\tau(\alpha), T_{\min}) + \iota + \gamma & \text{registro con prezzo-valore},\\
+\iota + \gamma & \text{registro senza prezzo-valore},
+\end{cases}
+\;+\; \nu + \omega + \Omega_M .
+\label{eq:c}
+\end{align}
+\end{proposizione}
+
+La proposizione è la sostanza del capitolo, e la sua conseguenza è controintuitiva: con il prezzo-valore attivo l'intera imposta di registro finisce in $c$, cioè nella parte \emph{fissa}, e non in $k$. L'incidenza percentuale dei costi accessori, $A(P)/P$, non è quindi una costante del modello ma una funzione decrescente del prezzo. Trattarla come costante è l'errore che il capitolo~\ref{sec:inversione} corregge.
+
+\subsection{Il denominatore dei rendimenti}
+
+\begin{osservazione}
+Ogni rendimento è un rapporto, e la scelta del denominatore è una scelta di modello. Usare $P$ invece di $C$ ignora imposte, notaio, provvigione e oneri del mutuo, che sono capitale uscito dal conto e che alla rivendita non torna. La distorsione è sistematica, sempre nello stesso verso, e vale $C/P - 1$, cioè l'incidenza dei costi accessori: sul caso di riferimento del progetto il $9{,}63$ per cento. Un modello che sbaglia sempre nella stessa direzione è peggio di uno rumoroso, perché sembra affidabile. Il modello usa quindi $C$ per i rendimenti dell'attivo e $E$, il capitale proprio, per il solo \emph{cash on cash}, che misura l'operazione finanziata e non l'immobile.
+\end{osservazione}
+
+\section{Il mutuo: ammortamento alla francese}
+
+\subsection{Derivazione della rata}
+
+\begin{proposizione}[Rata costante]
+Un capitale $M$ da restituire in $n$ rate posticipate costanti, al tasso di periodo $j$, richiede la rata
+\begin{equation}
+\Gamma \;=\; M\,\frac{j}{1-(1+j)^{-n}} \;=\; \frac{M}{a_{n,j}} .
+\label{eq:rata}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+La condizione che definisce il piano è l'equivalenza finanziaria al tempo zero fra l'erogato e la successione delle rate: il valore attuale delle rate, scontate al tasso del contratto, deve essere pari al capitale ricevuto. Quindi
+\[
+M \;=\; \sum_{k=1}^{n} \frac{\Gamma}{(1+j)^k} \;=\; \Gamma\,a_{n,j},
+\]
+dove l'ultima uguaglianza è la \eqref{eq:annualita}. Risolvendo per $\Gamma$ e sostituendo la forma chiusa di $a_{n,j}$ si ottiene la tesi.
+\end{proof}
+
+È la funzione che i fogli di calcolo chiamano \texttt{PMT} o \texttt{RATA}. Vale notare che la \eqref{eq:rata} non contiene alcuna ipotesi sulla composizione fra quota capitale e quota interessi: quella composizione è una \emph{conseguenza} della rata costante, non una scelta.
+
+\subsection{Debito residuo, quota interessi, quota capitale}
+
+\begin{proposizione}[Debito residuo in forma chiusa]
+Dopo la rata $k$ il debito residuo vale
+\begin{equation}
+D_k \;=\; M\,\frac{(1+j)^n - (1+j)^k}{(1+j)^n - 1} .
+\label{eq:residuo}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+La ricorsione del piano è $D_k = D_{k-1}(1+j) - \Gamma$ con $D_0 = M$. Si tratta di una ricorsione affine, la cui soluzione si ottiene cercando il punto fisso $D^\star$ tale che $D^\star = D^\star(1+j)-\Gamma$, cioè $D^\star = \Gamma/j$, e osservando che lo scarto dal punto fisso si moltiplica per $(1+j)$ a ogni passo:
+\[
+D_k - \frac{\Gamma}{j} \;=\; (1+j)^k\Big(M - \frac{\Gamma}{j}\Big)
+\quad\Longrightarrow\quad
+D_k \;=\; \frac{\Gamma}{j} + (1+j)^k\Big(M-\frac{\Gamma}{j}\Big).
+\]
+Sostituendo $\Gamma = Mj/(1-(1+j)^{-n})$ si ha $\Gamma/j = M/(1-(1+j)^{-n})$, e con qualche passaggio algebrico
+\[
+D_k = \frac{M}{1-(1+j)^{-n}}\Big(1-(1+j)^{k-n}\Big)
+= M\,\frac{(1+j)^n-(1+j)^k}{(1+j)^n-1},
+\]
+che è la tesi. Si verifica immediatamente che $D_0 = M$ e $D_n = 0$.
+\end{proof}
+
+Da qui seguono le due scomposizioni della rata:
+\begin{equation}
+I_k \;=\; j\,D_{k-1}, \qquad K_k \;=\; \Gamma - I_k,
+\label{eq:scomposizione}
+\end{equation}
+cioè la quota interessi è il tasso applicato al debito \emph{di inizio periodo} e la quota capitale è il residuo. La forma chiusa \eqref{eq:residuo} è ciò che permette al modello di calcolare il debito residuo a un'epoca qualunque senza percorrere il piano, e il foglio degli scenari la usa per restare esatto quando si cambia il tasso di scenario.
+
+\begin{osservazione}[Perché all'inizio si pagano soprattutto interessi]
+Dalla \eqref{eq:scomposizione} si vede che $I_k$ è decrescente perché $D_{k-1}$ lo è, e quindi $K_k$ è crescente. Non è una scelta della banca né una clausola: è una conseguenza aritmetica della rata costante. La conseguenza pratica, che il modello dichiara nelle note, è però l'opposto di quella che si sente ripetere: il fatto che all'inizio si paghino soprattutto interessi \emph{non} è una ragione per rimborsare presto, perché ogni mese la scelta è la stessa, cioè estinguere ora oppure pagare $j$ sul residuo per rimandare la decisione. La condizione di convenienza del rimborso è che nessun impiego alternativo renda, al netto dell'imposta, almeno $i$.
+\end{osservazione}
+
+\subsection{Rimborsi volontari e le due modalità di imputazione}
+
+Con un versamento aggiuntivo $x_k$ al periodo $k$, la ricorsione diventa
+\begin{equation}
+D_k \;=\; \max\big(0,\; D_{k-1}(1+j_k) - \Gamma_k - x_k\big),
+\label{eq:ricorsione}
+\end{equation}
+e la definizione di $\Gamma_k$ dipende dalla modalità dichiarata alla banca:
+\begin{equation}
+\Gamma_k \;=\;
+\begin{cases}
+\Gamma, & \text{riduzione della durata,}\\[0.4em]
+D_{k-1}\,\dfrac{j_k}{1-(1+j_k)^{-(n-k+1)}}, & \text{riduzione della rata.}
+\end{cases}
+\label{eq:modalita}
+\end{equation}
+
+Nel primo caso la rata resta quella originaria e il piano si accorcia, perché $D_k$ raggiunge zero prima di $n$; nel secondo la scadenza resta fissa e la rata si ricalcola sul residuo e sui periodi rimanenti. Le due producono risultati molto diversi: sul caso di riferimento, con cento euro al mese di versamento aggiuntivo, la riduzione della durata risparmia $11\,373$ euro di interessi contro $6\,543$ della riduzione della rata. La differenza non è un dettaglio contrattuale: è la scelta fra ridurre l'esposizione totale al tasso e ridurre l'impegno mensile, e va dichiarata perché non la sceglie il foglio.
+
+\subsection{Percorso del tasso a gradini}
+
+Su un mutuo indicizzato il tasso non è costante. Il modello descrive il percorso come una funzione a gradini: dati $m$ punti $(\hat{k}_1,\delta_1),\dots,(\hat{k}_m,\delta_m)$ con $\hat{k}_1<\dots<\hat{k}_m$, dove $\delta_h$ è la variazione cumulata rispetto al tasso iniziale, il tasso del periodo $k$ è
+\begin{equation}
+i_k \;=\; i \;+\; \delta_{h(k)},
+\qquad
+h(k) = \max\{\,h : \hat{k}_h \le k\,\},
+\label{eq:gradini}
+\end{equation}
+con la convenzione $\delta_{h}=0$ se nessun gradino è stato raggiunto. La \eqref{eq:gradini} entra nella \eqref{eq:ricorsione} attraverso $j_k = i_k/12$, e la ricorsione va percorsa numericamente perché non esiste forma chiusa con tasso variabile.
+
+\begin{osservazione}[Il piano che non si chiude]
+Con la modalità a durata variabile e un rialzo forte, la \eqref{eq:ricorsione} può non raggiungere lo zero entro l'orizzonte tabulato. Il modello tabula $n_{\max}=480$ periodi, cioè quarant'anni: se $D_{480}>0$ il piano non è risolto ma troncato, e le grandezze di sintesi calcolate sulla tabella, cioè durata effettiva e interessi totali, descrivono soltanto la porzione tabulata. Il foglio lo dichiara con una riga di esito dedicata, perché due numeri veri che rispondono a una domanda diversa da quella posta sono peggio di un errore.
+\end{osservazione}
+
+\subsection{Costo effettivo del finanziamento}
+
+Il costo effettivo non è il tasso nominale, perché il nominale ignora gli oneri accessori e le eventuali variazioni. Si definisce come il tasso interno della successione dei flussi del solo mutuo:
+\begin{equation}
+\text{trovare } y \text{ tale che} \quad
+M - \Omega_M \;-\; \sum_{k=1}^{n} \frac{\Gamma_k + x_k}{(1+y)^k} \;=\; 0,
+\label{eq:costo-effettivo}
+\end{equation}
+dove $M-\Omega_M$ è l'incasso netto al tempo zero, perché imposta sostitutiva, istruttoria, perizia e notaio del mutuo si pagano subito. Il tasso annuo effettivo è $12y$ nella convenzione lineare del modello.
+
+\begin{osservazione}
+La \eqref{eq:costo-effettivo} non è il TAEG di legge, che segue la convenzione della Banca d'Italia sull'insieme delle voci da includere. Il modello lo dichiara: è una stima interna, utile per confrontare due preventivi sulla stessa base, non un valore da citare in una contestazione.
+\end{osservazione}
+
+\section{Il reddito da locazione}
+
+\subsection{Dalla potenzialità al ricavo effettivo}
+
+Il canone contrattuale è una potenzialità, non un incasso. Con $L$ canone annuo a pieno regime, $\sigma$ mesi di sfitto attesi all'anno e $\beta$ accantonamento per morosità come quota del canone,
+\begin{equation}
+L_e \;=\; \Big(L - \frac{L}{12}\,\sigma\Big)\,(1-\beta)
+\;=\; L\,\Big(1-\frac{\sigma}{12}\Big)(1-\beta).
+\label{eq:ricavo-effettivo}
+\end{equation}
+Le due correzioni sono moltiplicative e non additive, cioè la morosità si applica a ciò che resta dopo lo sfitto: è la scelta prudenziale, e la differenza rispetto alla forma additiva è di secondo ordine ma sempre dello stesso segno.
+
+\begin{osservazione}
+$\sigma$ e $\beta$ sono i due parametri che chi valuta tende a mettere a zero, ed è l'errore più comune nelle valutazioni ottimistiche. Un mese l'anno di sfitto è l'assunzione prudenziale standard, non pessimistica, perché fra un contratto e l'altro il vuoto reale è di norma più lungo; e uno sfratto per morosità richiede circa un anno e mezzo, durante il quale il canone non entra e le imposte si pagano comunque.
+\end{osservazione}
+
+\subsection{Reddito operativo netto e utile netto}
+
+I costi del proprietario, tutti annui, sono le spese condominiali a suo carico $\chi$, la manutenzione ordinaria come quota $\mathrm{m}$ del valore, l'assicurazione $\zeta$, il costo figurativo del tempo $\eta$, l'accantonamento per la ristrutturazione di fine ciclo, e l'IMU. Il reddito operativo netto è
+\begin{equation}
+\mathrm{NOI} \;=\; L_e \;-\; \Big(\chi + P\,\mathrm{m} + \zeta + \eta + \frac{P\,\mathrm{r}}{N_r} + \mathrm{IMU}\Big),
+\label{eq:noi}
+\end{equation}
+dove $\mathrm{r}$ è il costo di un rifacimento completo come quota del valore e $N_r$ il numero di anni fra due rifacimenti, cosicché il terzo addendo è l'accantonamento annuo. L'utile netto sottrae l'imposta sul canone:
+\begin{equation}
+U \;=\; \mathrm{NOI} \;-\; \Theta(L_e),
+\label{eq:utile}
+\end{equation}
+con $\Theta$ funzione d'imposta che dipende dal regime scelto.
+
+\begin{osservazione}[Un costo sta in un posto solo]
+La \eqref{eq:noi} include l'accantonamento per la ristrutturazione, e la proiezione del flusso di cassa del capitolo seguente lo eredita attraverso $\mathrm{NOI}$ invece di ricalcolarlo. È la conseguenza di un difetto reale del modello, in cui la voce compariva sia nel conto economico sia come colonna autonoma della proiezione, e veniva quindi sottratta due volte: il flusso risultava peggiore del vero di quell'importo, ogni anno, e nessun controllo lo segnalava perché entrambe le formule erano corrette prese da sole.
+\end{osservazione}
+
+\subsection{Le quattro funzioni d'imposta}
+
+I quattro regimi si distinguono per la forma di $\Theta$, e le differenze non sono solo di aliquota.
+\begin{align}
+\Theta_{\text{ced}}(L_e) &= L_e\,\theta_c, \label{eq:ced}\\
+\Theta_{\text{conc}}(L_e) &= L_e\,\theta_{cc}, \label{eq:conc}\\
+\Theta_{\text{ord}}(L_e) &= L_e\,(1-\alpha_b)\,(\theta_m + \theta_a) \;+\; \frac{\max(L_e\,\tau_\ell,\;\tau_{\ell,\min})}{2}, \label{eq:ord}\\
+\Theta_{\text{breve}}(L_e) &= L_e\,\theta_b. \label{eq:breve}
+\end{align}
+
+Nella \eqref{eq:ord}, $\alpha_b$ è l'abbattimento forfettario, $\theta_m$ l'aliquota marginale IRPEF del contribuente, $\theta_a$ le addizionali locali, e l'ultimo addendo è l'imposta di registro annuale sul contratto, ripartita a metà fra locatore e conduttore. La cedolare secca la sostituisce, ed è una parte del suo vantaggio che l'aliquota nuda non mostra.
+
+Due proprietà strutturali distinguono i regimi al di là dell'aliquota. La prima è che $\Theta_{\text{ord}}$ dipende da $\theta_m$, cioè dalla posizione fiscale personale: lo stesso immobile ha regimi ottimali diversi per due contribuenti diversi, e il confronto fra regimi non è una proprietà dell'immobile. La seconda è che la cedolare comporta la rinuncia all'aggiornamento ISTAT del canone, cioè $g=0$ nella notazione del capitolo sull'inflazione, e questa è una conseguenza sull'\emph{intera successione} dei canoni futuri e non sull'imposta di un anno. Il capitolo \ref{sec:inflazione} la quantifica.
+
+\subsection{Proiezione del flusso di cassa}
+
+Con indicizzazione $g$ del canone, la proiezione annuale è
+\begin{equation}
+F_t \;=\; \underbrace{L_e\,(1+g)^{t-1} - \big(\mathrm{NOI}\text{-costi}\big)(1+g)^{t-1} - \Theta_t}_{\text{gestione}} \;-\; \underbrace{\Gamma_{\text{annua}}\,\mathbb{1}[t\le n/12]}_{\text{debito}},
+\qquad t=1,\dots,N,
+\label{eq:proiezione}
+\end{equation}
+e al termine si aggiunge il flusso di uscita
+\begin{equation}
+F_N^{\text{uscita}} \;=\; P\,(1+\rho)^N (1-\xi) \;-\; D_{\min(N,\,n/12)} \;-\; \Pi,
+\label{eq:uscita}
+\end{equation}
+con $\xi$ costi di vendita in quota e $\Pi$ eventuale imposta sulla plusvalenza. La \eqref{eq:uscita} è ciò che rende il tasso interno del capitolo seguente confrontabile con un investimento finanziario: senza l'uscita si confronterebbe una rendita con un capitale.
+
+\section{Gli indicatori, e cosa ciascuno misura}
+
+\subsection{Definizioni}
+
+\begin{align}
+\text{rendimento lordo} \quad & r_g = \frac{L}{P}, \label{eq:lordo}\\
+\text{rendimento netto} \quad & r_n = \frac{U}{C}, \label{eq:netto}\\
+\text{cap rate} \quad & r_c = \frac{\mathrm{NOI}}{C}, \label{eq:cap}\\
+\text{cash on cash} \quad & r_e = \frac{U - \Gamma_{\text{annua}}}{E}, \label{eq:coc}\\
+\text{DSCR} \quad & \mathrm{DSCR} = \frac{\mathrm{NOI}}{\Gamma_{\text{annua}}}. \label{eq:dscr}
+\end{align}
+
+I cinque non sono varianti dello stesso numero: hanno numeratori e denominatori diversi perché rispondono a domande diverse. Il rendimento lordo è quello degli annunci ed è il meno informativo, perché ignora tutti i costi e usa $P$ al denominatore; serve a scremare. Il cap rate esclude il debito e le imposte sul reddito, quindi confronta immobili fra loro a prescindere da come sono finanziati. Il rendimento netto misura l'immobile per l'investitore che paga le imposte. Il \emph{cash on cash} misura l'operazione finanziata, e il suo denominatore è il capitale proprio. Il DSCR non è un rendimento ma un rapporto di copertura, e la sua soglia è uno.
+
+\begin{osservazione}
+Fra $r_g$ e $r_n$ si perdono di norma due punti e mezzo, e chi promette un netto vicino al lordo sta contando male o non sta contando le stesse cose. La verifica rapida è chiedere quale sia il denominatore e se lo sfitto sia nel numeratore.
+\end{osservazione}
+
+\subsection{L'effetto della leva}
+
+\begin{proposizione}[Rendimento del capitale proprio]
+Sia $r_c$ il cap rate, $c_d$ il costo del debito come quota del debito, $D=M$ il debito e $E=C-M$ il capitale proprio. Ignorando le imposte sul reddito, il rendimento del capitale proprio soddisfa
+\begin{equation}
+r_E \;=\; r_c \;+\; \frac{D}{E}\,\big(r_c - c_d\big).
+\label{eq:leva}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+Il reddito dell'attivo è $r_c\,C = r_c\,(D+E)$; il costo del debito è $c_d D$; ciò che resta al capitale proprio è la differenza, quindi
+\[
+r_E = \frac{r_c(D+E) - c_d D}{E} = r_c\,\frac{D+E}{E} - c_d\,\frac{D}{E}
+= r_c + \frac{D}{E}\,(r_c - c_d),
+\]
+dove l'ultimo passaggio raccoglie $r_c$.
+\end{proof}
+
+La \eqref{eq:leva} è il risultato più utile del capitolo, perché rende esplicita una condizione che di solito si dà per ovvia e non lo è: la leva aumenta il rendimento del capitale proprio \emph{se e solo se} $r_c > c_d$, cioè se l'immobile rende più di quanto costa il denaro. Se $r_c < c_d$ la leva amplifica una perdita, e lo fa in proporzione a $D/E$. Sul caso di riferimento del progetto $r_c = 1{,}37$ per cento e il costo del debito è $3{,}2$ per cento: la disuguaglianza è rovesciata, e infatti il \emph{cash on cash} risulta negativo mentre il cap rate è positivo. Non è un difetto del calcolo, è la leva che lavora contro.
+
+\begin{osservazione}[Perché il modello non usa la \eqref{eq:leva} per calcolare]
+La \eqref{eq:leva} vale con $c_d$ costante e senza imposte, e in un mutuo ad ammortamento $c_d$ non è costante, perché la rata contiene anche capitale. Il modello calcola quindi $r_e$ direttamente dalla \eqref{eq:coc}, con il flusso di cassa effettivo, e usa la \eqref{eq:leva} come strumento di lettura: serve a capire il segno e l'ordine di grandezza, non a produrre il numero.
+\end{osservazione}
+
+\subsection{Tasso interno di rendimento}
+
+\begin{definizione}
+Il tasso interno di rendimento della successione $F_0,\dots,F_N$ è una radice dell'equazione
+\begin{equation}
+\VAN(y) \;=\; \sum_{t=0}^{N} \frac{F_t}{(1+y)^t} \;=\; 0 .
+\label{eq:tir}
+\end{equation}
+\end{definizione}
+
+Tre questioni vanno affrontate, perché il TIR è l'indicatore su cui si sbaglia più spesso.
+
+\paragraph{Esistenza e unicità.} La \eqref{eq:tir} è un polinomio in $v=(1+y)^{-1}$ di grado $N$, e in generale ha $N$ radici complesse. La regola dei segni di Cartesio garantisce che il numero di radici reali positive non superi il numero di cambi di segno della successione dei flussi. Per una struttura tipica di questo dominio, cioè un esborso iniziale negativo seguito da flussi di segno costante, il cambio di segno è unico e la radice reale positiva è unica: il TIR è ben definito. Quando la successione cambia segno più volte, per esempio con una ristrutturazione straordinaria a metà orizzonte, possono esistere più radici e il TIR perde significato. Il modello non pretende di rilevare questa condizione, e la dichiara come limite.
+
+\paragraph{Metodo numerico.} Non esiste forma chiusa per $N>4$. Il motore usa la bisezione sull'intervallo $[-0{,}9999,\,10]$, con tolleranza $10^{-7}$ e duecento iterazioni. La bisezione converge linearmente, dimezzando l'ampiezza dell'intervallo a ogni passo, quindi duecento iterazioni sono largamente sufficienti; è preferita a Newton, che converge quadraticamente ma può divergere quando la derivata è piccola, situazione tipica proprio dei profili immobiliari, dove il primo termine è un esborso grande e i successivi sono piccoli e dello stesso segno. Se non esiste cambio di segno nell'intervallo, la funzione restituisce zero invece di un valore inventato.
+
+\paragraph{Che cosa il TIR non dice.} Il TIR è un tasso di rendimento, non una misura di rischio, e assume implicitamente il reinvestimento dei flussi intermedi allo stesso tasso. Due operazioni con lo stesso TIR e scale diverse non sono equivalenti, ed è la ragione per cui il modello riporta accanto il valore attuale netto \eqref{eq:van}, che è additivo e commensurabile, e il multiplo sul capitale proprio.
+
+\subsection{Relazione fra VAN e TIR}
+
+Il VAN è funzione decrescente del tasso di sconto quando i flussi hanno un solo cambio di segno, e il TIR è per definizione il tasso che lo annulla. Quindi $\VAN(s)>0 \iff s< \TIR$ nel caso regolare: le due regole di decisione coincidono. Non coincidono nel confronto fra progetti di scala diversa, dove il VAN va usato e il TIR no, perché il primo è additivo e il secondo è un tasso.
+
+\section{L'inversione: il prezzo massimo sostenibile}
+\label{sec:inversione}
+
+\subsection{Il problema}
+
+La domanda della trattativa non è quanto rende l'immobile a un prezzo dato, ma quale prezzo, al massimo, giustifica l'operazione a un rendimento netto dichiarato accettabile $r^\dagger$. Formalmente si cerca $P^\star$ tale che
+\begin{equation}
+\frac{U(P^\star)}{C(P^\star)} \;=\; r^\dagger .
+\label{eq:problema-inversione}
+\end{equation}
+
+Il modo sbagliato di risolverla, e quello che il modello adottava fino alla revisione del 1 settembre 2026, è dividere il costo sostenibile per uno più l'incidenza dei costi accessori misurata allo scenario base:
+\begin{equation}
+P^\star_{\text{errato}} \;=\; \frac{U/r^\dagger}{1 + A(P_0)/P_0}.
+\label{eq:inversione-errata}
+\end{equation}
+
+La \eqref{eq:inversione-errata} sbaglia per due ragioni indipendenti che si sommano nello stesso verso.
+
+\paragraph{Prima causa: l'incidenza non è costante.} Dalla \eqref{eq:costo-affine} si ha $A(P)/P = k + c/P$, che è una funzione decrescente di $P$ e non un parametro. Congelarla al valore dello scenario base significa usare $k + c/P_0$ dove servirebbe $k + c/P^\star$, e poiché $P^\star < P_0$ nel caso interessante, si sottostima l'incidenza vera.
+
+\paragraph{Seconda causa: l'utile non è indipendente dal prezzo.} Dalla \eqref{eq:noi} si vede che manutenzione e accantonamento per la ristrutturazione sono quote del valore:
+\begin{equation}
+U(P) \;=\; U_0 \;-\; (P-P_0)\,\mathrm{m}^\dagger,
+\qquad
+\mathrm{m}^\dagger := \mathrm{m} + \frac{\mathrm{r}}{N_r},
+\label{eq:utile-di-p}
+\end{equation}
+dove $U_0$ è l'utile al prezzo base. Quindi abbassare il prezzo \emph{alza} l'utile, e la \eqref{eq:inversione-errata} lo tiene fermo.
+
+\subsection{La soluzione esatta}
+
+\begin{proposizione}[Prezzo massimo sostenibile]
+Sul tratto in cui $C$ è affine, cioè fuori dalla regione in cui il minimo di legge dell'imposta di registro è vincolante, la \eqref{eq:problema-inversione} ha l'unica soluzione
+\begin{equation}
+\boxed{\;
+P^\star \;=\; \frac{U_0 + P_0\,\mathrm{m}^\dagger - r^\dagger c}{r^\dagger (1+k) + \mathrm{m}^\dagger}\;}
+\label{eq:pmax}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+Si sostituiscono la \eqref{eq:costo-affine} e la \eqref{eq:utile-di-p} nella \eqref{eq:problema-inversione}:
+\[
+U_0 - (P-P_0)\,\mathrm{m}^\dagger \;=\; r^\dagger\big(P(1+k)+c\big).
+\]
+Si espande e si raccolgono i termini in $P$ a destra:
+\[
+U_0 + P_0 \mathrm{m}^\dagger \;=\; r^\dagger(1+k)P + r^\dagger c + P\,\mathrm{m}^\dagger
+\;=\; P\big(r^\dagger(1+k)+\mathrm{m}^\dagger\big) + r^\dagger c,
+\]
+da cui la tesi dividendo per il coefficiente di $P$, che è positivo per $r^\dagger>0$ e $k,\mathrm{m}^\dagger \ge 0$, il che garantisce anche l'unicità.
+\end{proof}
+
+L'equazione è di primo grado, quindi la soluzione è chiusa e non richiede metodi numerici. I tre coefficienti $k$, $c$ e $\mathrm{m}^\dagger$ stanno nel foglio in tre celle visibili con la loro nota, e non dentro la formula finale, perché un risultato di cui non si possono riconoscere i pezzi non si può contestare: sul caso di riferimento valgono $3{,}7$ per cento, $7\,165$ euro e $1{,}8$ per cento, e chi conosce il dominio riconosce nel primo la provvigione con la sua IVA, nel secondo il fatto che il prezzo-valore è attivo perché l'intera imposta di registro è finita nella parte fissa, e nel terzo l'uno per cento di manutenzione più lo zero virgola ottantadue di accantonamento.
+
+\subsection{Quanto valeva l'errore}
+
+Sul caso di riferimento, con $U_0 = 684$ euro, $r^\dagger = 4$ per cento, $P_0 = 120\,000$ euro:
+\begin{align*}
+P^\star_{\text{errato}} &= \frac{684/0{,}04}{1{,}0963} = \frac{17\,112}{1{,}0963} = 15\,609 \text{ euro},\\
+P^\star &= \frac{684 + 120\,000\cdot 0{,}01825 - 0{,}04\cdot 7\,165}{0{,}04\cdot 1{,}0366 + 0{,}01825} = \frac{2\,587{,}4}{0{,}059714} = 43\,445 \text{ euro}.
+\end{align*}
+Un fattore prossimo a tre, nel verso che fa apparire impossibile qualunque trattativa. Per un numero il cui unico scopo è dire quanto offrire, è il modo peggiore di sbagliare.
+
+\subsection{Il controllo di chiusura}
+
+La \eqref{eq:pmax} è esatta solo sul tratto affine. Il modello affianca al risultato una cella che ricalcola il rendimento a $P^\star$ con le formule esatte, minimo di legge compreso, e mostra lo scarto dalla soglia:
+\begin{equation}
+\varepsilon \;=\; \frac{U_0 - (P^\star-P_0)\mathrm{m}^\dagger}{P^\star + T_a(P^\star) + P^\star p(1+\upsilon_p) + \nu + \omega + \Omega_M} \;-\; r^\dagger .
+\label{eq:controllo}
+\end{equation}
+Sul caso di riferimento $\varepsilon = 0$ a quattro decimali. Il controllo sta nel foglio e non in un test per una ragione precisa: il caso che rompe la linearità si presenta quando chi usa il file cambia rendita, aliquota o obiettivo a video, non nel caso precaricato che un test coprirebbe.
+
+\begin{osservazione}[La lezione generalizzabile]
+Un'incidenza percentuale misurata su uno scenario non è un parametro del modello: è un rapporto fra due grandezze che dipendono entrambe dalla variabile che si sta muovendo. Usarla come costante è il modo più comune di introdurre un errore che non si vede, perché il risultato resta dell'ordine di grandezza giusto. La forma corretta di un'inversione è scomporre in parte proporzionale e parte fissa e risolvere l'equazione, non stimare un rapporto.
+\end{osservazione}
+
+\section{Sensibilità e rischio}
+
+\subsection{Derivate e elasticità}
+
+La sensibilità del rendimento netto a una variabile $\psi$ è la derivata parziale $\partial r_n/\partial \psi$, e la sua forma adimensionale è l'elasticità
+\begin{equation}
+\epsilon_\psi \;=\; \frac{\partial r_n}{\partial \psi}\cdot\frac{\psi}{r_n},
+\label{eq:elasticita}
+\end{equation}
+cioè la variazione percentuale del rendimento per una variazione dell'uno per cento della variabile. Le elasticità sono la grandezza giusta per confrontare l'importanza di variabili con unità diverse, che è esattamente il problema del diagramma a tornado.
+
+Sul canone si ha, tenendo tutto il resto fermo,
+\begin{equation}
+\frac{\partial U}{\partial L} = \Big(1-\frac{\sigma}{12}\Big)(1-\beta)\,(1-\theta),
+\qquad
+\frac{\partial r_n}{\partial L} = \frac{1}{C}\,\frac{\partial U}{\partial L},
+\label{eq:sens-canone}
+\end{equation}
+che mostra una cosa non ovvia: l'effetto di un aumento del canone sul rendimento è attenuato tre volte, dallo sfitto, dalla morosità e dall'imposta. Con $\sigma=1$, $\beta=0{,}03$ e $\theta=0{,}21$ il fattore complessivo è $0{,}917\cdot 0{,}97\cdot 0{,}79 = 0{,}703$: settanta centesimi di ogni euro di canone in più arrivano al rendimento.
+
+Sul prezzo la derivata è più ricca, perché il prezzo entra due volte:
+\begin{equation}
+\frac{\partial r_n}{\partial P} \;=\; \frac{-\mathrm{m}^\dagger\,C - U\,(1+k)}{C^2} \;<\; 0 ,
+\label{eq:sens-prezzo}
+\end{equation}
+dove il primo addendo del numeratore viene dai costi che scalano col prezzo e il secondo dal costo totale al denominatore. La \eqref{eq:sens-prezzo} è sempre negativa: nessuna sorpresa, ma la sua scomposizione dice che circa un terzo dell'effetto passa dal numeratore, cosa che una tabella di sensibilità non mostra.
+
+\subsection{Il diagramma a tornado}
+
+Il tornado ordina le variabili per ampiezza dell'effetto su una grandezza scelta, applicando a ciascuna uno scostamento e tenendo le altre al valore base. Se $\psi_h$ è la variabile $h$ e $\Delta_h$ lo scostamento applicato, la barra è
+\begin{equation}
+b_h \;=\; \big|\,G(\psi_h + \Delta_h) - G(\psi_h - \Delta_h)\,\big|,
+\label{eq:tornado}
+\end{equation}
+con $G$ la grandezza osservata. Due avvertenze, entrambe dichiarate nel foglio. Gli scostamenti $\Delta_h$ devono essere commensurabili fra loro, altrimenti l'ordinamento misura la scelta degli scostamenti e non l'importanza delle variabili; e il tornado è per costruzione univariato, quindi non vede le interazioni: due variabili che singolarmente contano poco possono contare molto insieme.
+
+\subsection{Simulazione: perché non basta il caso base}
+
+Tre scenari scelti a mano rispondono alla domanda sbagliata, perché non dicono quanto sia probabile ciascuno. La simulazione sostituisce gli scenari con una distribuzione di esiti.
+
+\paragraph{Impianto.} Si estraggono $S=1000$ realizzazioni di un vettore di variabili normali standard $Z = (Z_1,\dots,Z_5)$ e una uniforme $V\sim \mathcal{U}(0,1)$ per gli eventi discreti. Ogni grandezza incerta si costruisce come trasformazione della corrispondente normale:
+\begin{align}
+L^{(s)} &= \max\big(0,\; L\,(1+Z_1^{(s)}\,\varsigma_L)\big),\\
+\sigma^{(s)} &= \mathrm{clip}\big(\sigma + Z_2^{(s)}\,\varsigma_\sigma,\; 0,\; 12\big),\\
+i^{(s)} &= \max\big(0,\; i + Z_3^{(s)}\,\varsigma_i\big),\\
+\rho^{(s)} &= \rho + Z_4^{(s)}\,\frac{\varsigma_\rho}{\sqrt{N}} .
+\label{eq:estrazioni}
+\end{align}
+
+\paragraph{La correzione che vale più della tecnica.} L'ultima riga della \eqref{eq:estrazioni} contiene una divisione per $\sqrt{N}$ che non è cosmetica. La prima versione del modello trattava l'estrazione sulla rivalutazione come un regime permanente per tutto l'orizzonte, cioè applicava $\rho + Z\varsigma_\rho$ per $N$ anni consecutivi. È sbagliato: la rivalutazione si compone, quindi la grandezza incerta rilevante non è la variazione di un anno ma la \emph{media} del periodo, e la deviazione standard della media di $N$ variabili indipendenti con deviazione $\varsigma$ vale $\varsigma/\sqrt{N}$. Senza la correzione la coda alta produceva patrimoni finali fuori scala: una simulazione matematicamente coerente e finanziariamente assurda.
+
+\paragraph{Riproducibilità.} Le estrazioni sono generate una volta sola alla costruzione del file, con un seme dichiarato, e scritte come numeri fissi in un foglio nascosto; il calcolo che sta sopra è invece formula viva. La ragione è una proprietà della funzione casuale nativa dei fogli di calcolo: è volatile, quindi ogni ricalcolo rigenera tutti i numeri, due letture consecutive dello stesso file danno risultati diversi e nulla è verificabile. Separando estrazione e calcolo si ottiene una simulazione insieme stabile e interattiva, che nessuna delle due forme pure dava.
+
+\paragraph{Il limite dichiarato.} Le variabili sono estratte indipendenti, mentre nella realtà tassi, prezzi, sfitto e morosità si muovono insieme. Introdurre una struttura di correlazione richiederebbe di stimare una matrice che nessuno ha, e sostituirebbe un'assunzione dichiarata con una nascosta. Il modello resta indipendente e lo dice.
+
+\paragraph{Errore di campionamento.} Con $S$ estrazioni, la stima di una probabilità $p$ ha errore standard $\sqrt{p(1-p)/S}$, che per $p\approx 0{,}5$ e $S=1000$ vale circa $1{,}6$ punti percentuali. Le probabilità riportate dal modello vanno quindi lette a due cifre e non a tre, e questo è il motivo per cui il foglio non stampa decimali su di esse.
+
+\section{Inflazione applicata a questa operazione}
+\label{sec:inflazione}
+
+\subsection{Perché il segno non è ovvio}
+
+L'inflazione non agisce nello stesso verso su tutte le componenti, e in un acquisto a leva i versi si compensano solo in parte. Vale scomporre.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Componente & Natura & Effetto dell'inflazione \\
+\midrule
+Debito residuo & importo nominale fisso & favorevole: si erode \\
+Rata a tasso fisso & importo nominale fisso & favorevole: si alleggerisce \\
+Rata a tasso variabile & indicizzata all'indice & sfavorevole: cresce \\
+Canone, cedolare secca & non indicizzabile, $g=0$ & sfavorevole: perde tutto $\pi$ \\
+Canone, regime ordinario & indicizzabile ISTAT & neutro se $g=\pi$ \\
+Valore dell'immobile & nominale, cresce di $\rho$ & neutro se $\rho=\pi$ \\
+Costi operativi & nominali, crescono & sfavorevole se non si ribaltano \\
+\bottomrule
+\end{tabular}
+\caption{Direzione dell'effetto dell'inflazione per componente.}
+\end{table}
+
+\subsection{Il guadagno del debitore}
+
+\begin{proposizione}
+Il valore, in potere d'acquisto di oggi, dell'erosione operata dall'inflazione su un debito residuo nominale $D_N$ a un orizzonte di $N$ anni, è
+\begin{equation}
+\Delta_\pi \;=\; D_N\Big(1 - (1+\pi)^{-N}\Big).
+\label{eq:regalo}
+\end{equation}
+\end{proposizione}
+
+\begin{proof}
+Il debito è un'obbligazione a consegnare $D_N$ euro nominali. Il suo valore in euro di oggi è $D_N(1+\pi)^{-N}$ per la \eqref{eq:deflaziona}. La differenza fra l'importo nominale dovuto e il suo valore reale è la tesi.
+\end{proof}
+
+La \eqref{eq:regalo} è un trasferimento reale di ricchezza dal creditore al debitore, e in un mutuo residenziale il debitore è chi compra. È la ragione per cui l'inflazione, in un acquisto a leva a tasso fisso, ha un lato favorevole che il rendimento nominale non mostra e quello reale mostra solo in aggregato.
+
+\begin{osservazione}[Vale solo a tasso fisso]
+Su un variabile l'inflazione fa salire l'indice di riferimento, la rata cresce e lo sconto sul debito si paga in interessi. La \eqref{eq:regalo} continua a valere aritmeticamente ma è compensata, in tutto o in parte, dall'aumento del servizio del debito: il capitolo sul percorso del tasso a gradini serve esattamente a quantificare il secondo termine.
+\end{osservazione}
+
+\subsection{Rendimenti reali}
+
+Applicando la \eqref{eq:fisher} agli indicatori si ottiene
+\begin{equation}
+r_n^* = \frac{1+r_n}{1+\pi}-1,
+\qquad
+\TIR^* = \frac{1+\TIR}{1+\pi}-1,
+\qquad
+\rho^* = \frac{1+\rho}{1+\pi}-1 .
+\label{eq:reali}
+\end{equation}
+
+La terza è quella che merita attenzione: se si assume $\rho = \pi$, cioè che l'immobile si rivaluti quanto l'inflazione, allora $\rho^*=0$ esattamente, e il valore finale in potere d'acquisto coincide con il prezzo pagato. Non è un'assunzione pessimistica: in termini reali il mercato residenziale italiano è rimasto sostanzialmente fermo per un ventennio, e porre $\rho=\pi$ è già benevolo.
+
+La variazione reale del canone è
+\begin{equation}
+g^* = \frac{1+g}{1+\pi}-1,
+\label{eq:canone-reale}
+\end{equation}
+che con la cedolare secca, dove $g=0$ per obbligo, vale $-\pi/(1+\pi)$: il canone perde in termini reali quasi tutta l'inflazione, ogni anno, per tutta la durata dell'opzione.
+
+\subsection{Il costo dell'indicizzazione rinunciata}
+
+Questa è la parte del capitolo che quantifica una scelta fiscale che di solito si fa guardando solo l'aliquota.
+
+\begin{proposizione}
+Il valore attuale del canone a cui si rinuncia non indicizzando, su un orizzonte di $N$ anni, al tasso di sconto $s$, vale
+\begin{equation}
+\Lambda \;=\; L\,\Big(F(\pi,s,N) - F(g,s,N)\Big),
+\label{eq:rinuncia}
+\end{equation}
+con $F$ il fattore \eqref{eq:crescente}. Al netto dell'imposta sul canone la grandezza comparabile è $\Lambda(1-\theta)$.
+\end{proposizione}
+
+\begin{proof}
+La successione dei canoni pienamente indicizzati è $L(1+\pi)^{t-1}$, quella effettiva $L(1+g)^{t-1}$. Il valore attuale della differenza è, per linearità,
+\[
+\sum_{t=1}^{N}\frac{L(1+\pi)^{t-1} - L(1+g)^{t-1}}{(1+s)^t}
+= L\Big(\sum_{t=1}^{N}\frac{(1+\pi)^{t-1}}{(1+s)^t} - \sum_{t=1}^{N}\frac{(1+g)^{t-1}}{(1+s)^t}\Big),
+\]
+cioè la tesi per definizione di $F$.
+\end{proof}
+
+Il lato opposto della scelta è il risparmio d'imposta, il cui valore attuale su un canone effettivo costante è
+\begin{equation}
+\Sigma \;=\; \big(\Theta_{\text{ord}}(L_e) - \Theta_{\text{ced}}(L_e)\big)\,a_{N,s},
+\label{eq:risparmio}
+\end{equation}
+e il saldo della scelta è $\Sigma - \Lambda(1-\theta)$.
+
+\begin{osservazione}[Il risultato sul caso di riferimento, con le sue cautele]
+Con $L=6\,000$ euro, $\pi=2$ per cento, $g=0$, $s=3$ per cento, $N=25$ anni si ottiene $F(\pi,s,N)=21{,}6437$ e $F(g,s,N)=17{,}4131$, quindi $\Lambda = 25\,384$ euro lordi e $20\,053$ euro al netto della cedolare al ventuno per cento. Il risparmio d'imposta attualizzato vale $12\,777$ euro. Il saldo è quindi \emph{negativo} per circa settemiladuecento euro: su quell'orizzonte la cedolare secca costa più di quanto risparmi.
+
+Tre cautele, perché il confronto è fra grandezze non simmetriche e leggerlo come un verdetto sarebbe scorretto. L'orizzonte usato è quello del modello, decenni, mentre l'opzione per la cedolare si esercita per contratto e si può riconsiderare a ogni rinnovo: la cifra è il caso peggiore, quello di chi la rinnova sempre senza ripensarci. Il risparmio d'imposta dipende dall'aliquota marginale personale, che è un input e non un dato. E il canone concordato ha regole di aggiornamento proprie, fissate dall'accordo territoriale, che la \eqref{eq:rinuncia} non modella.
+
+Ciò che il saldo dice con certezza è che la scelta ha due lati e che il secondo non è trascurabile. È un confronto che quasi nessuno fa, perché il risparmio si vede subito nella dichiarazione e la mancata indicizzazione non si vede mai, essendo un canone che non è stato chiesto.
+\end{osservazione}
+
+\section{Comprare oppure restare in affitto}
+
+\subsection{Formalizzazione a parità di esborso}
+
+Il confronto corretto non è fra la rata e il canone, che è il confronto che si fa spontaneamente e che ignora la componente di capitale della rata. Il confronto è fra due strategie che partono dallo stesso esborso iniziale.
+
+Chi compra versa $E$ al tempo zero e poi, ogni anno, la rata più i costi del proprietario meno l'eventuale detrazione. Chi affitta investe $E$ in un portafoglio che rende $r_p$, paga il canone di mercato $L_a$ indicizzato all'inflazione, e investe ogni anno la differenza fra le uscite dell'altro e le proprie. Le due posizioni finali sono
+\begin{align}
+W_{\text{compra}} &= P(1+\rho)^N(1-\xi) - D_{\min(N,n/12)},
+\label{eq:w-compra}\\
+W_{\text{affitta}} &= \Big[E(1+r_p)^N + \sum_{t=1}^{N}\Delta_t (1+r_p)^{N-t}\Big] - \theta_p\,\max\big(0,\,\cdot\, - \text{versato}\big),
+\label{eq:w-affitta}
+\end{align}
+con $\Delta_t$ la differenza fra le uscite annuali dei due e $\theta_p$ l'imposta sulle rendite finanziarie applicata alla sola plusvalenza.
+
+\subsection{Le tre assunzioni che ribaltano l'esito}
+
+L'esito dipende quasi solo da $r_p$, $\rho$ e $L_a$. La derivata rispetto a $r_p$ è la più violenta: cambiando $r_p$ di un punto percentuale l'esito spesso si rovescia. Questo dice quanto poco il verdetto vada preso come responso e quanto vada preso come mappa di sensibilità.
+
+Due effetti non compaiono nelle \eqref{eq:w-compra} e \eqref{eq:w-affitta} e vanno tenuti a mente. Il primo è che la \eqref{eq:w-affitta} assume disciplina perfetta di chi affitta, cioè che investa davvero ogni euro di differenza, ogni anno, senza toccarlo; nella realtà quasi nessuno lo fa, e il mutuo funziona come piano di accumulo forzato. È un vantaggio comportamentale reale che il modello non sa misurare. Il secondo è che restano fuori la sicurezza abitativa, la libertà di intervenire sull'immobile, il rischio di sfratto e il vincolo di mobilità lavorativa: decisivi nella scelta di dove vivere, irrilevanti nella scelta di dove investire, ed è la ragione per cui le due domande vanno tenute separate anche quando riguardano lo stesso immobile.
+
+\subsection{Il caso senza mutuo}
+
+Se $M=0$ allora $E=C$ e le uscite di chi compra si riducono ai soli costi del proprietario. Il confronto continua a calcolare ma risponde a un'altra domanda: non più comprare a debito contro affittare e investire, ma immobilizzare il capitale in un immobile contro investirlo sui mercati. Per quella domanda l'indicatore corretto è il TIR reale confrontato con il rendimento reale del portafoglio, e il modello lo dichiara con un'avvertenza che compare da sola quando l'importo del mutuo è nullo.
+
+\section{Il confronto fra immobili e la graduatoria}
+
+\subsection{Normalizzazione}
+
+Fra immobili di taglia diversa il prezzo non è confrontabile. La normalizzazione elementare è il prezzo per unità di superficie,
+\begin{equation}
+u \;=\; \frac{P}{S},
+\label{eq:prezzo-mq}
+\end{equation}
+con $S$ superficie commerciale. La scelta della superficie commerciale, e non della calpestabile, non è indifferente: le quotazioni dell'Osservatorio del mercato immobiliare sono espresse su superficie commerciale, quindi il confronto con esse richiede la stessa base. Usare la calpestabile al numeratore e confrontare con quotazioni commerciali produce uno scarto sistematico verso l'alto del quindici-venti per cento.
+
+\subsection{Lo scarto sulla quotazione di zona}
+
+\begin{definizione}
+Sia $[\underline{q},\overline{q}]$ l'intervallo di quotazione della zona omogenea per la tipologia dell'immobile. Lo scarto è
+\begin{equation}
+\delta \;=\; \frac{u}{\tfrac{1}{2}(\underline{q}+\overline{q})} - 1 .
+\label{eq:scarto}
+\end{equation}
+\end{definizione}
+
+Tre proprietà vanno dichiarate. La \eqref{eq:scarto} usa la media dell'intervallo, che è una scelta e non un dato: la quotazione OMI è un intervallo perché la zona contiene immobili diversi, e collassarlo sulla media perde l'informazione sulla dispersione. Lo scarto è definito solo se la zona è nota: quando manca, il modello usa l'intervallo dell'intero Comune, che è largo e rende $\delta$ poco informativo, e lo segnala. E $\delta$ non è un giudizio: la quotazione è una media di zona per tipologia, quindi non vede stato di conservazione, piano, affaccio, classe energetica né lavori deliberati in condominio. Uno scarto molto negativo ha sempre una ragione, e la ragione va trovata prima di innamorarsene.
+
+\subsection{Il prezzo che entra nel confronto}
+
+Il foglio di confronto usa, per ogni riga, il prezzo obiettivo se compilato e il richiesto altrimenti:
+\begin{equation}
+P_{\text{riga}} \;=\; \begin{cases} P_{\text{obiettivo}} & \text{se } P_{\text{obiettivo}}>0,\\ P_{\text{richiesto}} & \text{altrimenti.}\end{cases}
+\label{eq:prezzo-riga}
+\end{equation}
+Ne segue che lo scarto calcolato sul foglio di confronto differisce da quello calcolato sul registro, che usa sempre il richiesto. La differenza fra i due, letta al contrario, è lo sconto che si sta chiedendo: non è un'incoerenza ma un'informazione, purché si sappia quale delle due si sta leggendo, ed è la ragione per cui il modello calcola lo scarto due volte invece di leggerlo una volta dall'altro foglio.
+
+\subsection{Il regime di acquisto è un dato della riga}
+
+Le funzioni d'imposta \eqref{eq:imposte} dipendono da $\alpha$, agevolazione prima casa, e dal tipo di venditore. Nessuno dei due è una costante del modello: $\alpha$ non è nemmeno una caratteristica dell'immobile, è una caratteristica della posizione di chi compra rispetto a quell'immobile, e cambia tipicamente fra un immobile nel Comune di residenza e uno fuori. Applicare lo stesso regime a tutte le righe produce, come mostra l'osservazione del capitolo sul costo, una graduatoria ordinata al contrario nella parte alta. Il modello li dichiara per riga con tre stati, dove il terzo, il vuoto, significa eredita dal caso base: la neutralità sui registri già compilati non è cortesia verso il passato ma una proprietà verificabile.
+
+\subsection{Perché non esiste un punteggio sintetico}
+
+Sarebbe tecnicamente facile combinare gli indicatori in un unico numero, con pesi. Il modello non lo fa, e la ragione è che i pesi sarebbero arbitrari e la loro arbitrarietà scomparirebbe dentro il numero: un punteggio sintetico non aggiunge informazione, nasconde il ragionamento che l'ha prodotto. La graduatoria ordina per un criterio dichiarato, lo scarto sulla zona, e affianca gli altri indicatori senza fonderli; l'ordine in cui guardare gli immobili resta un campo compilato a mano, perché dipende anche da cose che il modello non sa, come la vicinanza a chi ci deve abitare o il fatto che il venditore abbia fretta.
+
+\appendix
+
+\section{Tavola di corrispondenza}
+
+Ogni simbolo di questo documento corrisponde a un nome definito nel workbook e, dove esiste, a una funzione del motore Python. La tavola serve a rendere ogni numero rintracciabile fino alla sua formula.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Simbolo & Formula & Nome nel workbook & Motore Python \\
+\midrule
+$V_c$ & \eqref{eq:catastale} & \texttt{valore\_catastale} & \texttt{valore\_catastale} \\
+$B(P)$ & \eqref{eq:base} & \texttt{base\_registro} & \texttt{base\_imponibile\_registro} \\
+$T_a$ & \eqref{eq:imposte} & \texttt{imposte\_totali} & \texttt{imposte\_acquisto} \\
+$A$ & \eqref{eq:accessori} & \texttt{costi\_accessori} & \texttt{costo\_operazione} \\
+$C$ & \eqref{eq:costo-affine} & \texttt{costo\_totale} & \texttt{costo\_operazione} \\
+$E$ & --- & \texttt{esborso} & \texttt{costo\_operazione} \\
+$\Gamma$ & \eqref{eq:rata} & \texttt{rata\_mensile} & \texttt{rata\_francese} \\
+$D_k$ & \eqref{eq:residuo} & \texttt{debito\_residuo\_anno} & \texttt{piano\_ammortamento} \\
+$L_e$ & \eqref{eq:ricavo-effettivo} & \texttt{ricavo\_effettivo} & \texttt{conto\_economico} \\
+$\mathrm{NOI}$ & \eqref{eq:noi} & \texttt{noi\_annuo} & \texttt{conto\_economico} \\
+$U$ & \eqref{eq:utile} & \texttt{utile\_locazione} & \texttt{conto\_economico} \\
+$\Theta$ & \eqref{eq:ced}--\eqref{eq:breve} & --- & \texttt{imposta\_sul\_canone} \\
+$r_n$ & \eqref{eq:netto} & --- & \texttt{metriche} \\
+$r_c$ & \eqref{eq:cap} & --- & \texttt{metriche} \\
+$r_e$ & \eqref{eq:coc} & --- & \texttt{metriche} \\
+$\mathrm{DSCR}$ & \eqref{eq:dscr} & --- & \texttt{metriche} \\
+$\TIR$ & \eqref{eq:tir} & \texttt{flussi\_tir} & \texttt{tir} \\
+$\VAN$ & \eqref{eq:van} & \texttt{tasso\_sconto} & \texttt{van} \\
+$P^\star$ & \eqref{eq:pmax} & --- & --- \\
+$k$, $c$ & \eqref{eq:k}, \eqref{eq:c} & --- & --- \\
+$F(g,s,n)$ & \eqref{eq:crescente} & --- & \texttt{fattore\_rendita\_crescente} \\
+$r^*$ & \eqref{eq:fisher} & --- & \texttt{tasso\_reale} \\
+$Y^*$ & \eqref{eq:deflaziona} & --- & \texttt{deflaziona} \\
+$\Delta_\pi$ & \eqref{eq:regalo} & --- & \texttt{effetto\_inflazione} \\
+$\Lambda$ & \eqref{eq:rinuncia} & --- & \texttt{effetto\_inflazione} \\
+$\delta$ & \eqref{eq:scarto} & --- & \texttt{Annuncio.scarto\_su\_omi} \\
+$u$ & \eqref{eq:prezzo-mq} & --- & \texttt{Annuncio.prezzo\_mq} \\
+$i_k$ & \eqref{eq:gradini} & \texttt{sim\_shock}, \texttt{sim\_shock\_mese} & --- \\
+\bottomrule
+\end{tabular}
+\caption{Dal simbolo alla cella e alla funzione.}
+\end{table}
+
+\section{Il caso di riferimento, svolto}
+
+I valori seguenti sono quelli precaricati nel workbook e verificati con il ricalcolo di Excel. Servono da riscontro: chi rifà i conti a mano su questo caso deve ritrovarli.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Grandezza & Valore & Nota \\
+\midrule
+Prezzo $P$ & $120\,000$ \euro & acquisto da privato, prima casa, prezzo-valore \\
+Rendita catastale $R$ & $450$ \euro & categoria A/3, $55$ m\textsuperscript{2} \\
+Valore catastale $V_c$ & $51\,975$ \euro & $450 \cdot 1{,}05 \cdot 110$ \\
+Base registro $B$ & $51\,975$ \euro & prezzo-valore attivo \\
+Imposte $T_a$ & $1\,140$ \euro & $\max(51\,975\cdot 0{,}02;\,1\,000)+100$ \\
+Valore del bonus prima casa & $4\,064$ \euro & differenza col regime ordinario \\
+Costi accessori $A$ & $11\,557$ \euro & \\
+Costo totale $C$ & $131\,557$ \euro & \\
+Incidenza dei costi & $9{,}63$ \% & $A/P$ \\
+Esborso $E$ & $41\,557$ \euro & con mutuo di $90\,000$ \\
+Rata mensile $\Gamma$ & $436{,}21$ \euro & $i=3{,}2$ \%, $n=300$ \\
+Interessi totali & $40\,863$ \euro & \\
+Oneri del mutuo $\Omega_M$ & $2\,025$ \euro & \\
+Canone lordo $L$ & $6\,000$ \euro & $500$ \euro/mese \\
+Ricavo effettivo $L_e$ & $5\,335$ \euro & $\sigma=1$, $\beta=3$ \% \\
+$\mathrm{NOI}$ & $1\,805$ \euro & \\
+Utile netto $U$ & $684$ \euro & cedolare secca al $21$ \% \\
+Rendimento lordo $r_g$ & $5{,}00$ \% & \\
+Rendimento netto $r_n$ & $0{,}52$ \% & \\
+Cap rate $r_c$ & $1{,}37$ \% & \\
+Cash on cash $r_e$ & $-10{,}95$ \% & la leva lavora contro: $r_c < c_d$ \\
+$\mathrm{DSCR}$ & $0{,}34$ & sotto uno \\
+$\TIR$ & $0{,}40$ \% & orizzonte $25$ anni \\
+$\TIR$ reale & $-1{,}56$ \% & con $\pi=2$ \% \\
+Rendimento netto reale $r_n^*$ & $-1{,}45$ \% & \\
+Prezzo massimo $P^\star$ & $43\,445$ \euro & a $r^\dagger=4$ \% \\
+Controllo $\varepsilon$ & $0{,}0000$ \% & \\
+\bottomrule
+\end{tabular}
+\caption{Caso di riferimento con i valori verificati.}
+\end{table}
+
+\begin{osservazione}
+La lettura del caso è istruttiva e vale enunciarla: con questi numeri l'operazione ha un rendimento nominale positivo ma prossimo a zero, un rendimento reale negativo, un \emph{cash on cash} negativo di undici punti e un DSCR di un terzo. Non è un caso costruito per fallire: è un immobile a $2\,182$ euro il metro quadro affittato a $500$ euro al mese, cioè una configurazione ordinaria in molte zone italiane. La conclusione che il modello suggerisce è che al prezzo trattato l'operazione non regge ai criteri dichiarati, e che il prezzo che li reggerebbe è meno della metà: è esattamente il tipo di risposta per cui uno strumento del genere serve.
+\end{osservazione}
+
+\section{Limiti dichiarati}
+
+Si raccolgono qui, in un elenco unico, i limiti che i capitoli hanno introdotto uno per uno.
+
+Il TIR non pesa il rischio e assume il reinvestimento dei flussi allo stesso tasso. La \eqref{eq:leva} vale con costo del debito costante, che in un ammortamento non è. La \eqref{eq:pmax} è esatta solo sul tratto affine del costo, e il minimo di legge dell'imposta di registro lo rompe. Il tornado è univariato e non vede le interazioni. La simulazione estrae variabili indipendenti, mentre nella realtà si muovono insieme. Il piano del mutuo è tabulato su quarant'anni e può non chiudersi entro la tabella. Il confronto comprare-affittare assume disciplina perfetta di chi investe la differenza. La \eqref{eq:scarto} collassa un intervallo sulla sua media. Il modello non prezza il lavoro di gestione oltre al costo figurativo dichiarato, e non modella la ristrutturazione come progetto, per scelta di perimetro.
+
+Nessuno di questi limiti è nascosto in un commento del codice: ciascuno compare nella cella del foglio che lo produce, perché un limite dichiarato dove il numero si legge è un presidio, e un limite dichiarato in una nota tecnica che nessuno apre è un alibi.
+
+\vfill
+\noindent\rule{\linewidth}{0.4pt}\\[0.3em]
+\small
+Questo documento accompagna uno strumento di analisi personale e non costituisce consulenza fiscale, legale o finanziaria. Le aliquote citate sono quelle vigenti alla data di revisione dichiarata nel progetto e cambiano con ogni legge di bilancio. Prima di qualunque firma le posizioni soggettive vanno confermate da un notaio e da un commercialista, e la conformità urbanistica da un tecnico abilitato.
+
+\end{document}

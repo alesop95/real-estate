@@ -10,11 +10,13 @@ Commit di riferimento: a0b3420, righe catturate e prezzo massimo esatto
 Ultimo aggiornamento:  2026-09-01
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
-Test:                  63 verdi, 42 sul motore e 21 sulla struttura
+Trattazione LaTeX:     23 pagine, compilata senza avvisi il 2026-09-02
+Registro annunci:      14 immobili, non versionato
+Test:                  65 verdi, 44 sul motore e 21 sulla struttura
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
 ```
 
-Committato fino a `7fe9747`, che porta la riconciliazione delle schede. Non committato: l'indice navigabile del workbook, cioe' il foglio Guida ricostruito con i collegamenti a tutti i fogli, il ritorno all'indice su ogni foglio, l'helper dei collegamenti interni in `stile.py`, l'unificazione degli stati ammessi per un annuncio, due test nuovi, il manuale operativo `docs/manuale-operativo.md`, i rimandi ad esso nelle guide e nel README, ADR-017 e la voce 12 dello studio didattico con l'approfondimento `refactor-12`. I frontmatter delle schede restano ancorati ad `a0b3420`, che e' il commit del codice che descrivono.
+Committato fino a `7fe9747`. Del 2 settembre non e' committato nulla: la catena dei tassi in `tassi.py` con l'opzione del comando, l'analisi dell'effetto inflazione nel motore e nel foglio Metriche, il pacchetto LaTeX istanziato con la trattazione `docs/matematica-finanziaria.tex`, i due annunci nuovi a registro, due test, l'allineamento della documentazione, ADR-018 e la voce di work-log. Resta inoltre non committato il lavoro del 1 settembre sull'indice navigabile e sul manuale operativo, elencato sotto. Non committato: l'indice navigabile del workbook, cioe' il foglio Guida ricostruito con i collegamenti a tutti i fogli, il ritorno all'indice su ogni foglio, l'helper dei collegamenti interni in `stile.py`, l'unificazione degli stati ammessi per un annuncio, due test nuovi, il manuale operativo `docs/manuale-operativo.md`, i rimandi ad esso nelle guide e nel README, ADR-017 e la voce 12 dello studio didattico con l'approfondimento `refactor-12`. I frontmatter delle schede restano ancorati ad `a0b3420`, che e' il commit del codice che descrivono.
 
 Resta fuori dal versionamento, per scelta, il solo `data/annunci.csv` con i dodici immobili a registro, perche' porta i link alle trattative e la colonna del prezzo obiettivo.
 
@@ -29,7 +31,8 @@ Resta fuori dal versionamento, per scelta, il solo `data/annunci.csv` con i dodi
 | `.claude/context/current-work.md` | feature attiva | aggiornata al 1 settembre |
 | `.claude/context/roadmap.md` | direzione | aggiornata al 1 settembre, sezione "Prossimo" chiusa |
 | `.claude/context/studio-didattico-master.md` e i dodici `refactor-NN` | evoluzioni strutturali del progetto | dodici voci, allineate al codice corrente |
-| `docs/manuale-operativo.md` | `tools/valuta.py`, registro, workbook | nuova il 1 settembre: ogni comando, ogni campo, ogni foglio, diagnostica |
+| `docs/manuale-operativo.md` | `tools/valuta.py`, registro, workbook | ogni comando, ogni campo, ogni foglio, diagnostica; include la catena dei tassi e la build LaTeX |
+| `docs/matematica-finanziaria.tex` | tutte le formule del modello | nuova il 2 settembre: 23 pagine, derivazioni, tavola simbolo-cella-funzione, caso svolto |
 | `docs/da-zero.md` | avvio, `tools/valuta.py` | allineata, include `tassi --risalita` e l'indice navigabile |
 | `docs/fiscalita-acquisto.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
 | `docs/fiscalita-locazione.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |

@@ -604,6 +604,177 @@ def metriche(
     )
 
 
+# ---------------------------------------------------------------------------
+# Effetto dell'inflazione: dal rendimento nominale a quello reale
+# ---------------------------------------------------------------------------
+
+def tasso_reale(tasso_nominale: float, inflazione: float) -> float:
+    """Tasso reale esatto, per l'equazione di Fisher: (1+r)/(1+i)-1.
+
+    La forma che si vede scritta quasi sempre e' la sottrazione, cioe' r meno i,
+    e non e' la definizione: e' la sua approssimazione al primo ordine. Le due
+    coincidono solo nel limite di tassi piccoli, perche' la differenza fra loro
+    vale i*(1+r_reale)/(1+i) circa, quindi cresce col prodotto dei due tassi.
+
+    Sui numeri di questo dominio la differenza non e' trascurabile come sembra.
+    Con un rendimento nominale del cinque per cento e un'inflazione del due, la
+    sottrazione da' il tre per cento e la formula esatta il 2,94: sei centesimi
+    di punto, cioe' il due per cento del rendimento reale stesso. Su venticinque
+    anni di capitalizzazione quella differenza si compone e sposta il montante
+    finale di alcuni punti percentuali. Il modello usa quindi sempre la forma
+    esatta, e mostra accanto l'errore che si commetterebbe con l'altra, perche'
+    la sottrazione resta utile per il conto a mente e va saputa per quello che e'.
+
+    La ragione per cui la forma esatta e' quella giusta si vede scrivendo cosa
+    significa un rendimento reale: e' il rapporto fra il potere d'acquisto finale
+    e quello iniziale. Un euro investito diventa (1+r) euro nominali, che al
+    livello dei prezzi finale comprano (1+r)/(1+i) volte quello che comprava un
+    euro all'inizio. Il rendimento reale e' quel rapporto meno uno, per
+    definizione e non per approssimazione.
+    """
+    if inflazione <= -1:
+        raise ValueError("inflazione non ammissibile: renderebbe nullo il livello dei prezzi")
+    return (1 + tasso_nominale) / (1 + inflazione) - 1
+
+
+def deflaziona(valore_nominale: float, inflazione: float, anni: float) -> float:
+    """Riporta un importo futuro al potere d'acquisto di oggi.
+
+    E' l'operazione che distingue un patrimonio finale da un patrimonio finale
+    utilizzabile. Duecentomila euro fra venticinque anni con un'inflazione del
+    due per cento comprano quello che oggi comprano circa centoventiduemila: la
+    differenza non e' una perdita contabile, e' potere d'acquisto che non c'e'.
+    """
+    return valore_nominale / (1 + inflazione) ** anni
+
+
+def fattore_rendita_crescente(crescita: float, sconto: float, anni: int) -> float:
+    """Valore attuale di una rendita unitaria che cresce a tasso costante.
+
+    La rendita paga 1 al primo anno, (1+g) al secondo, (1+g)^(n-1) all'ultimo, e
+    ogni pagamento si attualizza al tasso s. La somma vale
+
+        F = somma per k da 1 a n di (1+g)^(k-1) / (1+s)^k
+
+    ed e' una serie geometrica di ragione q = (1+g)/(1+s), che si chiude in
+
+        F = q * (1 - q^n) / ((1+g) * (1 - q))
+
+    La forma chiusa esiste per una ragione pratica e non estetica: la stessa
+    grandezza serve dentro il workbook, dove una somma su n termini con n
+    variabile richiederebbe una formula matriciale oppure una colonna di
+    appoggio, e nessuna delle due e' ispezionabile come una cella singola. Il
+    workbook usa quindi la forma chiusa, questo modulo tiene anche la somma
+    esplicita in `effetto_inflazione`, e un test verifica che coincidano: e' la
+    doppia implementazione applicata a una formula invece che a un modello.
+
+    Il caso q uguale a uno, cioe' crescita pari al tasso di sconto, annulla il
+    denominatore e va trattato a parte: allora ogni termine vale 1/(1+g) e la
+    somma e' n/(1+g). Non e' un caso di scuola, perche' assumere una crescita del
+    canone pari al tasso di sconto reale e' un'ipotesi che qualcuno fa davvero.
+    """
+    if sconto <= -1 or crescita <= -1:
+        raise ValueError("tassi non ammissibili")
+    q = (1 + crescita) / (1 + sconto)
+    if abs(q - 1) < 1e-12:
+        return anni / (1 + crescita)
+    return q * (1 - q ** anni) / ((1 + crescita) * (1 - q))
+
+
+@dataclass
+class EffettoInflazione:
+    """Che cosa fa l'inflazione a questa operazione, voce per voce.
+
+    Il risultato interessante e' che l'inflazione non agisce nella stessa
+    direzione su tutte le componenti, e in un acquisto a leva le direzioni si
+    compensano solo in parte. Il debito e' nominale, quindi l'inflazione lo
+    erode a favore di chi lo ha contratto; la rata di un mutuo a tasso fisso e'
+    nominale, quindi si alleggerisce in termini reali anno dopo anno; il canone
+    e' indicizzabile solo in parte e solo in alcuni regimi, quindi perde terreno;
+    l'immobile si rivaluta nominalmente, e in termini reali solo se la
+    rivalutazione supera l'inflazione, cosa che nel mercato residenziale italiano
+    degli ultimi vent'anni non e' accaduta.
+    """
+
+    inflazione: float
+    rendimento_netto_nominale: float
+    rendimento_netto_reale: float
+    errore_approssimazione: float
+    """Quanto sbaglia la sottrazione r meno i rispetto alla formula esatta."""
+    erosione_reale_canone: float
+    """Variazione reale annua del canone: negativa se l'indicizzazione non copre l'inflazione."""
+    rivalutazione_reale_immobile: float
+    tir_nominale: float
+    tir_reale: float
+    valore_finale_nominale: float
+    valore_finale_reale: float
+    debito_residuo_nominale: float
+    debito_residuo_reale: float
+    sconto_inflazione_sul_debito: float
+    """Quanto vale, in euro di oggi, l'erosione del debito operata dall'inflazione."""
+    rata_annua_reale_a_fine_orizzonte: float
+    canone_perso_per_mancata_indicizzazione: float
+    """Valore attuale del canone a cui si rinuncia non indicizzando, sull'orizzonte."""
+
+
+def effetto_inflazione(
+    inflazione: float,
+    rendimento_netto_nominale: float,
+    tir_nominale: float,
+    prezzo: float,
+    rivalutazione_immobile: float,
+    debito_residuo_nominale: float,
+    rata_annua: float,
+    canone_annuo: float,
+    indicizzazione_canone: float,
+    orizzonte_anni: int,
+    tasso_sconto: float,
+) -> EffettoInflazione:
+    """Scompone l'effetto dell'inflazione sulle grandezze dell'operazione.
+
+    Sull'ultima voce vale una nota, perche' quantifica una scelta fiscale che di
+    solito si fa guardando solo l'aliquota. La cedolare secca sostituisce
+    l'IRPEF sul canone con un'aliquota fissa, ed e' quasi sempre conveniente sul
+    breve; in cambio, per l'articolo 3 comma 11 del d.lgs. 23/2011, chi la opta
+    rinuncia per la durata dell'opzione all'aggiornamento ISTAT del canone. Su un
+    contratto quattro piu' quattro con un'inflazione del due per cento, la
+    rinuncia costa un canone che a fine periodo vale in termini reali il quindici
+    per cento in meno, e su un orizzonte di venticinque anni la somma attualizzata
+    di quel mancato aggiornamento e' confrontabile con il risparmio d'imposta che
+    l'aveva motivata. Il modello calcola l'una e l'altra grandezza e lascia il
+    confronto a chi decide, perche' dipende dall'aliquota marginale personale.
+    """
+    reale = tasso_reale(rendimento_netto_nominale, inflazione)
+    valore_finale = prezzo * (1 + rivalutazione_immobile) ** orizzonte_anni
+    debito_reale = deflaziona(debito_residuo_nominale, inflazione, orizzonte_anni)
+
+    # Il canone perso: differenza fra un canone indicizzato all'inflazione piena
+    # e quello indicizzato come dichiarato, attualizzata al tasso di sconto.
+    perso = 0.0
+    for anno in range(1, orizzonte_anni + 1):
+        pieno = canone_annuo * (1 + inflazione) ** (anno - 1)
+        effettivo = canone_annuo * (1 + indicizzazione_canone) ** (anno - 1)
+        perso += (pieno - effettivo) / (1 + tasso_sconto) ** anno
+
+    return EffettoInflazione(
+        inflazione=inflazione,
+        rendimento_netto_nominale=rendimento_netto_nominale,
+        rendimento_netto_reale=reale,
+        errore_approssimazione=(rendimento_netto_nominale - inflazione) - reale,
+        erosione_reale_canone=tasso_reale(indicizzazione_canone, inflazione),
+        rivalutazione_reale_immobile=tasso_reale(rivalutazione_immobile, inflazione),
+        tir_nominale=tir_nominale,
+        tir_reale=tasso_reale(tir_nominale, inflazione),
+        valore_finale_nominale=valore_finale,
+        valore_finale_reale=deflaziona(valore_finale, inflazione, orizzonte_anni),
+        debito_residuo_nominale=debito_residuo_nominale,
+        debito_residuo_reale=debito_reale,
+        sconto_inflazione_sul_debito=debito_residuo_nominale - debito_reale,
+        rata_annua_reale_a_fine_orizzonte=deflaziona(rata_annua, inflazione, orizzonte_anni),
+        canone_perso_per_mancata_indicizzazione=perso,
+    )
+
+
 def plusvalenza_su_rivendita(
     prezzo_vendita: float,
     costo_acquisto: float,
