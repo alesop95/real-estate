@@ -46,3 +46,9 @@ desktop.ini
 *.bcf
 *.run.xml
 *.pdf
+
+# Configurazione del vault Obsidian aperto sulla radice del progetto. Resta locale
+# alla macchina: porta lo stato delle finestre, i pannelli aperti e la lista dei file
+# recenti, che non sono contenuto del progetto. Il vault non copia e non sposta nulla,
+# quindi ignorare questa cartella non perde niente. Vedi docs/vault-obsidian.md.
+.obsidian/

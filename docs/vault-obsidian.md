@@ -1,6 +1,6 @@
 # Come organizzare questa documentazione in un vault Obsidian
 
-> Prova di organizzazione, non una migrazione già fatta. Descrive come i quattordici documenti di `docs/`, la memoria di progetto e il materiale personale si disporrebbero in un vault Obsidian, che cosa ci si guadagna, che cosa si rompe, e la sola forma che regge senza duplicare la sorgente. Si legge se si sta valutando di aprire questo progetto in Obsidian.
+> Il vault è aperto sulla radice del progetto dal 3 settembre 2026, e la sua configurazione vive in `.obsidian/`, ignorata da git. Il documento descrive come i documenti di `docs/`, la memoria di progetto e il materiale personale si dispongono nel vault, che cosa ci si guadagna, che cosa si rompe, e quale parte della configurazione è già scritta su disco contro quale resta da fare nell'interfaccia. Si legge prima di aprire questo progetto in Obsidian, e in particolare su un'altra macchina, dove `.obsidian/` non c'è perché non è versionata.
 
 ## La domanda vera, prima della struttura
 
@@ -45,13 +45,13 @@ real-estate/                     ← il vault
   .obsidian/                     ← configurazione del vault, da ignorare in git
 ```
 
-Nella pratica quotidiana serve una cosa in più: dire a Obsidian di non indicizzare ciò che non è documentazione. Nelle impostazioni, alla voce dei file esclusi, si aggiungono `src`, `tools`, `tests`, `scripts`, `output`, `data`. Restano visibili nel filesystem ma spariscono dal grafo e dalla ricerca, che è quello che si vuole: un grafo che include duemila righe di Python non dice niente.
+Nella pratica quotidiana serve una cosa in più: dire a Obsidian di non indicizzare ciò che non è documentazione. Alla voce dei file esclusi si aggiungono `src`, `tools`, `tests`, `scripts`, `output`, `data`, e in questo vault ci sono già, scritti in `app.json`. Restano visibili nel filesystem ma spariscono dal grafo e dalla ricerca, che è quello che si vuole: un grafo che include duemila righe di Python non dice niente.
 
 ## I due hub, e perché sono due
 
 Un vault si naviga bene quando ha pochi punti di ingresso dichiarati, e questo progetto ne ha già due che funzionano come tali senza modifiche.
 
-`README.md` è l'ingresso per chi arriva da fuori: dice che cosa fa il progetto, come si installa, com'è fatto. Si imposta come pagina iniziale del vault nelle impostazioni.
+`README.md` è l'ingresso per chi arriva da fuori: dice che cosa fa il progetto, come si installa, com'è fatto. È il documento su cui il vault si apre, per il meccanismo spiegato più sotto: non esiste un'impostazione di pagina iniziale nel nucleo di Obsidian, e al suo posto si usa lo spazio di lavoro salvato.
 
 `docs/README.md` è l'ingresso per chi cerca un documento: organizza i quattordici per tipo di domanda e non per argomento. È l'hub che si usa davvero durante il lavoro.
 
@@ -98,7 +98,7 @@ Un nodo isolato ci sarebbe, e va previsto invece di scoprirlo: `matematica-finan
 
 Tre cose, in ordine di gravità.
 
-**La sintassi dei collegamenti.** Obsidian propone per default le doppie parentesi quadre, che non sono Markdown standard e su GitHub restano testo. Va cambiata nelle impostazioni: si disattiva il collegamento con le doppie quadre e si imposta il percorso relativo alla nota. Così i collegamenti che Obsidian crea sono gli stessi che funzionano già in tutto il resto del progetto.
+**La sintassi dei collegamenti.** Obsidian propone per default le doppie parentesi quadre, che non sono Markdown standard e su GitHub restano testo. Va cambiata nelle impostazioni, e in questo vault lo è già in `app.json`: si disattiva il collegamento con le doppie quadre e si imposta il percorso relativo alla nota. Così i collegamenti che Obsidian crea sono gli stessi che funzionano già in tutto il resto del progetto.
 
 **Le parentesi nel nome di un file.** `guida-tecnica(catena-calcolo-e-normativa).md` è un caso reale in questo progetto, e in Markdown un percorso con parentesi tonde richiede la forma con parentesi angolari, cioè `[testo](<percorso(con).md>)`, altrimenti la prima tonda di chiusura interrompe il collegamento. Obsidian gestisce entrambe le forme, GitHub anche, ma ogni collegamento a quel file va scritto nella forma angolare e chi lo scrive deve ricordarsene. Rinominare con i trattini, cioè `guida-tecnica-catena-di-calcolo-e-norme.md`, direbbe la stessa cosa senza il vincolo: è una raccomandazione e non un problema aperto, perché i collegamenti attuali sono scritti nella forma giusta e funzionano.
 
@@ -106,13 +106,23 @@ Tre cose, in ordine di gravità.
 
 Una quarta cosa non si rompe ma va saputa: `.obsidian/` contiene la configurazione del vault, comprese le dimensioni delle finestre e i file aperti di recente. Va nel `.gitignore`, e se si vuole condividere la configurazione fra macchine si versiona selettivamente solo `.obsidian/app.json` e `.obsidian/appearance.json`, lasciando fuori `workspace.json`.
 
-## La configurazione minima, in pratica
+## La configurazione, che ora esiste su disco
 
-Sei passi, una volta sola.
+I sei passi previsti sono cinque scritti in `.obsidian/`, quindi su questa macchina non resta nulla da cliccare per averli, e uno che un file di configurazione del nucleo di Obsidian non può esprimere e che ha la sostituzione descritta più sotto.
 
-Si apre Obsidian e si sceglie di aprire una cartella come vault, indicando la radice del progetto. Nelle impostazioni dei file e collegamenti si disattiva l'uso delle doppie parentesi quadre e si imposta il formato del collegamento su percorso relativo alla nota. Nelle stesse impostazioni si aggiungono ai file esclusi `src`, `tools`, `tests`, `scripts`, `output`, `data`. Si imposta `README.md` come nota iniziale. Si aggiunge `.obsidian/` al `.gitignore`. Si apre il grafo e si verifica che la forma sia quella attesa: due hub al centro, tre grappoli, la trattazione come nodo terminale.
+Il file `app.json` porta le tre impostazioni che rendono il vault compatibile con il resto del progetto invece che ostile: i collegamenti si scrivono in Markdown standard e non con le doppie parentesi quadre, il percorso è relativo alla nota, e i sei percorsi di codice e di artefatti indicati sopra sono esclusi da ricerca, grafo e menzioni non collegate, con l'aggiunta di `.pytest_cache/`, che contiene un README generato da pytest e non da noi. Due impostazioni non erano nella proposta e vale dire perché ci sono. La visualizzazione dei file non supportati è attiva, altrimenti la trattazione `.tex` non comparirebbe nemmeno nell'albero dei file, e l'aggiornamento automatico dei collegamenti al rinomino è disattivo, perché su una documentazione dove ogni collegamento è scritto a mano nella forma che GitHub accetta, compreso il caso con le parentesi tonde, la riscrittura automatica è un rischio e non una comodità.
 
-Nessuno dei sei passi tocca un file di contenuto, ed è il criterio con cui la proposta è costruita: se aprire il vault richiedesse di modificare i documenti, sarebbe una migrazione e non una vista.
+Il file `core-plugins.json` accende ciò che serve a navigare, cioè grafo, collegamenti entranti e uscenti, ricerca globale, struttura del documento, proprietà e note a piè di pagina, e spegne il resto. Due spegnimenti sono deliberati e non estetici. La sincronizzazione di Obsidian è spenta perché caricherebbe il contenuto del vault sui server del produttore, e questo progetto non pubblica niente fuori da questa macchina; il visualizzatore web interno è spento perché aprirebbe pagine di rete dentro l'applicazione che tiene aperto il dossier di una trattativa reale. Il file `community-plugins.json` è una lista vuota, ed è la dichiarazione esplicita che nessun plugin di terze parti tocca questi file: il rischio concreto, già previsto sopra, è un formattatore automatico che riavvolge le righe e viola la convenzione del paragrafo su riga unica.
+
+Il file `graph.json` imposta il grafo sulla forma attesa. Le etichette restano fuori, gli allegati dentro, perché è come allegato che compare la trattazione `.tex`; i collegamenti irrisolti sono nascosti, perché i riferimenti al codice escluso non devono sporcare la vista; i nodi orfani restano visibili, perché un documento che nessuno cita è un'informazione e non un difetto da mascherare.
+
+Il file `workspace.json` apre il vault su `README.md` in modalità lettura, con `docs/README.md` nella seconda linguetta, l'albero dei file e la ricerca a sinistra, i collegamenti entranti e uscenti e la struttura del documento a destra. È la sostituzione della nota iniziale: Obsidian non ha nel nucleo l'impostazione di una pagina di apertura, che richiede il plugin Homepage della comunità, e al suo posto ripristina l'ultimo spazio di lavoro. Alla prima apertura il risultato è lo stesso, con una differenza da sapere: quel file è stato di sessione, quindi Obsidian lo riscrive alla chiusura e dalla volta successiva riapre i documenti dove li si è lasciati, non più i due hub.
+
+Il vault è anche registrato nell'elenco dei vault dell'applicazione, che vive in `%APPDATA%\obsidian\obsidian.json`, quindi compare nella lista accanto agli altri di questa macchina e si riapre da lì senza indicare di nuovo la cartella. Del file precedente resta una copia `obsidian.json.bak` nella stessa cartella, da cancellare quando la lista risulta corretta.
+
+Restano fuori dalla configurazione due cose. La lingua dell'interfaccia e il tema sono impostazioni dell'applicazione e non del vault, quindi seguono quelle degli altri vault di questa macchina e non sono state toccate. La forma del grafo, invece, va verificata alla prima apertura: due hub al centro, tre grappoli, la trattazione come nodo terminale. Se la forma non è quella, la causa più probabile è un'esclusione che ha tolto più del previsto, e si legge in `app.json` prima che nell'interfaccia.
+
+Nessuno dei passi tocca un file di contenuto, ed è il criterio con cui la configurazione è costruita: se aprire il vault avesse richiesto di modificare i documenti, sarebbe stata una migrazione e non una vista.
 
 ## La raccomandazione
 
