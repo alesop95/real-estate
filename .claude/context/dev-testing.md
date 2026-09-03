@@ -64,4 +64,4 @@ Se Excel resta appeso dopo una prova, cosa che accade quando lo script termina s
 
 ## Quando rigenerare e riverificare
 
-Dopo ogni modifica a `excel_builder.py` va rigenerato il workbook e rieseguita la verifica. Dopo ogni modifica a `parametri.py` vanno rieseguiti sia il riepilogo sia la verifica, e va aggiornata la data di revisione in testa al file insieme alla riga corrispondente in `docs/fonti.md`.
+Dopo ogni modifica a `excel_builder.py` va rigenerato il workbook e rieseguita la verifica. Dopo ogni modifica a `parametri.py` vanno rieseguiti sia il riepilogo sia la verifica, e va aggiornata la data di revisione in testa al file insieme alla riga corrispondente in [`docs/fonti.md`](../../docs/fonti.md).

@@ -1,6 +1,6 @@
 # 06. Il contratto posizionale fra registro e foglio
 
-> Deep-dive della voce 6 di `studio-didattico-master.md`. Riguarda `src/immobiliare/annunci.py`, funzione `esporta_in_excel`, il metodo `foglio_annunci` di `excel_builder.py`, e il test `test_esportazione_scrive_nelle_colonne_giuste`.
+> Deep-dive della voce 6 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `src/immobiliare/annunci.py`, funzione `esporta_in_excel`, il metodo `foglio_annunci` di `excel_builder.py`, e il test `test_esportazione_scrive_nelle_colonne_giuste`.
 
 ## Tre elenchi che devono restare paralleli
 

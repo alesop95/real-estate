@@ -92,11 +92,11 @@ Data: 2026-08-31. Stato: accettata.
 
 Contesto. Le decisioni erano registrate qui in forma sintetica, ma il perché di sette scelte strutturali, e soprattutto com'era il codice prima e perché quella forma era fragile, non era scritto da nessuna parte. Chi riprende il progetto vede lo stato finale e non i vincoli che lo hanno prodotto.
 
-Decisione. Adottato il pacchetto `studio-didattico` del template: `.claude/context/studio-didattico-master.md` con voci numerate in ordine cronologico nella struttura in quattro parti, e un approfondimento `refactor-NN-<slug>.md` per ciascuna, con il codice reale prima e dopo e la sezione su come estendere il pattern.
+Decisione. Adottato il pacchetto `studio-didattico` del template: [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md) con voci numerate in ordine cronologico nella struttura in quattro parti, e un approfondimento `refactor-NN-<slug>.md` per ciascuna, con il codice reale prima e dopo e la sezione su come estendere il pattern.
 
 Motivazione. Un registro ADR dice cosa si è deciso; non insegna a riconoscere la classe di difetto. Il caso del moltiplicatore catastale lo dimostra: era identico in Python e in Excel, quindi la doppia implementazione non l'ha intercettato, e il valore sta nel capire perché un presidio che funziona sugli errori di trascrizione non funziona su un errore concettuale replicato fedelmente.
 
-Conseguenze. Ogni evoluzione strutturale futura aggiunge una voce al master e il suo approfondimento. Il pacchetto è indicizzato in `CLAUDE.md` e va letto prima di rifare diversamente una scelta che ha già un numero.
+Conseguenze. Ogni evoluzione strutturale futura aggiunge una voce al master e il suo approfondimento. Il pacchetto è indicizzato in [`CLAUDE.md`](../../CLAUDE.md) e va letto prima di rifare diversamente una scelta che ha già un numero.
 
 ## ADR-009, il fascicolo dei documenti sta in un foglio separato dalla checklist
 
@@ -136,11 +136,11 @@ Conseguenze. `omi.importa_fornitura` resta la sola via per i dati correnti e acc
 
 ## ADR-012, le aste giudiziarie entrano nel perimetro
 
-Data: 2026-08-31. Stato: accettata. Supera la voce di `roadmap.md` che le dichiarava fuori perimetro.
+Data: 2026-08-31. Stato: accettata. Supera la voce di [`roadmap.md`](../context/roadmap.md) che le dichiarava fuori perimetro.
 
 Contesto. La roadmap teneva le aste giudiziarie fuori dal perimetro, con la motivazione che seguono regole proprie su perizia, custode, decreto di trasferimento e liberazione dell'immobile e che meriterebbero uno strumento separato. La motivazione era corretta sui fatti e sbagliata nella conclusione: quelle regole proprie sono poche e circoscritte, e il resto del modello, cioè imposte, mutuo, rendimento e confronto con l'alternativa, vale identico.
 
-Decisione. Le aste entrano, con un foglio dedicato che modella ciò che differisce e riusa tutto il resto: cinque campi nel registro, il foglio Asta, sette voci nel Dossier tecnico e la scheda `docs/aste-immobiliari.md`. Restano fuori le vendite nella liquidazione giudiziale, le aste con incanto e i beni non abitativi.
+Decisione. Le aste entrano, con un foglio dedicato che modella ciò che differisce e riusa tutto il resto: cinque campi nel registro, il foglio Asta, sette voci nel Dossier tecnico e la scheda [`docs/aste-immobiliari.md`](../../docs/aste-immobiliari.md). Restano fuori le vendite nella liquidazione giudiziale, le aste con incanto e i beni non abitativi.
 
 Motivazione. Il foglio non serve a calcolare meglio: serve a impedire un errore preciso. Un'asta valutata con il modello ordinario mostra un'incidenza dei costi bassa, perché manca la provvigione, e un prezzo apparentemente ottimo, e fa sembrare conveniente un'operazione che porta con sé l'assenza di garanzia per i vizi ex art. 2922 c.c., il possesso del debitore fino al decreto ex art. 560 c.p.c., la locazione opponibile ex art. 2923 c.c. e la decadenza con perdita della cauzione ex art. 587 c.p.c. Il numero di sintesi non è quindi il prezzo ma lo sconto sul valore di mercato, confrontato con una soglia che rappresenta il prezzo di quei rischi.
 
@@ -200,7 +200,7 @@ Motivazione. L'errore aveva due cause indipendenti che si sommavano nella stessa
 
 Sul perché la verifica sta nel foglio e non in un test. La soluzione chiusa è esatta solo sul tratto in cui il costo totale è lineare nel prezzo, e c'è un caso in cui non lo è: il minimo di legge dell'imposta di registro, che su prezzi molto bassi diventa vincolante. Un test coprirebbe il caso precaricato, non il caso che l'utente produce cambiando gli input a video, ed è proprio quello il momento in cui serve saperlo. La cella dello scarto è il presidio giusto perché è presente esattamente quando il problema si presenta.
 
-Conseguenze. La riga dello scarto sul prezzo trattato deriva ora dal prezzo massimo invece di ricalcolarlo, quindi le due non possono divergere. Il nome `incidenza_costi` resta e resta utile come indicatore autonomo, ma non è più usato per invertire nulla. La lezione è registrata anche in `docs/metodo-e-metriche.md`, perché vale oltre questa cella: un'incidenza percentuale misurata su uno scenario non è un parametro, e usarla come tale produce errori silenziosi.
+Conseguenze. La riga dello scarto sul prezzo trattato deriva ora dal prezzo massimo invece di ricalcolarlo, quindi le due non possono divergere. Il nome `incidenza_costi` resta e resta utile come indicatore autonomo, ma non è più usato per invertire nulla. La lezione è registrata anche in [`docs/metodo-e-metriche.md`](../../docs/metodo-e-metriche.md), perché vale oltre questa cella: un'incidenza percentuale misurata su uno scenario non è un parametro, e usarla come tale produce errori silenziosi.
 
 ## ADR-017, il workbook si naviga da un indice, e ogni elenco di valori ammessi ha una sorgente sola
 
@@ -218,7 +218,7 @@ Sulla forma del collegamento, la ragione è tecnica e va scritta perché la scor
 
 Sugli stati ammessi, la ragione è che erano due elenchi e divergevano già. Il valore scritto dalla riga di comando non passa per la validazione del foglio, quindi resta in cella senza errore, ma il menu a tendina non lo contiene e un filtro per stato non lo trova dove chi lo ha scritto lo cerca. È lo stesso principio di ADR-013 applicato a un elenco invece che a un riferimento: fra due forme, si sceglie quella in cui la divergenza è impossibile invece di quella in cui è silenziosa.
 
-Conseguenze. Il vincolo che ne discende per il futuro è che un foglio nuovo va aggiunto in due posti, il metodo che lo costruisce e la tupla dell'indice, e che il test lo impone invece di lasciarlo alla memoria. Il ritorno all'indice, invece, non richiede nulla, perché lo scrive la funzione del titolo. Il manuale operativo `docs/manuale-operativo.md` nasce nella stessa sessione e con la stessa motivazione, cioè rendere usabile ciò che era stato reso corretto.
+Conseguenze. Il vincolo che ne discende per il futuro è che un foglio nuovo va aggiunto in due posti, il metodo che lo costruisce e la tupla dell'indice, e che il test lo impone invece di lasciarlo alla memoria. Il ritorno all'indice, invece, non richiede nulla, perché lo scrive la funzione del titolo. Il manuale operativo [`docs/manuale-operativo.md`](../../docs/manuale-operativo.md) nasce nella stessa sessione e con la stessa motivazione, cioè rendere usabile ciò che era stato reso corretto.
 
 ## ADR-018, la matematica del modello si formalizza in un documento a parte, e il nominale non basta
 

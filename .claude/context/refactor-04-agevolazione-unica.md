@@ -1,6 +1,6 @@
 # 04. Una sola fonte di verità per l'agevolazione
 
-> Deep-dive della voce 4 di `studio-didattico-master.md`. Riguarda `src/immobiliare/calcoli.py`, funzioni `agevolazione_applicabile`, `base_imponibile_registro` e `imposte_acquisto`, e le celle di controllo del foglio Immobile.
+> Deep-dive della voce 4 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `src/immobiliare/calcoli.py`, funzioni `agevolazione_applicabile`, `base_imponibile_registro` e `imposte_acquisto`, e le celle di controllo del foglio Immobile.
 
 ## La regola fiscale, e perché si presta all'errore
 

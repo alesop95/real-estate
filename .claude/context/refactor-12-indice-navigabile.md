@@ -1,6 +1,6 @@
 # 12. L'indice navigabile, e i due errori che si fanno una volta
 
-> Deep-dive della voce 12 di `studio-didattico-master.md`. Riguarda `FOGLIO_INDICE`, `collegamento` e `titolo` in `src/immobiliare/stile.py`, la tupla `Costruttore.PERCORSO` e il metodo `foglio_guida` di `excel_builder.py`, `STATI_ANNUNCIO` in `annunci.py`, e i test `test_indice_copre_tutti_i_fogli_e_i_collegamenti_esistono` e `test_ogni_foglio_visibile_torna_all_indice`.
+> Deep-dive della voce 12 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `FOGLIO_INDICE`, `collegamento` e `titolo` in `src/immobiliare/stile.py`, la tupla `Costruttore.PERCORSO` e il metodo `foglio_guida` di `excel_builder.py`, `STATI_ANNUNCIO` in `annunci.py`, e i test `test_indice_copre_tutti_i_fogli_e_i_collegamenti_esistono` e `test_ogni_foglio_visibile_torna_all_indice`.
 
 ## Il difetto, che nessun test avrebbe trovato
 

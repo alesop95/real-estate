@@ -1,6 +1,6 @@
 # 05. Un costo ricorrente sta in un posto solo
 
-> Deep-dive della voce 5 di `studio-didattico-master.md`. Riguarda il rapporto fra il foglio Locazione e il foglio Cash flow, e la funzione `conto_economico` in `src/immobiliare/calcoli.py`.
+> Deep-dive della voce 5 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda il rapporto fra il foglio Locazione e il foglio Cash flow, e la funzione `conto_economico` in `src/immobiliare/calcoli.py`.
 
 ## L'origine: una voce che nessuno mette a bilancio
 

@@ -206,7 +206,7 @@ Sulla differenza fra euro short-term rate ed Euribor, che il modello usa entramb
 
 ## Verifica e test
 
-Quattro livelli, descritti in `.claude/context/dev-testing.md`.
+Quattro livelli, descritti in [`.claude/context/dev-testing.md`](.claude/context/dev-testing.md).
 
 **La verifica formale del workbook.** La libreria che genera il file scrive le formule senza valutarle, quindi può produrre un file sintatticamente valido e funzionalmente rotto senza che Python protesti. Lo script apre il file con Excel via automazione COM, forza un ricalcolo completo, raccoglie ogni cella che valuta a errore e termina con codice diverso da zero se ne trova.
 

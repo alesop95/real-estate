@@ -10,7 +10,7 @@ last-verified-commit: a0b3420
 
 # Studio didattico, racconto evolutivo
 
-> Livello documentale distinto dalle schede di stato. `STACK.md` e le altre schede dicono *cosa* è vero oggi; `memory/decisions.md` dice *quale* decisione è stata presa e con quali conseguenze. Questo file dice *perché una forma ingenua era fragile e perché quella nuova è un salto*, e cresce per voci numerate in ordine cronologico: ogni intervento aggiunge una voce in fondo, nessuna voce si riscrive. Il dettaglio nel codice reale sta nei deep-dive `refactor-NN-*.md` accanto a questo file.
+> Livello documentale distinto dalle schede di stato. [`STACK.md`](STACK.md) e le altre schede dicono *cosa* è vero oggi; `memory/decisions.md` dice *quale* decisione è stata presa e con quali conseguenze. Questo file dice *perché una forma ingenua era fragile e perché quella nuova è un salto*, e cresce per voci numerate in ordine cronologico: ogni intervento aggiunge una voce in fondo, nessuna voce si riscrive. Il dettaglio nel codice reale sta nei deep-dive `refactor-NN-*.md` accanto a questo file.
 
 La pratica è stata adottata il 31 agosto 2026, su richiesta esplicita, con le voci che ricostruiscono i salti già compiuti in questo progetto perché tutti documentati e verificabili nel work-log e nel codice.
 
@@ -22,7 +22,7 @@ Com'era e perché era fragile. La forma naturale, e quella che quasi tutti i gen
 
 Il salto senior e perché è meglio. Il generatore scrive formule Excel, e i riferimenti fra fogli passano per *nomi definiti* invece che per indirizzi di cella. La conseguenza è che il file non è un rapporto ma il modello stesso: chi lo apre cambia una cella gialla e vede ricalcolare l'intero workbook. Il costo è reale e va dichiarato: le formule non si valutano alla scrittura, quindi il generatore può produrre file sintatticamente validi e funzionalmente rotti, il che ha generato la voce 3 di questo racconto. Il principio generale è che quando l'artefatto prodotto è anche l'interfaccia con cui si lavora, conviene spostare il calcolo dentro l'artefatto e tenere nel codice la sua costruzione.
 
-Dove leggere il dettaglio: `refactor-01-formule-vive.md`.
+Dove leggere il dettaglio: [`refactor-01-formule-vive.md`](refactor-01-formule-vive.md).
 
 ## 2. Il denominatore dei rendimenti è il costo totale, non il prezzo
 
@@ -32,7 +32,7 @@ Com'era e perché era fragile. La convenzione degli annunci, delle conversazioni
 
 Il salto senior e perché è meglio. Il denominatore diventa il costo totale dell'operazione, e il capitale proprio effettivamente immobilizzato diventa il denominatore separato del *cash on cash*. Tenere due denominatori distinti, invece di uno solo di compromesso, è ciò che rende leggibile la leva finanziaria: il rendimento sul costo totale misura l'immobile, quello sull'esborso misura l'operazione finanziata. Sul caso di riferimento la differenza fra le due convenzioni è quasi un decimo, e il modello espone l'incidenza dei costi come indicatore autonomo proprio per rendere visibile quanto si sta correggendo.
 
-Dove leggere il dettaglio: `refactor-02-denominatore.md`.
+Dove leggere il dettaglio: [`refactor-02-denominatore.md`](refactor-02-denominatore.md).
 
 ## 3. Il workbook si verifica aprendolo, non scrivendolo
 
@@ -42,7 +42,7 @@ Com'era e perché era fragile. La verifica implicita era che il generatore termi
 
 Il salto senior e perché è meglio. Esiste uno script che apre il workbook con Excel via automazione, forza un ricalcolo completo, raccoglie tutte le celle che valutano a errore e termina con codice diverso da zero. Accanto, una tecnica di diagnosi: quando il file non si apre affatto, si generano workbook progressivi con un foglio in più alla volta e si prova ad aprirli tutti, isolando il foglio responsabile per bisezione. Il principio generale è che quando un artefatto viene interpretato da un motore esterno, l'unica verifica che vale è farlo interpretare da quel motore.
 
-Dove leggere il dettaglio: `refactor-03-verifica-con-excel.md`.
+Dove leggere il dettaglio: [`refactor-03-verifica-con-excel.md`](refactor-03-verifica-con-excel.md).
 
 ## 4. L'agevolazione applicabile è una sola fonte di verità
 
@@ -52,7 +52,7 @@ Com'era e perché era fragile. Le due grandezze erano calcolate in due punti dis
 
 Il salto senior e perché è meglio. La condizione diventa una funzione sola, `agevolazione_applicabile`, e nel workbook una cella sola con un nome, `agevolata`, calcolata prima di tutto ciò che ne dipende. L'ordine di costruzione delle celle smette di essere cosmetico e diventa parte della correttezza. Il principio è che quando due valori derivano dalla stessa condizione, la condizione va calcolata una volta e riferita, mai ricalcolata in parallelo: due copie della stessa logica divergono sempre, e divergono nel caso raro, cioè quello che nessuno prova.
 
-Dove leggere il dettaglio: `refactor-04-agevolazione-unica.md`.
+Dove leggere il dettaglio: [`refactor-04-agevolazione-unica.md`](refactor-04-agevolazione-unica.md).
 
 ## 5. Un costo ricorrente sta in un posto solo
 
@@ -62,7 +62,7 @@ Com'era e perché era fragile. Compariva in entrambi, ed erano due cose diverse:
 
 Il salto senior e perché è meglio. La voce entra una volta sola nel conto economico, e il foglio del flusso di cassa perde la colonna autonoma. La regola che ne discende, e che è stata applicata poi a ogni voce nuova, è che un costo ha un unico luogo di dichiarazione e tutti gli altri fogli lo ereditano attraverso una grandezza aggregata. Quando si è aggiunto il costo figurativo del tempo, mesi dopo, la domanda giusta è stata immediata: in quale conto economico entra, non in quali fogli va aggiunto.
 
-Dove leggere il dettaglio: `refactor-05-doppio-conteggio.md`.
+Dove leggere il dettaglio: [`refactor-05-doppio-conteggio.md`](refactor-05-doppio-conteggio.md).
 
 ## 6. Il contratto posizionale fra due file va protetto da un test
 
@@ -72,7 +72,7 @@ Com'era e perché era fragile. L'allineamento fra l'ordine dei campi della datac
 
 Il salto senior e perché è meglio. Un test esporta un annuncio con valori noti e rilegge le celle una per una, verificando anche che le tre colonne di formula non siano state sovrascritte. Ha ripagato il costo alla prima esecuzione, scoprendo un difetto che nessuno stava cercando: la libreria ignora l'assegnazione quando si passa un valore nullo al costruttore della cella, quindi un campo azzerato non ripuliva la cella e l'annuncio esportato ereditava in silenzio il dato di quello che occupava prima quella riga. Il principio è che un contratto posizionale non documentato è un difetto in attesa, e che il modo di renderlo sicuro non è commentarlo ma eseguirlo.
 
-Dove leggere il dettaglio: `refactor-06-contratto-posizionale.md`.
+Dove leggere il dettaglio: [`refactor-06-contratto-posizionale.md`](refactor-06-contratto-posizionale.md).
 
 ## 7. La simulazione separa l'estrazione dal calcolo
 
@@ -84,7 +84,7 @@ Il salto senior e perché è meglio. Le due cose vengono separate. Le estrazioni
 
 Nella stessa voce rientra una correzione di modello che vale più della tecnica. La prima versione trattava l'estrazione sulla rivalutazione come se fosse un regime permanente per tutto l'orizzonte, e la coda alta produceva patrimoni finali fuori scala. La rivalutazione si compone, quindi l'estrazione non è la variazione di un anno ma la media del periodo, e la sua dispersione scende con la radice del numero di anni: senza quella correzione la simulazione era matematicamente coerente e finanziariamente assurda.
 
-Dove leggere il dettaglio: `refactor-07-simulazione-riproducibile.md`.
+Dove leggere il dettaglio: [`refactor-07-simulazione-riproducibile.md`](refactor-07-simulazione-riproducibile.md).
 
 ## 8. Un riferimento per coordinata è un difetto in attesa
 
@@ -94,7 +94,7 @@ Com'era e perché era fragile. Tutte tre convivevano, e le ultime due hanno prod
 
 Il salto senior e perché è meglio. La scelta non riguarda l'eleganza ma il modo in cui l'errore si manifesta, e questa è la parte generalizzabile. Un nome definito inesistente produce `#NOME?` in ogni cella che lo usa, e la verifica con Excel lo intercetta. Una chiave assente in un dizionario di righe solleva un `KeyError` alla generazione, e il file non viene nemmeno prodotto. Una coordinata sbagliata è invece un riferimento perfettamente valido a una cella diversa: nessun errore, un numero dell'ordine di grandezza giusto, un foglio che si apre. Fra tre forme che possono sbagliare si scelgono quelle che sbagliano rumorosamente. Il presidio non è un commento ma un test che verifica l'invariante in termini di etichette e non di numeri di riga, così che continui a valere dopo un riordino del foglio.
 
-Dove leggere il dettaglio: `refactor-08-riferimenti-per-nome.md`.
+Dove leggere il dettaglio: [`refactor-08-riferimenti-per-nome.md`](refactor-08-riferimenti-per-nome.md).
 
 ## 9. Un'assunzione uguale per tutte le righe non è un dato
 
@@ -104,7 +104,7 @@ Com'era e perché era fragile. Il regime di acquisto, cioè prima casa oppure no
 
 Il salto senior e perché è meglio. Il dato torna dove varia, cioè nella riga, e il foglio espone il regime applicato accanto alle imposte, perché una graduatoria in cui una riga paga l'IVA e un'altra il registro va letta sapendolo. La parte non ovvia è il terzo stato: il vuoto non significa NO, significa eredita da dove stava prima. Serve a rendere l'aggiunta esattamente neutra su tutto ciò che esiste già, e la neutralità qui non è cortesia verso il passato ma una proprietà verificabile, perché permette di affermare che un registro non toccato produce gli stessi numeri. Trattare il vuoto come NO avrebbe cambiato in silenzio le imposte di dodici annunci, togliendo loro l'agevolazione prima casa.
 
-Dove leggere il dettaglio: `refactor-09-regime-per-riga.md`.
+Dove leggere il dettaglio: [`refactor-09-regime-per-riga.md`](refactor-09-regime-per-riga.md).
 
 ## 10. Un'incidenza percentuale non è un parametro del modello
 
@@ -114,7 +114,7 @@ Com'era e perché era fragile. Era calcolato dividendo il costo totale sostenibi
 
 Il salto senior e perché è meglio. L'equazione si risolve invece di stimarla, e la soluzione è algebra di primo grado, non un metodo numerico: il costo totale è lineare a tratti nel prezzo, l'utile è lineare decrescente, imporre il loro rapporto pari all'obiettivo dà una formula chiusa. Le tre grandezze che la compongono stanno in tre celle visibili con la loro nota, perché una formula che nasconde tre coefficienti non è ispezionabile. La seconda metà del salto è il controllo di chiusura: una cella ricalcola il rendimento al prezzo trovato con le formule esatte delle imposte, minimo di legge compreso, e mostra lo scarto dalla soglia. Sta nel foglio e non in un test per una ragione precisa, cioè che la soluzione è esatta solo sul tratto lineare e il caso che la rompe, il minimo di legge dell'imposta di registro, si presenta quando l'utente cambia gli input a video, non nel caso precaricato che un test coprirebbe. Il principio generale è che un rapporto fra due grandezze che dipendono entrambe dalla variabile che si sta muovendo non è un parametro, e usarlo come tale è il modo più comune di introdurre un errore che resta dell'ordine di grandezza giusto.
 
-Dove leggere il dettaglio: `refactor-10-prezzo-massimo-esatto.md`.
+Dove leggere il dettaglio: [`refactor-10-prezzo-massimo-esatto.md`](refactor-10-prezzo-massimo-esatto.md).
 
 ## 11. Uno scenario di stress si misura sui dati, non si sceglie a sentimento
 
@@ -126,7 +126,7 @@ Il salto senior e perché è meglio. Il numero si misura sulla serie storica, ch
 
 Nella stessa voce rientra un difetto trovato usando ciò che si era appena costruito, che è il modo in cui questi difetti si trovano. Provando il rialzo reale in tre gradini, il piano arrivava a 480 mesi con 206.464 euro di interessi: due numeri veri che rispondevano a una domanda diversa, perché 480 è il fondo della tabella e non la durata del piano, e restavano 87.082 euro di debito non estinto. Sotto la modalità che riduce la durata un rialzo forte allunga il piano invece di alzare la rata. Ora due righe di esito dicono se il piano si chiude, e lo stesso scenario sotto la modalità che riduce la rata, cioè il funzionamento del variabile italiano, chiude regolarmente con la rata che passa da 436 a 626 euro: è quello il numero da confrontare con il reddito.
 
-Dove leggere il dettaglio: `refactor-11-scenario-misurato.md`.
+Dove leggere il dettaglio: [`refactor-11-scenario-misurato.md`](refactor-11-scenario-misurato.md).
 
 ## 12. Uno strumento corretto che non si sa percorrere non è finito
 
@@ -140,4 +140,4 @@ Due dettagli tecnici della stessa voce meritano attenzione perché sono errori c
 
 Nella stessa voce rientra un difetto trovato scrivendo la documentazione, che è il modo in cui la documentazione ripaga il suo costo. L'aiuto della riga di comando offriva per lo stato di un annuncio tre valori che il menu a tendina del foglio non contiene: due copie dello stesso elenco di valori ammessi, già divergenti. Ora l'elenco ha una sorgente sola. È ADR-013 applicato a un elenco invece che a un riferimento, e il principio è lo stesso: fra due forme si sceglie quella in cui la divergenza è impossibile, non quella in cui è silenziosa.
 
-Dove leggere il dettaglio: `refactor-12-indice-navigabile.md`.
+Dove leggere il dettaglio: [`refactor-12-indice-navigabile.md`](refactor-12-indice-navigabile.md).

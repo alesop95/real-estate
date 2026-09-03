@@ -8,7 +8,7 @@ Il sistema è già progettato per non sprecare contesto, e queste pratiche valgo
 
 Densità sopra completezza: una sintesi densa vale più di un estratto lungo. Si scrive e si legge per segnale, non per volume.
 
-On-demand: le skill, i capitoli di una skill-libro, le schede di `context/` e le pagine della wiki si caricano solo quando servono al task, mai tutte insieme. Il `CLAUDE.md` indicizza i satelliti, non li incorpora.
+On-demand: le skill, i capitoli di una skill-libro, le schede di `context/` e le pagine della wiki si caricano solo quando servono al task, mai tutte insieme. Il [`CLAUDE.md`](../../CLAUDE.md) indicizza i satelliti, non li incorpora.
 
 Niente riletture integrali: il motore di riconciliazione confronta i commit e legge solo le schede pertinenti; i documenti voluminosi come i `.docx` si estraggono a fette, mai letti per intero, e si tiene un mirror `.md` per i diff invece di rileggere il binario.
 

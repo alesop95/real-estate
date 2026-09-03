@@ -53,7 +53,7 @@ I test, allo stesso modo, non toccano la rete. La scansione delle risalite si ve
 
 ## Aggiornamento annuale
 
-L'unica manutenzione prevista è fiscale, e ha una procedura fissa. Si aggiornano i valori in `src/immobiliare/parametri.py` verificandoli sulle fonti di `docs/fonti.md`, si sposta la costante `REVISIONE` in testa al file, si aggiornano le schede di dominio sotto `docs/` nelle parti impattate, si eseguono i test e la verifica del workbook, e si rigenera.
+L'unica manutenzione prevista è fiscale, e ha una procedura fissa. Si aggiornano i valori in `src/immobiliare/parametri.py` verificandoli sulle fonti di [`docs/fonti.md`](../../docs/fonti.md), si sposta la costante `REVISIONE` in testa al file, si aggiornano le schede di dominio sotto `docs/` nelle parti impattate, si eseguono i test e la verifica del workbook, e si rigenera.
 
 I test sono la rete di sicurezza di questo passaggio: congelano il caso di riferimento e verificano gli scaglioni IRPEF, il minimo di legge del registro e i moltiplicatori catastali, che sono le tre cose che cambiano più spesso e che passerebbero inosservate.
 

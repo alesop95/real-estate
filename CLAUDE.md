@@ -1,6 +1,6 @@
 # real-estate
 
-> Istruzioni di team, versionate. Questo file è l'indice del progetto: indicizza i soli file satellite tracciati e descrive la procedura di ripresa. Le preferenze personali vivono in `CLAUDE.local.md`, ignorato da git, non qui.
+> Istruzioni di team, versionate. Questo file è l'indice del progetto: indicizza i soli file satellite tracciati e descrive la procedura di ripresa. Le preferenze personali vivono in [`CLAUDE.local.md`](CLAUDE.local.md), ignorato da git, non qui.
 
 ## Cos'è questo progetto
 
@@ -29,9 +29,9 @@ L'identità git, l'indirizzo dell'istanza Ollama e il remoto sono specifici dell
 
 ## Procedura di ripresa in una sessione nuova
 
-Lo stato del progetto è interamente recuperabile su disco. Si legge per primo `.claude/memory/index.md`, che da' branch, stato di verifica di ogni scheda e punto di ripresa. Si legge poi `.claude/context/current-work.md` se c'è una feature attiva. Le schede di dominio sotto `docs/` si aprono solo quando il task tocca la materia che descrivono, mai tutte insieme. Il registro `.claude/memory/progress.md` e quello delle decisioni `.claude/memory/decisions.md` forniscono storia e motivazioni quando servono.
+Lo stato del progetto è interamente recuperabile su disco. Si legge per primo [`.claude/memory/index.md`](.claude/memory/index.md), che da' branch, stato di verifica di ogni scheda e punto di ripresa. Si legge poi [`.claude/context/current-work.md`](.claude/context/current-work.md) se c'è una feature attiva. Le schede di dominio sotto `docs/` si aprono solo quando il task tocca la materia che descrivono, mai tutte insieme. Il registro [`.claude/memory/progress.md`](.claude/memory/progress.md) e quello delle decisioni [`.claude/memory/decisions.md`](.claude/memory/decisions.md) forniscono storia e motivazioni quando servono.
 
-Prima di toccare un parametro fiscale si legge `docs/fonti.md` e si verifica la fonte: nessun numero entra nel modello senza una fonte citata e una data di verifica.
+Prima di toccare un parametro fiscale si legge [`docs/fonti.md`](docs/fonti.md) e si verifica la fonte: nessun numero entra nel modello senza una fonte citata e una data di verifica.
 
 ## Comandi
 
@@ -54,7 +54,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 
 L'ultimo comando è la verifica del workbook: apre il file con Excel, forza il ricalcolo completo e segnala ogni cella in errore. Va eseguito dopo ogni modifica a `excel_builder.py`, perché la libreria che genera il file scrive le formule ma non le valuta. I test automatici si eseguono con `python -m pytest tests`, oppure lanciando direttamente i due file se pytest non è installato.
 
-Il materiale personale, cioè il dossier delle trattative, i riferimenti di terzi e i segnalibri, vive sotto `_notes/` ed è interamente ignorato da git. La mappa di cosa contiene, con trascritta l'informazione dei file che sono vuoti e la portano nel nome, sta in `_notes/INDICE-MATERIALE.md`.
+Il materiale personale, cioè il dossier delle trattative, i riferimenti di terzi e i segnalibri, vive sotto `_notes/` ed è interamente ignorato da git. La mappa di cosa contiene, con trascritta l'informazione dei file che sono vuoti e la portano nel nome, sta in [`_notes/INDICE-MATERIALE.md`](_notes/INDICE-MATERIALE.md).
 
 ## Indice dei file satellite tracciati
 
@@ -65,7 +65,7 @@ README.md    descrizione del progetto per chi lo incontra la prima volta
 LICENSE      licenza MIT, con la nota che delimita cosa la licenza non garantisce
 ```
 
-Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. L'indice di questa cartella, con che cos'è ciascun file, per chi è scritto e quando si apre, sta in `docs/README.md`: è il file da aprire quando non si sa dove cercare.
+Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. L'indice di questa cartella, con che cos'è ciascun file, per chi è scritto e quando si apre, sta in [`docs/README.md`](docs/README.md): è il file da aprire quando non si sa dove cercare.
 
 ```
 docs/README.md               indice della documentazione: i quattro percorsi di lettura,
@@ -149,13 +149,13 @@ refactor-11-scenario-misurato.md            il rialzo del tasso preso dalla seri
 refactor-12-indice-navigabile.md            l'indice del workbook e i collegamenti interni
 ```
 
-Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.
+Regole modulari sotto `.claude/rules/`, che sono cinque e che questo indice elencava soltanto come cartella. [`.claude/rules/interaction-style.md`](.claude/rules/interaction-style.md) fissa lo stile di ogni file scritto qui dentro, dal registro al paragrafo su riga unica alla tipografia italiana. [`.claude/rules/git-identity-and-repo.md`](.claude/rules/git-identity-and-repo.md) dice con quale identità si firma e con quale alias SSH si parla al remoto, e [`.claude/rules/git-commands-format.md`](.claude/rules/git-commands-format.md) come si consegnano all'utente i comandi, perché restino copiabili su qualunque terminale. [`.claude/rules/security-permissions.md`](.claude/rules/security-permissions.md) descrive le modalità di permesso e i limiti del sandbox su questa piattaforma. [`.claude/rules/token-economy.md`](.claude/rules/token-economy.md) raccoglie le pratiche di risparmio del contesto. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.
 
 ## Vincoli di team
 
 Ogni prodotto di questo progetto resta un file su questa macchina. Non si pubblica nulla su servizi esterni, nemmeno in forma privata e nemmeno come pagina di sola lettura: non pagine web ospitate, non documenti su piattaforme di terzi, non caricamenti di alcun genere. Vale per la documentazione come per i dati, e vale anche quando il contenuto sembra innocuo, perché il perimetro non lo decide il singolo contenuto: questo progetto tratta una trattativa reale, con prezzi obiettivo, recapiti di terzi e una strategia di acquisto, e la riservatezza di quel materiale è una proprietà del progetto e non di ciascun file. Quando serve un documento condivisibile, si scrive un file sotto `docs/` e lo condivide l'utente con i mezzi che sceglie.
 
-Le operazioni di `git add`, commit e push restano manuali dell'utente: l'agente prepara i file, non committa. L'identità git va impostata a livello locale del repository secondo `.claude/rules/git-identity-and-repo.md`. Lo stile di documentazione e di interazione è quello di `.claude/rules/interaction-style.md`, e vale per ogni file scritto qui dentro. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
+Le operazioni di `git add`, commit e push restano manuali dell'utente: l'agente prepara i file, non committa. L'identità git va impostata a livello locale del repository secondo [`.claude/rules/git-identity-and-repo.md`](.claude/rules/git-identity-and-repo.md). Lo stile di documentazione e di interazione è quello di [`.claude/rules/interaction-style.md`](.claude/rules/interaction-style.md), e vale per ogni file scritto qui dentro. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
 
 Il materiale personale, raccolto sotto `_notes/` dopo il riordino del 28 agosto 2026, non è versionato e non va pubblicato: contiene documentazione di trattative reali, fogli di calcolo di terzi e conversazioni. Nemmeno `data/annunci.csv` entra in git, perché porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che è la propria strategia di acquisto e non ha ragione di stare in una repository pubblica.
 

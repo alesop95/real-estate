@@ -1,6 +1,6 @@
 # 01. Formule vive invece di valori calcolati
 
-> Deep-dive della voce 1 di `studio-didattico-master.md`. Riguarda `src/immobiliare/excel_builder.py` e il rapporto fra questo e `src/immobiliare/calcoli.py`.
+> Deep-dive della voce 1 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `src/immobiliare/excel_builder.py` e il rapporto fra questo e `src/immobiliare/calcoli.py`.
 
 ## La forma ingenua
 

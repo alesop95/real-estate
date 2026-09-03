@@ -1,6 +1,6 @@
 # 03. Verificare il workbook aprendolo con Excel
 
-> Deep-dive della voce 3 di `studio-didattico-master.md`. Riguarda `tools/verifica-excel.ps1` e la tecnica di bisezione sui fogli.
+> Deep-dive della voce 3 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `tools/verifica-excel.ps1` e la tecnica di bisezione sui fogli.
 
 ## Che cosa non verifica il generatore
 

@@ -6,9 +6,9 @@
 
 Questo file risponde alle domande operative: quale comando eseguire, quale opzione passare, quale cella compilare, in che ordine, e cosa fare quando qualcosa non funziona. Non spiega la materia, perché la materia è già spiegata altrove e ripeterla qui produrrebbe due versioni destinate a divergere.
 
-Per spiegare lo strumento a chi compra insieme, e non ha il progetto sulla macchina, si manda `guida-al-workbook.md`: è l'unico documento di questa cartella scritto per essere letto da fuori, e ripete quanto serve invece di rimandare altrove.
+Per spiegare lo strumento a chi compra insieme, e non ha il progetto sulla macchina, si manda [`guida-al-workbook.md`](guida-al-workbook.md): è l'unico documento di questa cartella scritto per essere letto da fuori, e ripete quanto serve invece di rimandare altrove.
 
-Per il perché di un numero si va nelle schede di dominio. Le imposte di trasferimento, il prezzo-valore, la prima casa, la detrazione degli interessi e l'IMU stanno in `fiscalita-acquisto.md`. I quattro regimi di tassazione del canone e le novità 2026 sulle locazioni brevi stanno in `fiscalita-locazione.md`. Le verifiche legali e urbanistiche stanno in `due-diligence.md`, i documenti da farsi consegnare in `perizia-pre-acquisto.md`, le vendite giudiziarie in `aste-immobiliari.md`, l'acquisto in più persone in `comprare-in-piu-persone.md`. Le scelte metodologiche, cioè quale denominatore usa un rendimento e perché, stanno in `metodo-e-metriche.md`. L'architettura del codice sta in `guida-tecnica(catena-calcolo-e-normativa).md`, la spiegazione senza gergo di ogni voce sta in `guida-al-workbook.md`, il percorso rapido per la prima valutazione sta in `da-zero.md`, e la provenienza di ogni dato sta in `fonti.md`.
+Per il perché di un numero si va nelle schede di dominio. Le imposte di trasferimento, il prezzo-valore, la prima casa, la detrazione degli interessi e l'IMU stanno in [`fiscalita-acquisto.md`](fiscalita-acquisto.md). I quattro regimi di tassazione del canone e le novità 2026 sulle locazioni brevi stanno in [`fiscalita-locazione.md`](fiscalita-locazione.md). Le verifiche legali e urbanistiche stanno in [`due-diligence.md`](due-diligence.md), i documenti da farsi consegnare in [`perizia-pre-acquisto.md`](perizia-pre-acquisto.md), le vendite giudiziarie in [`aste-immobiliari.md`](aste-immobiliari.md), l'acquisto in più persone in [`comprare-in-piu-persone.md`](comprare-in-piu-persone.md). Le scelte metodologiche, cioè quale denominatore usa un rendimento e perché, stanno in [`metodo-e-metriche.md`](metodo-e-metriche.md). L'architettura del codice sta in [`guida-tecnica(catena-calcolo-e-normativa).md`](<guida-tecnica(catena-calcolo-e-normativa).md>), la spiegazione senza gergo di ogni voce sta in `guida-al-workbook.md`, il percorso rapido per la prima valutazione sta in [`da-zero.md`](da-zero.md), e la provenienza di ogni dato sta in [`fonti.md`](fonti.md).
 
 ## Il percorso in un diagramma
 
@@ -127,7 +127,7 @@ bash scripts/setup-tex.sh
 bash scripts/build.sh --main docs/matematica/matematica-finanziaria.tex
 ```
 
-Il PDF finisce accanto al sorgente e non è versionato, perché è un artefatto derivato. L'ambiente LaTeX serve soltanto a questo documento: il resto del progetto non ne dipende, e chi non lo compila non perde nulla del funzionamento dello strumento. La procedura è incapsulata nella skill `latex-build` sotto `.claude/skills/`.
+Il PDF finisce accanto al sorgente e non è versionato, perché è un artefatto derivato. L'ambiente LaTeX serve soltanto a questo documento: il resto del progetto non ne dipende, e chi non lo compila non perde nulla del funzionamento dello strumento. La procedura è incapsulata nella skill [`latex-build`](../.claude/skills/latex-build/SKILL.md) sotto `.claude/skills/`.
 
 ## Il ciclo di lavoro
 
@@ -411,7 +411,7 @@ python tools/valuta.py excel --con-annunci
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```
 
-Se la modifica riguarda una funzionalità che dipende da un input dell'utente, la verifica formale non basta, perché dice solo che nessuna cella è in errore e una formula corretta che legge la cella sbagliata passa quel controllo. Serve una prova di comportamento, cioè aprire il file, scrivere gli input, ricalcolare e leggere l'esito. Il modo di farlo, con le prove già eseguite e i valori che devono uscire, sta in `.claude/context/dev-testing.md`.
+Se la modifica riguarda una funzionalità che dipende da un input dell'utente, la verifica formale non basta, perché dice solo che nessuna cella è in errore e una formula corretta che legge la cella sbagliata passa quel controllo. Serve una prova di comportamento, cioè aprire il file, scrivere gli input, ricalcolare e leggere l'esito. Il modo di farlo, con le prove già eseguite e i valori che devono uscire, sta in [`.claude/context/dev-testing.md`](../.claude/context/dev-testing.md).
 
 ## Diagnostica
 

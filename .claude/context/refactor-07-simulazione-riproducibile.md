@@ -1,6 +1,6 @@
 # 07. Simulazione riproducibile e insieme interattiva
 
-> Deep-dive della voce 7 di `studio-didattico-master.md`. Riguarda i metodi `foglio_estrazioni` e `foglio_rischio` di `src/immobiliare/excel_builder.py`, e le costanti `ESTRAZIONI` e `SEME_SIMULAZIONE`.
+> Deep-dive della voce 7 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda i metodi `foglio_estrazioni` e `foglio_rischio` di `src/immobiliare/excel_builder.py`, e le costanti `ESTRAZIONI` e `SEME_SIMULAZIONE`.
 
 ## Il problema, che è un conflitto fra due requisiti
 

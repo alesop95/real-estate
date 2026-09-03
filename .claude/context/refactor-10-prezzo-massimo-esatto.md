@@ -1,6 +1,6 @@
 # 10. Il prezzo massimo si risolve, e si autoverifica
 
-> Deep-dive della voce 10 di `studio-didattico-master.md`. Riguarda la sezione *Prezzo massimo sostenibile* dentro `foglio_scenari` in `src/immobiliare/excel_builder.py`, e il test `test_prezzo_massimo_e_esatto_e_si_autoverifica`.
+> Deep-dive della voce 10 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda la sezione *Prezzo massimo sostenibile* dentro `foglio_scenari` in `src/immobiliare/excel_builder.py`, e il test `test_prezzo_massimo_e_esatto_e_si_autoverifica`.
 
 ## La formula di prima, e le due cose che teneva ferme
 

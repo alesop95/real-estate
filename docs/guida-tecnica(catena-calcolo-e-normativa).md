@@ -1,6 +1,6 @@
 # Guida tecnica
 
-> Per chi mette le mani nel modello: come è costruito, dove si interviene, e il significato finanziario e fiscale di ogni voce con il riferimento normativo puntuale. I testi degli articoli citati sono stati verificati sul corpus normativo locale del progetto `legal-consultant`, che espone la legislazione italiana consolidata vigente; l'URN riportato è quello con cui l'articolo si recupera. La versione per chi vuole solo usare il file è in `guida-al-workbook.md`.
+> Per chi mette le mani nel modello: come è costruito, dove si interviene, e il significato finanziario e fiscale di ogni voce con il riferimento normativo puntuale. I testi degli articoli citati sono stati verificati sul corpus normativo locale del progetto `legal-consultant`, che espone la legislazione italiana consolidata vigente; l'URN riportato è quello con cui l'articolo si recupera. La versione per chi vuole solo usare il file è in [`guida-al-workbook.md`](guida-al-workbook.md).
 
 ## Come è fatto
 
@@ -216,7 +216,7 @@ Sono gli articoli che governano il passaggio da proposta a rogito, e sono la rag
 
 ### Documentazione tecnica pre-acquisto
 
-Il foglio Dossier tecnico elenca sessantasei documenti in nove famiglie, con peso, chi li rilascia, la norma e il costo indicativo. È costruito da `foglio_dossier()` a partire da una lista di tuple, e i due nomi definiti `documenti_bloccanti_aperti` e `documenti_completamento` alimentano il Cruscotto. La scheda estesa è `docs/perizia-pre-acquisto.md`; qui stanno le sole norme che governano il fascicolo.
+Il foglio Dossier tecnico elenca sessantasei documenti in nove famiglie, con peso, chi li rilascia, la norma e il costo indicativo. È costruito da `foglio_dossier()` a partire da una lista di tuple, e i due nomi definiti `documenti_bloccanti_aperti` e `documenti_completamento` alimentano il Cruscotto. La scheda estesa è [`docs/perizia-pre-acquisto.md`](perizia-pre-acquisto.md); qui stanno le sole norme che governano il fascicolo.
 
 | Voce | Norma | Perché è nel modello |
 |---|---|---|

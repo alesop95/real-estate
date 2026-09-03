@@ -2,7 +2,7 @@
 
 > Scheda di dominio, aggiornata al 28 agosto 2026. La versione operativa a spunte, filtrabile per fase e per stato, è il foglio Checklist del workbook. Questa scheda spiega perché ciascuna verifica esiste e che cosa succede se salta.
 
-Questa scheda descrive le verifiche da fare. L'elenco dei documenti che servono per poterle fare, con chi li rilascia, la norma che li rende dovuti e il costo, sta in `perizia-pre-acquisto.md` e nel foglio Dossier tecnico del workbook.
+Questa scheda descrive le verifiche da fare. L'elenco dei documenti che servono per poterle fare, con chi li rilascia, la norma che li rende dovuti e il costo, sta in [`perizia-pre-acquisto.md`](perizia-pre-acquisto.md) e nel foglio Dossier tecnico del workbook.
 
 ## Il vincolo temporale che governa tutto
 

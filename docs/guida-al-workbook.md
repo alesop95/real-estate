@@ -2,7 +2,7 @@
 
 > Guida d'uso completa del foglio di calcolo, per chi lo usa e per chi deve capirne le conclusioni senza toccare il codice. Nasce dalla fusione di due guide che avevano lo stesso destinatario, `guida-non-tecnica.md` e `guida-per-il-socio.md`, e ne conserva interamente il contenuto: la prima parte è il giro guidato che si legge una volta, la seconda è il riferimento cella per cella che si consulta quando serve.
 
-Si legge da sola e si può mandare a un'altra persona: non richiede di avere il progetto sulla macchina, e i comandi che cita servono a chi lo genera, non a chi lo legge. La versione per chi mette le mani nel codice è in `guida-tecnica(catena-calcolo-e-normativa).md`, e la matematica dietro ogni formula in `matematica/matematica-finanziaria.tex`.
+Si legge da sola e si può mandare a un'altra persona: non richiede di avere il progetto sulla macchina, e i comandi che cita servono a chi lo genera, non a chi lo legge. La versione per chi mette le mani nel codice è in [`guida-tecnica(catena-calcolo-e-normativa).md`](<guida-tecnica(catena-calcolo-e-normativa).md>), e la matematica dietro ogni formula in `matematica/matematica-finanziaria.tex`.
 
 ## Che cosa è questo file e che cosa non è
 
@@ -261,7 +261,7 @@ Il foglio calcola la parte di ciascuno perché **sul fisco ciascuno fa storia a 
 
 Tre regole che conviene conoscere prima di firmare. Le decisioni si contano **per quote, non per teste**: con il 51% governi la gestione, con i due terzi fai i lavori, per vendere servono tutti. Ciascuno può **vendere la sua quota a chi vuole**, e senza un patto di prelazione ti ritrovi in società con uno sconosciuto. E soprattutto: **chiunque può in ogni momento chiedere di sciogliere la comunione**, cioè costringere a vendere. L'unico antidoto è un patto di indivisione, che vale al massimo dieci anni e va rinnovato.
 
-C'è una scheda dedicata che spiega tutto questo per esteso: `docs/comprare-in-piu-persone.md`.
+C'è una scheda dedicata che spiega tutto questo per esteso: [`docs/comprare-in-piu-persone.md`](comprare-in-piu-persone.md).
 
 ### Ottavo, la scheda Checklist
 
@@ -285,7 +285,7 @@ Come si usa in pratica. Prima si marcano non applicabili le voci che non c'entra
 
 Due cose da sapere prima di iniziare. La prima è che quello che l'agenzia non ha, quasi sempre esiste lo stesso: visure e planimetrie le prende un tecnico in giornata per poche decine di euro, i documenti del condominio li ha gratis l'amministratore, i titoli edilizi stanno in Comune. La seconda è che i titoli edilizi in Comune si ottengono con l'accesso agli atti, che però vuole la delega del proprietario o una proposta già firmata: è il motivo per cui la proposta si fa **condizionata** all'esito della verifica, invece di aspettare documenti che non arriveranno mai prima.
 
-Il costo di tutta la verifica sta fra le seicento e le millecinquecento euro. Sembra molto finché non lo confronti con quello che costa scoprire dopo il rogito una difformità da sanare. La spiegazione distesa di ogni documento sta in `docs/perizia-pre-acquisto.md`.
+Il costo di tutta la verifica sta fra le seicento e le millecinquecento euro. Sembra molto finché non lo confronti con quello che costa scoprire dopo il rogito una difformità da sanare. La spiegazione distesa di ogni documento sta in [`docs/perizia-pre-acquisto.md`](perizia-pre-acquisto.md).
 
 # Parte seconda: riferimento, cella per cella
 

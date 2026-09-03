@@ -4,7 +4,7 @@
 
 ## 2026-09-03, tipografia italiana su tutto il progetto, fusione delle guide, README pubblico
 
-File toccati: quarantatré file fra documentazione, memoria e codice. Nuovi: `docs/guida-al-workbook.md`, `docs/vault-obsidian.md`, `tools/fix-accents.py`, `tools/fix-missing-accents.py`, `tools/fix-dashes.py`, `tools/dashes-exclude.txt`. Rimossi: `docs/guida-non-tecnica.md` e `docs/guida-per-il-socio.md`, il cui contenuto vive interamente nella guida fusa. Test invariati a settantuno.
+File toccati: quarantatré file fra documentazione, memoria e codice. Nuovi: [`docs/guida-al-workbook.md`](../../docs/guida-al-workbook.md), [`docs/vault-obsidian.md`](../../docs/vault-obsidian.md), `tools/fix-accents.py`, `tools/fix-missing-accents.py`, `tools/fix-dashes.py`, `tools/dashes-exclude.txt`. Rimossi: `docs/guida-non-tecnica.md` e `docs/guida-per-il-socio.md`, il cui contenuto vive interamente nella guida fusa. Test invariati a settantuno.
 
 Tipografia. Istanziato il pacchetto `fix-typography` del template e applicato: 3830 sostituzioni su 37 file per gli accenti scritti con l'apostrofo, un accento mancante del tutto, sette trattini lunghi e segni meno. La conversione ha portato il progetto alla forma corretta dell'italiano su centoventinove forme distinte.
 
@@ -30,9 +30,9 @@ Verifica: settantuno test verdi, workbook rigenerato, trattazione ricompilata in
 
 ## 2026-09-03, indice della documentazione, e una duplicazione dichiarata
 
-File toccati: `docs/README.md` nuovo, `CLAUDE.md`, `README.md`, `docs/da-zero.md`, `docs/fonti.md`, `docs/guida-non-tecnica.md`, `docs/manuale-operativo.md`, `.claude/memory/index.md`.
+File toccati: [`docs/README.md`](../../docs/README.md) nuovo, [`CLAUDE.md`](../../CLAUDE.md), `README.md`, [`docs/da-zero.md`](../../docs/da-zero.md), [`docs/fonti.md`](../../docs/fonti.md), `docs/guida-non-tecnica.md`, [`docs/manuale-operativo.md`](../../docs/manuale-operativo.md), [`.claude/memory/index.md`](index.md).
 
-L'utente ha rinominato `docs/guida-tecnica.md` in `docs/guida-tecnica(catena-calcolo-e-normativa).md`, e ha chiesto di orientarsi fra i documenti. Due cose da fare, e una da dichiarare.
+L'utente ha rinominato `docs/guida-tecnica.md` in [`docs/guida-tecnica(catena-calcolo-e-normativa).md`](<../../docs/guida-tecnica(catena-calcolo-e-normativa).md>), e ha chiesto di orientarsi fra i documenti. Due cose da fare, e una da dichiarare.
 
 Riferimenti riparati. La rinomina aveva rotto sette riferimenti in sei file più la tabella delle schede nell'indice di stato. In `CLAUDE.md` il nome sta in un blocco preformattato con le descrizioni allineate in colonna, e i ventotto caratteri in più avevano disallineato la riga: ricomposta portando la descrizione a capo. La memoria storica non è stata toccata, cioè `progress.md` e le ADR conservano il nome che il file aveva quel giorno, perché riscriverlo falsificherebbe il racconto di che cosa è stato fatto quando.
 
@@ -182,7 +182,7 @@ Verifica: sessantatre test verdi, workbook rigenerato, aperto con Excel e ricalc
 
 ## 2026-09-01, zone OMI nel confronto, regime per riga, e tre difetti latenti trovati per strada
 
-File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/annunci.py`, `src/immobiliare/parametri.py`, `src/immobiliare/tassi.py`, `tools/valuta.py`, `tests/test_workbook.py`, `tests/test_calcoli.py`, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/raccolta-annunci.md`, `docs/metodo-e-metriche.md`, `docs/fonti.md`, `docs/da-zero.md`, `CLAUDE.md`, `README.md`, e i file di memoria e contesto su richiesta esplicita dell'utente. Test da cinquantadue a sessantuno, quarantadue sul motore e diciannove sulla struttura. Nuove ADR: 013, 014, 015, 016. Il lavoro è stato committato dall'utente in quattro commit lungo la giornata, l'ultimo ff86e78; la parte dal foglio Locazione in avanti, più documentazione e registri, resta da committare.
+File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/annunci.py`, `src/immobiliare/parametri.py`, `src/immobiliare/tassi.py`, `tools/valuta.py`, `tests/test_workbook.py`, `tests/test_calcoli.py`, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, [`docs/raccolta-annunci.md`](../../docs/raccolta-annunci.md), [`docs/metodo-e-metriche.md`](../../docs/metodo-e-metriche.md), `docs/fonti.md`, `docs/da-zero.md`, `CLAUDE.md`, `README.md`, e i file di memoria e contesto su richiesta esplicita dell'utente. Test da cinquantadue a sessantuno, quarantadue sul motore e diciannove sulla struttura. Nuove ADR: 013, 014, 015, 016. Il lavoro è stato committato dall'utente in quattro commit lungo la giornata, l'ultimo ff86e78; la parte dal foglio Locazione in avanti, più documentazione e registri, resta da committare.
 
 La sessione era partita con un obiettivo circoscritto, portare le zone OMI dentro il foglio Confronto immobili, e ne sono usciti tre difetti latenti che nessuno stava cercando. Vale registrarli con il dettaglio, perché appartengono tutti alla stessa famiglia: producono un numero plausibile, non un errore, e quindi sopravvivono a qualunque revisione a video.
 
@@ -216,7 +216,7 @@ Verifica finale: sessantuno test verdi, workbook a ventun fogli rigenerato con d
 
 ## 2026-09-01, sei annunci acquisiti, e la graduatoria diventa un comando
 
-File toccati: `tools/valuta.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, `CLAUDE.md`, `.claude/context/STACK.md`. Il registro, non versionato, sale a dodici immobili di cui dodici con superficie e prezzo e nove con zona OMI assegnata.
+File toccati: `tools/valuta.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, `CLAUDE.md`, [`.claude/context/STACK.md`](../context/STACK.md). Il registro, non versionato, sale a dodici immobili di cui dodici con superficie e prezzo e nove con zona OMI assegnata.
 
 Acquisiti dagli screenshot gli annunci da house_6 a house_11, più house_12 aggiunto in corsa. Tutti bloccati al prelievo automatico, quindi letti a vista. Emerge una differenza fra portali che vale registrare: immobiliare.it espone anno di costruzione, classe energetica con indice di prestazione, spese condominiali mensili e prezzo al metro quadro; idealista si ferma spesso a "classe energetica non indicata" e casa.it aggiunge il campo dello stato al rogito, che su un annuncio ha rivelato l'immobile già locato.
 
@@ -246,7 +246,7 @@ Il registro sale a dodici immobili, sei con dati e sei con il solo link.
 
 ## 2026-08-31, undici annunci a registro, le aste nel perimetro, recap operativo
 
-File toccati: `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py`, `docs/aste-immobiliari.md` nuovo, `docs/raccolta-annunci.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`, `.claude/context/roadmap.md`, `.claude/memory/decisions.md` con ADR-012.
+File toccati: `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py`, [`docs/aste-immobiliari.md`](../../docs/aste-immobiliari.md) nuovo, `docs/raccolta-annunci.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`, [`.claude/context/roadmap.md`](../context/roadmap.md), [`.claude/memory/decisions.md`](decisions.md) con ADR-012.
 
 Registro. Aggiunti otto link forniti dall'utente, portando il registro a undici immobili. Uno era già presente e il riconoscimento dei duplicati per link normalizzato lo ha rifiutato, che è la prima volta che quella difesa serve davvero. Un link accorciato di Google è stato risolto seguendo i reindirizzamenti e si è rivelato un annuncio su casa.it. Due annunci sono marcati a priorità dieci su indicazione dell'utente.
 
@@ -298,7 +298,7 @@ Verifica: quarantotto test verdi, workbook rigenerato con le quotazioni riversat
 
 ## 2026-08-31, fornitura OMI 2025/2 acquisita, e tre difetti trovati dal giro reale
 
-File toccati: `src/immobiliare/omi.py`, `src/immobiliare/annunci.py`, `tools/valuta.py`, `tests/test_calcoli.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, `.claude/context/deployment.md`, `.claude/context/design-and-security.md`, `.claude/memory/decisions.md` con ADR-011.
+File toccati: `src/immobiliare/omi.py`, `src/immobiliare/annunci.py`, `tools/valuta.py`, `tests/test_calcoli.py`, `tests/test_workbook.py`, `docs/raccolta-annunci.md`, [`.claude/context/deployment.md`](../context/deployment.md), [`.claude/context/design-and-security.md`](../context/design-and-security.md), `.claude/memory/decisions.md` con ADR-011.
 
 Acquisita la fornitura ufficiale. Richiesta dall'area riservata per la regione Marche, semestre 2025/2, e importata: 22.347 quotazioni su 1.405 Comuni. La cartella `data/omi` contiene ora sia il mirror 2018-2 sia la fornitura 2025/2, e il programma legge la seconda ignorando la prima, che è esattamente il caso per cui la selezione per semestre è stata scritta. Il salto di prezzo fra i due semestri è considerevole: a Civitanova la zona B1 in stato normale passa da 1.300-1.900 a 1.650-3.000 euro al metro quadro, mentre il rendimento lordo implicito resta intorno al cinque per cento, cioè i canoni hanno seguito i prezzi.
 
@@ -320,7 +320,7 @@ Verifica: quarantasette test verdi, workbook rigenerato e riaperto con Excel sen
 
 ## 2026-08-31, garanzie legali nel dossier, indicatori di contesto, promemoria OMI
 
-File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/indicatori.py` nuovo, `src/immobiliare/omi.py`, `tools/valuta.py`, `tests/test_calcoli.py`, `docs/perizia-pre-acquisto.md`, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/raccolta-annunci.md`, `docs/fonti.md`, `README.md`, `CLAUDE.md`, `.claude/context/STACK.md`, `.claude/context/deployment.md`, `.claude/memory/decisions.md` con ADR-010. Fuori progetto, preparato e non committato: `E:\legal-consultant\docs\dominio-compravendita-immobiliare.md`.
+File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/indicatori.py` nuovo, `src/immobiliare/omi.py`, `tools/valuta.py`, `tests/test_calcoli.py`, [`docs/perizia-pre-acquisto.md`](../../docs/perizia-pre-acquisto.md), `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/raccolta-annunci.md`, `docs/fonti.md`, `README.md`, `CLAUDE.md`, `.claude/context/STACK.md`, `.claude/context/deployment.md`, `.claude/memory/decisions.md` con ADR-010. Fuori progetto, preparato e non committato: `E:\legal-consultant\docs\dominio-compravendita-immobiliare.md`.
 
 Audit legale del dossier. Il fascicolo pre-acquisto era stato costruito con l'occhio del tecnico e mancava di tutto ciò che un legale metterebbe per primo, cioè le dichiarazioni con valore legale. Interrogato il corpus, sono state aggiunte dodici voci in una nona famiglia. Le due che reggono il resto sono l'articolo 1482 del codice civile, per cui il compratore può sospendere il prezzo e ottenere la risoluzione solo se i gravami non erano dichiarati dal venditore e da lui ignorati, mentre se li conosceva gli resta la sola garanzia per evizione, e l'articolo 1489, che copre oneri e diritti di terzi non apparenti, i quali non si trascrivono e non compaiono in nessuna visura. La conseguenza operativa è che la dichiarazione di libertà da gravami non è una formalità notarile ma la condizione che tiene in vita il rimedio, e va anticipata nella proposta.
 
@@ -340,7 +340,7 @@ Verifica: quarantatré test verdi, workbook rigenerato e riaperto con Excel senz
 
 ## 2026-08-31, giro di prova sullo strumento e canone concordato realistico
 
-File toccati: `src/immobiliare/parametri.py`, `tools/valuta.py`, e l'allineamento di `.claude/memory/index.md`, `.claude/memory/progress.md`, `.claude/memory/decisions.md` con ADR-009, `.claude/context/current-work.md`, `.claude/context/STACK.md`, `.claude/context/dev-testing.md`, `.claude/context/studio-didattico-master.md`, `docs/da-zero.md`, `docs/guida-tecnica.md`.
+File toccati: `src/immobiliare/parametri.py`, `tools/valuta.py`, e l'allineamento di `.claude/memory/index.md`, `.claude/memory/progress.md`, `.claude/memory/decisions.md` con ADR-009, [`.claude/context/current-work.md`](../context/current-work.md), `.claude/context/STACK.md`, [`.claude/context/dev-testing.md`](../context/dev-testing.md), [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md), `docs/da-zero.md`, `docs/guida-tecnica.md`.
 
 Allineamento. Le schede di memoria e contesto sono state riportate al commit `7307fdc` e ai conteggi correnti: venti fogli, quaranta test. Le voci storiche del work-log non sono state toccate, perché descrivono lo stato al momento in cui furono scritte ed è proprio il loro valore.
 
@@ -352,7 +352,7 @@ Osservazione emersa dal giro. Il foglio di confronto mostra rendita catastale e 
 
 ## 2026-08-31, dossier dei documenti tecnici pre-acquisto
 
-File toccati: `src/immobiliare/excel_builder.py` (metodo `foglio_dossier` e due contatori sul Cruscotto), `tests/test_workbook.py`, `docs/perizia-pre-acquisto.md` nuovo, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/due-diligence.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`.
+File toccati: `src/immobiliare/excel_builder.py` (metodo `foglio_dossier` e due contatori sul Cruscotto), `tests/test_workbook.py`, `docs/perizia-pre-acquisto.md` nuovo, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, [`docs/due-diligence.md`](../../docs/due-diligence.md), `docs/fonti.md`, `CLAUDE.md`, `README.md`.
 
 Il foglio. Nuovo foglio Dossier tecnico, ventesimo del workbook, con cinquantaquattro documenti in otto famiglie: identificazione e titolarità, legittimità urbanistica, struttura e sismica, vincoli, impianti ed energia, condominio, nuova costruzione, occupazione e tributi. Ogni riga porta chi rilascia il documento, la norma che lo rende dovuto, che cosa prova e che cosa si rischia se manca, un costo indicativo, e le colonne di stato, data della richiesta e data di ricezione. Ventuno voci sono marcate bloccanti nel senso preciso che senza di esse l'atto è nullo, la banca non delibera oppure il costo di regolarizzazione resta ignoto.
 
@@ -386,7 +386,7 @@ Verifica: trentanove test verdi, workbook a diciannove fogli riaperto con Excel,
 
 ## 2026-08-31, articoli civilistici del corpus, acquisto in più persone e scenari settabili
 
-File toccati: `src/immobiliare/excel_builder.py` (foglio Comproprietà e blocco dei tre scenari), `tests/test_workbook.py`, `docs/comprare-in-piu-persone.md` nuovo, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`.
+File toccati: `src/immobiliare/excel_builder.py` (foglio Comproprietà e blocco dei tre scenari), `tests/test_workbook.py`, [`docs/comprare-in-piu-persone.md`](../../docs/comprare-in-piu-persone.md) nuovo, `docs/guida-tecnica.md`, `docs/guida-non-tecnica.md`, `docs/fonti.md`, `CLAUDE.md`, `README.md`.
 
 Articoli civilistici. L'utente aveva enumerato a mano nel suo foglio precedente dieci articoli del codice civile, dei quali il modello ne citava due. Recuperati dal corpus locale quarantatré articoli con testo e rubrica, tutti trovati: le fasi contrattuali dal 1326 al 1403 con il 2645-bis, il 2775-bis, il 2825-bis e il 2932, la garanzia per vizi, e l'intero titolo sulla comunione dal 1100 al 1116 più il 2247 e il 2248 sul confine con la società. Sono ora il riferimento normativo della guida tecnica.
 
@@ -400,7 +400,7 @@ Verifica: trentanove test verdi, workbook a sedici fogli riaperto con Excel senz
 
 ## 2026-08-29, fonti residue chiuse: trascrizioni, canale Telegram, legge regionale, e tre correzioni al modello
 
-File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/omi.py`, `src/immobiliare/parametri.py`, `tools/valuta.py`, `docs/fonti.md`, le due guide, `_notes/INDICE-MATERIALE.md`.
+File toccati: `src/immobiliare/excel_builder.py`, `src/immobiliare/omi.py`, `src/immobiliare/parametri.py`, `tools/valuta.py`, `docs/fonti.md`, le due guide, [`_notes/INDICE-MATERIALE.md`](../../_notes/INDICE-MATERIALE.md).
 
 Trascrizioni dei video. I quattro video segnalati sono stati trascritti senza ricorrere al riconoscimento vocale: YouTube espone i sottotitoli automatici italiani e `yt-dlp` li scarica direttamente. Circa 68.000 parole ripulite dalla sovrapposizione tipica delle didascalie automatiche. Da qui vengono due voci nuove del modello.
 
@@ -436,7 +436,7 @@ Verifica: trentanove test verdi, workbook a quindici fogli riaperto con Excel se
 
 ## 2026-08-28, riordino della cartella, colonne del registro e confronto fra immobili
 
-File toccati: `.gitignore`, il riordino di `_notes/`, `_notes/INDICE-MATERIALE.md` e `_notes/RESUME-PROMPT.md` nuovi e ignorati, `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py` nuovo, `.claude/context/deployment.md` nuovo, `LICENSE`, `CLAUDE.local.md` e `.claude/settings.local.json` nuovi e ignorati, `CLAUDE.md`, `README.md`, `docs/raccolta-annunci.md`, `.claude/context/dev-testing.md`, `.claude/context/current-work.md`.
+File toccati: `.gitignore`, il riordino di `_notes/`, `_notes/INDICE-MATERIALE.md` e [`_notes/RESUME-PROMPT.md`](../../_notes/RESUME-PROMPT.md) nuovi e ignorati, `src/immobiliare/annunci.py`, `src/immobiliare/excel_builder.py`, `tools/valuta.py`, `tests/test_workbook.py` nuovo, `.claude/context/deployment.md` nuovo, `LICENSE`, [`CLAUDE.local.md`](../../CLAUDE.local.md) e `.claude/settings.local.json` nuovi e ignorati, `CLAUDE.md`, `README.md`, `docs/raccolta-annunci.md`, `.claude/context/dev-testing.md`, `.claude/context/current-work.md`.
 
 Riordino della cartella. In radice il codice stava mischiato a quattordici elementi personali. Tutto il materiale è stato spostato sotto `_notes/`, in tre rami con criteri distinti: `dossier/` per il materiale personale, `riferimenti/` per quello di terzi, `segnalibri/` per i collegamenti senza file associato. Settantuno file spostati, nessuno perso, nessuno rinominato. La scelta di non rinominare non è pigrizia: quattro file hanno dimensione zero e portano l'informazione nel nome, fra cui il numero del centralino di una palazzina, e un rinomino l'avrebbe cancellata. Il loro contenuto è trascritto in `_notes/INDICE-MATERIALE.md`, che mappa l'intera struttura. Il `.gitignore` si è di conseguenza semplificato, perché una sola riga per `_notes/` sostituisce le dieci regole per nome che c'erano prima.
 

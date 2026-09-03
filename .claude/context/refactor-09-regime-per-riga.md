@@ -1,6 +1,6 @@
 # 09. Il regime di acquisto torna nella riga, con un terzo stato
 
-> Deep-dive della voce 9 di `studio-didattico-master.md`. Riguarda la dataclass `Annuncio` e la lista `ordine` in `src/immobiliare/annunci.py`, i metodi `foglio_annunci` e `foglio_confronto_immobili` di `excel_builder.py`, e i test `test_regime_di_acquisto_per_riga_nel_confronto` e `test_campi_a_tre_stati_normalizzati`.
+> Deep-dive della voce 9 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda la dataclass `Annuncio` e la lista `ordine` in `src/immobiliare/annunci.py`, i metodi `foglio_annunci` e `foglio_confronto_immobili` di `excel_builder.py`, e i test `test_regime_di_acquisto_per_riga_nel_confronto` e `test_campi_a_tre_stati_normalizzati`.
 
 ## Che cosa faceva l'assunzione globale
 

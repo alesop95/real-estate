@@ -112,7 +112,7 @@ Il contatore in fondo al foglio dice quante verifiche restano aperte, e compare 
 
 Si parte dall'altra estremità. Nel foglio **Annunci** si mettono tutti gli immobili che si stanno guardando, anche solo con link, Comune, metri quadri e prezzo. Il foglio **Confronto immobili** si popola da solo e applica a ciascuno il calcolo completo, imposte comprese.
 
-Per orientarsi fra i venti fogli non serve ricordarli: il primo foglio del workbook è un indice con un collegamento a ciascuno, e per ognuno dice se si compila o si legge, quando lo si apre e che cosa ne esce. Da ogni foglio si torna all'indice col collegamento in alto a sinistra. Questo documento resta il percorso rapido; la guida completa a ogni comando e a ogni campo è `manuale-operativo.md`.
+Per orientarsi fra i venti fogli non serve ricordarli: il primo foglio del workbook è un indice con un collegamento a ciascuno, e per ognuno dice se si compila o si legge, quando lo si apre e che cosa ne esce. Da ogni foglio si torna all'indice col collegamento in alto a sinistra. Questo documento resta il percorso rapido; la guida completa a ogni comando e a ogni campo è [`manuale-operativo.md`](manuale-operativo.md).
 
 Da lì esce il candidato su cui vale la pena spendere l'ora del passo 5. Gli altri restano in lista.
 
@@ -126,7 +126,7 @@ python tools/valuta.py excel --con-annunci
 
 ## Se si compra in più persone
 
-C'è il foglio **Comproprietà**, una riga per acquirente. La cosa da sapere subito è che **non serve costituire una società**: tenere insieme un immobile e affittarlo è comunione, non impresa. Le regole di governo e i casi in cui invece una società serve stanno in `comprare-in-piu-persone.md`.
+C'è il foglio **Comproprietà**, una riga per acquirente. La cosa da sapere subito è che **non serve costituire una società**: tenere insieme un immobile e affittarlo è comunione, non impresa. Le regole di governo e i casi in cui invece una società serve stanno in [`comprare-in-piu-persone.md`](comprare-in-piu-persone.md).
 
 ## Verificare che tutto funzioni
 
@@ -143,9 +143,9 @@ Se la rigenerazione fallisce con un errore di permesso, è Excel rimasto aperto 
 
 ## Dove andare a leggere
 
-`guida-al-workbook.md` accompagna foglio per foglio in linguaggio comune. `guida-tecnica(catena-calcolo-e-normativa).md` riporta architettura e riferimento di ogni voce con formula e norma. `fiscalita-acquisto.md` e `fiscalita-locazione.md` spiegano la materia. `due-diligence.md` spiega perché ogni verifica della checklist esiste. `comprare-in-piu-persone.md` copre l'acquisto in comproprietà. `fonti.md` dice da dove viene ogni numero.
+[`guida-al-workbook.md`](guida-al-workbook.md) accompagna foglio per foglio in linguaggio comune. [`guida-tecnica(catena-calcolo-e-normativa).md`](<guida-tecnica(catena-calcolo-e-normativa).md>) riporta architettura e riferimento di ogni voce con formula e norma. [`fiscalita-acquisto.md`](fiscalita-acquisto.md) e [`fiscalita-locazione.md`](fiscalita-locazione.md) spiegano la materia. [`due-diligence.md`](due-diligence.md) spiega perché ogni verifica della checklist esiste. `comprare-in-piu-persone.md` copre l'acquisto in comproprietà. [`fonti.md`](fonti.md) dice da dove viene ogni numero.
 
-Chi vuole capire perché il modello è fatto così, e non solo come si usa, trovi in `.claude/context/studio-didattico-master.md` il racconto delle scelte di progetto, con i deep-dive nel codice reale.
+Chi vuole capire perché il modello è fatto così, e non solo come si usa, trovi in [`.claude/context/studio-didattico-master.md`](../.claude/context/studio-didattico-master.md) il racconto delle scelte di progetto, con i deep-dive nel codice reale.
 
 ## Una cosa da ricordare
 

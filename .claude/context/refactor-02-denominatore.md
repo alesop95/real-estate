@@ -1,6 +1,6 @@
 # 02. Il denominatore dei rendimenti
 
-> Deep-dive della voce 2 di `studio-didattico-master.md`. Riguarda `src/immobiliare/calcoli.py`, in particolare `CostoOperazione` e `metriche`, e le celle di sintesi del foglio Metriche.
+> Deep-dive della voce 2 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `src/immobiliare/calcoli.py`, in particolare `CostoOperazione` e `metriche`, e le celle di sintesi del foglio Metriche.
 
 ## Il problema, che non è di codice
 

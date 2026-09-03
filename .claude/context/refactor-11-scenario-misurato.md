@@ -1,6 +1,6 @@
 # 11. Lo scenario di stress si misura, e il piano dichiara se si chiude
 
-> Deep-dive della voce 11 di `studio-didattico-master.md`. Riguarda `risalite_storiche` ed `estremi_storici` in `src/immobiliare/tassi.py`, `RISALITE_EURIBOR` in `parametri.py`, la sezione *Percorso del tasso* e le righe di chiusura dentro `foglio_simulatore_mutuo` di `excel_builder.py`, l'opzione `--risalita` di `tools/valuta.py`, e i test `test_risalita_storica_cerca_la_finestra_e_non_gli_estremi` e `test_risalite_congelate_coerenti_con_la_documentazione`.
+> Deep-dive della voce 11 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda `risalite_storiche` ed `estremi_storici` in `src/immobiliare/tassi.py`, `RISALITE_EURIBOR` in `parametri.py`, la sezione *Percorso del tasso* e le righe di chiusura dentro `foglio_simulatore_mutuo` di `excel_builder.py`, l'opzione `--risalita` di `tools/valuta.py`, e i test `test_risalita_storica_cerca_la_finestra_e_non_gli_estremi` e `test_risalite_congelate_coerenti_con_la_documentazione`.
 
 ## Il punto in cui il modello si arrendeva all'intuizione
 

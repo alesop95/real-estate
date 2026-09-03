@@ -139,7 +139,7 @@ python tools/valuta.py annunci modifica --id house_4 --note "asta, tribunale di 
 
 e si compilano a mano nel foglio Annunci le colonne dell'asta, cioè base d'asta, data, tribunale e procedura, e soprattutto lo stato di occupazione. Poi si lavora nel foglio Asta, non nel foglio Immobile: le imposte si calcolano allo stesso modo, ma il costo dell'operazione comprende il compenso del delegato, la cancellazione dei gravami e la liberazione, e non comprende la provvigione.
 
-Il numero da guardare non è il prezzo ma lo sconto effettivo sul valore di mercato, e quello da scriversi su un foglio prima della gara è il prezzo massimo a cui fermarsi. La materia sta in `aste-immobiliari.md`.
+Il numero da guardare non è il prezzo ma lo sconto effettivo sul valore di mercato, e quello da scriversi su un foglio prima della gara è il prezzo massimo a cui fermarsi. La materia sta in [`aste-immobiliari.md`](aste-immobiliari.md).
 
 ## Che cosa fare quando si passa alla trattativa
 

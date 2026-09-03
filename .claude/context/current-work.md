@@ -70,14 +70,14 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'è una feature ap
 - [x] Il workbook precompilato non sovrascrive più il file-modello
 - [x] Trattazione leggibile da zero: capitolo sulla notazione e 27 letture a parole
 - [x] Tipografia italiana su tutto il progetto: accenti, trattini, con gli strumenti istanziati
-- [x] Fusione delle due guide d'uso in `guida-al-workbook.md`, senza perdita di contenuto
+- [x] Fusione delle due guide d'uso in [`guida-al-workbook.md`](../../docs/guida-al-workbook.md), senza perdita di contenuto
 - [x] README pubblico completo, con architettura, modello, fonti e collegamenti verificati
 - [x] Indice della documentazione, e prova di organizzazione in un vault Obsidian
 - [ ] Commit del lavoro dal 1 al 3 settembre, che spetta all'utente
 
 ## Riconciliazione
 
-Fatta il 1 settembre 2026. Le sette schede di questa cartella, cioè `STACK.md`, `design-and-security.md`, `deployment.md`, `dev-testing.md`, `current-work.md`, `roadmap.md` e `studio-didattico-master.md`, portano `generated-from-commit` e `last-verified-commit` ancorati a `a0b3420`, e nessuna porta più un segnaposto. Prima di ancorarle, `design-and-security.md` e `deployment.md` sono state allineate al lavoro della giornata, perché erano le due schede che non avevo toccato ma che il lavoro aveva reso in parte non più vere: la prima sul criterio con cui si sceglie cosa chiedere al modello locale e sul limite di copertura della doppia implementazione, la seconda sulla terza scadenza ricorrente e sul principio che una funzione di rete non entra nella catena che produce un artefatto.
+Fatta il 1 settembre 2026. Le sette schede di questa cartella, cioè [`STACK.md`](STACK.md), [`design-and-security.md`](design-and-security.md), [`deployment.md`](deployment.md), [`dev-testing.md`](dev-testing.md), `current-work.md`, [`roadmap.md`](roadmap.md) e [`studio-didattico-master.md`](studio-didattico-master.md), portano `generated-from-commit` e `last-verified-commit` ancorati a `a0b3420`, e nessuna porta più un segnaposto. Prima di ancorarle, `design-and-security.md` e `deployment.md` sono state allineate al lavoro della giornata, perché erano le due schede che non avevo toccato ma che il lavoro aveva reso in parte non più vere: la prima sul criterio con cui si sceglie cosa chiedere al modello locale e sul limite di copertura della doppia implementazione, la seconda sulla terza scadenza ricorrente e sul principio che una funzione di rete non entra nella catena che produce un artefatto.
 
 Alla riconciliazione successiva la cosa da verificare per prima è se `parametri.py` sia stato toccato, perché governa due date indipendenti: la `REVISIONE` fiscale e il `verificato_il` delle risalite dell'Euribor.
 

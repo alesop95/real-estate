@@ -1,6 +1,6 @@
 # Fiscalità dell'acquisto
 
-> Scheda di dominio, aggiornata al 28 agosto 2026 con i parametri della legge di bilancio 2026, legge 30 dicembre 2025 n. 199. I numeri operativi vivono in `src/immobiliare/parametri.py` e nel foglio Parametri del workbook: questa scheda spiega la logica, non duplica le cifre. Le fonti puntuali stanno in `fonti.md`.
+> Scheda di dominio, aggiornata al 28 agosto 2026 con i parametri della legge di bilancio 2026, legge 30 dicembre 2025 n. 199. I numeri operativi vivono in `src/immobiliare/parametri.py` e nel foglio Parametri del workbook: questa scheda spiega la logica, non duplica le cifre. Le fonti puntuali stanno in [`fonti.md`](fonti.md).
 
 ## Il bivio che determina tutto: chi vende
 

@@ -1,6 +1,6 @@
 # 08. Riferimenti per nome, non per coordinata
 
-> Deep-dive della voce 8 di `studio-didattico-master.md`. Riguarda il metodo `foglio_cruscotto` di `excel_builder.py`, il conto economico dentro `foglio_locazione`, la tabella a tre scenari dentro `foglio_scenari`, e i tre test `test_cruscotto_legge_il_confronto_affitto_per_nome`, `test_conto_economico_locazione_somma_le_righe_giuste`, `test_tabella_scenari_non_usa_offset_numerici`.
+> Deep-dive della voce 8 di [`studio-didattico-master.md`](studio-didattico-master.md). Riguarda il metodo `foglio_cruscotto` di `excel_builder.py`, il conto economico dentro `foglio_locazione`, la tabella a tre scenari dentro `foglio_scenari`, e i tre test `test_cruscotto_legge_il_confronto_affitto_per_nome`, `test_conto_economico_locazione_somma_le_righe_giuste`, `test_tabella_scenari_non_usa_offset_numerici`.
 
 ## Il difetto, in una riga di codice
 

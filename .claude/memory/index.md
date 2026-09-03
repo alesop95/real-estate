@@ -25,27 +25,27 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il 
 
 | Scheda | Copre | Stato |
 |---|---|---|
-| `.claude/context/STACK.md` | `src/**`, `tools/**` | aggiornata al 1 settembre, da ancorare al commit |
-| `.claude/context/design-and-security.md` | `src/immobiliare/annunci.py`, `src/immobiliare/llm_locale.py` | scritta, da ancorare al commit |
-| `.claude/context/deployment.md` | `pyproject.toml`, `tools/**` | scritta, da ancorare al commit |
-| `.claude/context/dev-testing.md` | `tools/verifica-excel.ps1`, `tests/**` | aggiornata al 1 settembre, da ancorare al commit |
-| `.claude/context/current-work.md` | feature attiva | aggiornata al 1 settembre |
-| `.claude/context/roadmap.md` | direzione | aggiornata al 1 settembre, sezione "Prossimo" chiusa |
-| `.claude/context/studio-didattico-master.md` e i dodici `refactor-NN` | evoluzioni strutturali del progetto | dodici voci, allineate al codice corrente |
-| `docs/manuale-operativo.md` | `tools/valuta.py`, registro, workbook | ogni comando, ogni campo, ogni foglio, diagnostica; include la catena dei tassi e la build LaTeX |
+| [`.claude/context/STACK.md`](../context/STACK.md) | `src/**`, `tools/**` | aggiornata al 1 settembre, da ancorare al commit |
+| [`.claude/context/design-and-security.md`](../context/design-and-security.md) | `src/immobiliare/annunci.py`, `src/immobiliare/llm_locale.py` | scritta, da ancorare al commit |
+| [`.claude/context/deployment.md`](../context/deployment.md) | `pyproject.toml`, `tools/**` | scritta, da ancorare al commit |
+| [`.claude/context/dev-testing.md`](../context/dev-testing.md) | `tools/verifica-excel.ps1`, `tests/**` | aggiornata al 1 settembre, da ancorare al commit |
+| [`.claude/context/current-work.md`](../context/current-work.md) | feature attiva | aggiornata al 1 settembre |
+| [`.claude/context/roadmap.md`](../context/roadmap.md) | direzione | aggiornata al 1 settembre, sezione "Prossimo" chiusa |
+| [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md) e i dodici `refactor-NN` | evoluzioni strutturali del progetto | dodici voci, allineate al codice corrente |
+| [`docs/manuale-operativo.md`](../../docs/manuale-operativo.md) | `tools/valuta.py`, registro, workbook | ogni comando, ogni campo, ogni foglio, diagnostica; include la catena dei tassi e la build LaTeX |
 | `docs/matematica/matematica-finanziaria.tex` | tutte le formule del modello | 32 pagine: capitolo sulla notazione per chi parte da zero, 27 paragrafi In parole, derivazioni, tavola simbolo-cella-funzione, caso svolto |
-| `docs/da-zero.md` | avvio, `tools/valuta.py` | allineata, include `tassi --risalita` e l'indice navigabile |
-| `docs/fiscalita-acquisto.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
-| `docs/fiscalita-locazione.md` | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
-| `docs/due-diligence.md` | foglio Checklist | allineata |
-| `docs/perizia-pre-acquisto.md` | foglio Dossier tecnico | allineata, norme lette sui testi primari |
-| `docs/aste-immobiliari.md` | foglio Asta | allineata, norme lette sui testi primari |
-| `docs/metodo-e-metriche.md` | `src/immobiliare/calcoli.py` | allineata, due sezioni nuove sul prezzo massimo e sullo scenario di stress |
-| `docs/raccolta-annunci.md` | `src/immobiliare/annunci.py`, `src/immobiliare/omi.py` | allineata, include blocco OMI e regime per riga |
-| `docs/comprare-in-piu-persone.md` | foglio Comproprietà | allineata |
-| `docs/guida-al-workbook.md` | workbook, tutti i fogli | nata il 3 settembre dalla fusione delle due guide d'uso, in tre parti |
-| `docs/guida-tecnica(catena-calcolo-e-normativa).md` | workbook e `src/**` | allineata a ventun fogli |
-| `docs/fonti.md` | tutte | allineata, include l'uso della serie storica Euribor |
+| [`docs/da-zero.md`](../../docs/da-zero.md) | avvio, `tools/valuta.py` | allineata, include `tassi --risalita` e l'indice navigabile |
+| [`docs/fiscalita-acquisto.md`](../../docs/fiscalita-acquisto.md) | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
+| [`docs/fiscalita-locazione.md`](../../docs/fiscalita-locazione.md) | `src/immobiliare/parametri.py` | allineata alla revisione 2026-08-28 |
+| [`docs/due-diligence.md`](../../docs/due-diligence.md) | foglio Checklist | allineata |
+| [`docs/perizia-pre-acquisto.md`](../../docs/perizia-pre-acquisto.md) | foglio Dossier tecnico | allineata, norme lette sui testi primari |
+| [`docs/aste-immobiliari.md`](../../docs/aste-immobiliari.md) | foglio Asta | allineata, norme lette sui testi primari |
+| [`docs/metodo-e-metriche.md`](../../docs/metodo-e-metriche.md) | `src/immobiliare/calcoli.py` | allineata, due sezioni nuove sul prezzo massimo e sullo scenario di stress |
+| [`docs/raccolta-annunci.md`](../../docs/raccolta-annunci.md) | `src/immobiliare/annunci.py`, `src/immobiliare/omi.py` | allineata, include blocco OMI e regime per riga |
+| [`docs/comprare-in-piu-persone.md`](../../docs/comprare-in-piu-persone.md) | foglio Comproprietà | allineata |
+| [`docs/guida-al-workbook.md`](../../docs/guida-al-workbook.md) | workbook, tutti i fogli | nata il 3 settembre dalla fusione delle due guide d'uso, in tre parti |
+| [`docs/guida-tecnica(catena-calcolo-e-normativa).md`](<../../docs/guida-tecnica(catena-calcolo-e-normativa).md>) | workbook e `src/**` | allineata a ventun fogli |
+| [`docs/fonti.md`](../../docs/fonti.md) | tutte | allineata, include l'uso della serie storica Euribor |
 
 ## Che cosa esiste e funziona
 
@@ -65,7 +65,7 @@ Il modulo `omi.py` scarica dal mirror open data, importa la fornitura ufficiale 
 
 I test automatici sono sessantatre, in due file: quarantadue sul motore e sui moduli di dominio e ventuno sulla struttura del workbook, sull'acquisizione e sulla graduatoria. Passano tutti, e la verifica con Excel non trova celle in errore.
 
-Il materiale personale sta sotto `_notes/`, ignorato da git, con la mappa in `_notes/INDICE-MATERIALE.md`. Nulla di personale è tracciato.
+Il materiale personale sta sotto `_notes/`, ignorato da git, con la mappa in [`_notes/INDICE-MATERIALE.md`](../../_notes/INDICE-MATERIALE.md). Nulla di personale è tracciato.
 
 ## Punto di ripresa
 
@@ -73,4 +73,4 @@ Sul processo resta da committare il lavoro sull'indice navigabile e sul manuale 
 
 Sul merito, lo strumento non ha più voci di sviluppo aperte con una correzione delimitata, e le tre voci di "Prossimo" della roadmap sono chiuse. Il lavoro utile è passato dallo strumento all'uso dello strumento: scegliere fra i dodici annunci a registro quello da approfondire, riempire il foglio Immobile con i suoi dati reali, verificare l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, e chiedere la rendita catastale, che nessuno dei dodici annunci indica ed è il dato che sblocca il prezzo-valore. Poi si leggono il Cruscotto, la coda bassa del foglio Rischio e il prezzo massimo sostenibile con il suo scarto sul prezzo trattato. Se il mutuo in valutazione è variabile, il percorso del tasso va compilato con il rialzo storico prima di firmare.
 
-Le direzioni ancora aperte, tutte facoltative, stanno in `roadmap.md` sotto "Più avanti": la più vicina a essere utile è l'ammortamento della surroga, perché un rialzo simulato con il percorso a gradini rende immediata la domanda su quanto convenga surrogare a quel punto del piano. I limiti noti che restano, con la ragione per cui restano, sono elencati fra le domande aperte di `current-work.md`.
+Le direzioni ancora aperte, tutte facoltative, stanno in [`roadmap.md`](../context/roadmap.md) sotto "Più avanti": la più vicina a essere utile è l'ammortamento della surroga, perché un rialzo simulato con il percorso a gradini rende immediata la domanda su quanto convenga surrogare a quel punto del piano. I limiti noti che restano, con la ragione per cui restano, sono elencati fra le domande aperte di [`current-work.md`](../context/current-work.md).

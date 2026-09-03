@@ -36,4 +36,4 @@ La clausola `Co-Authored-By` si omette quando si usa `-m` su riga singola: il co
 
 ## Identità da verificare
 
-Prima di fornire i comandi, l'agente verifica che la configurazione locale del repository sia corretta (user.name, user.email, remote origin) secondo la regola `git-identity-and-repo.md`. Se l'identità locale non è impostata, propone i comandi di configurazione prima di quelli di commit.
+Prima di fornire i comandi, l'agente verifica che la configurazione locale del repository sia corretta (user.name, user.email, remote origin) secondo la regola [`git-identity-and-repo.md`](git-identity-and-repo.md). Se l'identità locale non è impostata, propone i comandi di configurazione prima di quelli di commit.
