@@ -87,6 +87,9 @@ docs/raccolta-annunci.md     registro degli annunci, vincoli dell'acquisizione a
 docs/comprare-in-piu-persone.md
                               acquisto in comproprieta': comunione o societa', maggioranze,
                               scioglimento, fisco pro quota, quando serve una societa'
+docs/guida-per-il-socio.md   guida per chi compra insieme e non ha il progetto sulla
+                              macchina: il percorso, i cinque colori, le cinquantuno celle
+                              di input una per una, un giro completo su un immobile reale
 docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il significato
                               di ogni voce spiegato in linguaggio comune
 docs/matematica/matematica-finanziaria.tex
@@ -144,6 +147,8 @@ refactor-12-indice-navigabile.md            l'indice del workbook e i collegamen
 Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.
 
 ## Vincoli di team
+
+Ogni prodotto di questo progetto resta un file su questa macchina. Non si pubblica nulla su servizi esterni, nemmeno in forma privata e nemmeno come pagina di sola lettura: non pagine web ospitate, non documenti su piattaforme di terzi, non caricamenti di alcun genere. Vale per la documentazione come per i dati, e vale anche quando il contenuto sembra innocuo, perche' il perimetro non lo decide il singolo contenuto: questo progetto tratta una trattativa reale, con prezzi obiettivo, recapiti di terzi e una strategia di acquisto, e la riservatezza di quel materiale e' una proprieta' del progetto e non di ciascun file. Quando serve un documento condivisibile, si scrive un file sotto `docs/` e lo condivide l'utente con i mezzi che sceglie.
 
 Le operazioni di `git add`, commit e push restano manuali dell'utente: l'agente prepara i file, non committa. L'identita' git va impostata a livello locale del repository secondo `.claude/rules/git-identity-and-repo.md`. Lo stile di documentazione e di interazione e' quello di `.claude/rules/interaction-style.md`, e vale per ogni file scritto qui dentro. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
 

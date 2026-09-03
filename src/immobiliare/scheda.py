@@ -114,7 +114,11 @@ def _tabella(righe: list[str]) -> list[str]:
     dalla pagina: un difetto che non compare nel sorgente ne' fra gli avvisi del
     compilatore, e che si vede solo guardando il PDF.
     """
-    fuori = [r"\begin{tabular}{@{}p{4.6cm}r@{\hspace{0.45cm}}p{7.1cm}@{}}", r"\toprule"]
+    # La terza colonna e' testo esplicativo e va in corpo piu' piccolo: e'
+    # l'elemento che manda a capo di piu', quindi e' quello che decide se la
+    # scheda sta in una pagina. Su house_1, che ha quattro campi mancanti e
+    # quindi la tabella in fondo, a corpo normale sbordava.
+    fuori = [r"\begin{tabular}{@{}p{4.6cm}r@{\hspace{0.45cm}}>{\scriptsize}p{7.1cm}@{}}", r"\toprule"]
     fuori.extend(righe)
     fuori.append(r"\bottomrule")
     fuori.append(r"\end{tabular}")
@@ -133,7 +137,7 @@ def _sezione(titolo: str) -> list[str]:
     L'interruzione serve: senza, titolo e tabella finiscono sulla stessa riga e
     il titolo compare a sinistra della tabella invece che sopra.
     """
-    return [r"\par\vspace{0.7em}", r"\textbf{" + _esc(titolo) + r"}\par\vspace{0.25em}"]
+    return [r"\par\vspace{0.5em}", r"\textbf{" + _esc(titolo) + r"}\par\vspace{0.2em}"]
 
 
 def costruisci(
@@ -227,13 +231,14 @@ def costruisci(
     c.append(r"\usepackage[utf8]{inputenc}")
     c.append(r"\usepackage[T1]{fontenc}")
     c.append(r"\usepackage[italian]{babel}")
-    c.append(r"\usepackage[a4paper,margin=1.8cm]{geometry}")
+    c.append(r"\usepackage[a4paper,top=1.4cm,bottom=1.2cm,left=1.6cm,right=1.6cm]{geometry}")
     c.append(r"\usepackage{booktabs}")
     c.append(r"\usepackage{xcolor}")
     c.append(r"\usepackage{array}")
     c.append(r"\newcommand{\euro}{\texteuro}")
     c.append(r"\pagestyle{empty}")
     c.append(r"\setlength{\parindent}{0pt}")
+    c.append(r"\raggedbottom")
     c.append(r"\begin{document}")
 
     c.append(r"\begin{center}")
@@ -351,7 +356,7 @@ def costruisci(
         c.extend(_tabella(righe))
 
     # ------------------------------------------------------ il numero da usare
-    c.append(r"\par\vspace{0.7em}")
+    c.append(r"\par\vspace{0.5em}")
     if prezzo_massimo is None:
         c.append(r"\colorbox{yellow!30}{\parbox{\dimexpr\linewidth-2\fboxsep}{"
                  r"\textbf{Il numero da portare in trattativa non e' calcolabile.}\\[0.3em]"
@@ -411,8 +416,8 @@ def costruisci(
         + "; un mese di sfitto atteso all'anno e accantonamento per morosita' al "
         + _num(P.COSTI.morosita_su_canone * 100) + " per cento; regime di locazione a cedolare secca."
     )
-    c.append(r"\par\vspace{0.7em}")
-    c.append(r"{\footnotesize " + _esc(assunzioni))
+    c.append(r"\par\vspace{0.5em}")
+    c.append(r"{\scriptsize " + _esc(assunzioni))
     c.append(
         r"\\[0.4em] Questa scheda e' uno strumento di analisi personale e non costituisce "
         r"consulenza fiscale, legale o finanziaria. Prima di firmare qualunque cosa le posizioni "
