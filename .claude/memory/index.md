@@ -44,7 +44,7 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che e' il 
 | `docs/raccolta-annunci.md` | `src/immobiliare/annunci.py`, `src/immobiliare/omi.py` | allineata, include blocco OMI e regime per riga |
 | `docs/comprare-in-piu-persone.md` | foglio Comproprieta' | allineata |
 | `docs/guida-non-tecnica.md` | workbook, tutti i fogli | allineata a ventun fogli |
-| `docs/guida-tecnica.md` | workbook e `src/**` | allineata a ventun fogli |
+| `docs/guida-tecnica(catena-calcolo-e-normativa).md` | workbook e `src/**` | allineata a ventun fogli |
 | `docs/fonti.md` | tutte | allineata, include l'uso della serie storica Euribor |
 
 ## Che cosa esiste e funziona

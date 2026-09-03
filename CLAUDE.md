@@ -65,9 +65,11 @@ README.md    descrizione del progetto per chi lo incontra la prima volta
 LICENSE      licenza MIT, con la nota che delimita cosa la licenza non garantisce
 ```
 
-Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice.
+Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. L'indice di questa cartella, con che cos'e' ciascun file, per chi e' scritto e quando si apre, sta in `docs/README.md`: e' il file da aprire quando non si sa dove cercare.
 
 ```
+docs/README.md               indice della documentazione: i quattro percorsi di lettura,
+                              i quindici documenti per tipo di domanda, le sovrapposizioni note
 docs/da-zero.md              avvio da zero: cosa installare, quali documenti procurarsi,
                               la prima valutazione completa in sette passi
 docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
@@ -100,7 +102,8 @@ docs/matematica/matematica-finanziaria.tex
 docs/manuale-operativo.md    guida d'uso completa: installazione, ogni comando con ogni
                               opzione, ogni campo del registro, ogni foglio, manutenzione
                               ricorrente, diagnostica degli errori
-docs/guida-tecnica.md        architettura, catena di calcolo, riferimento di ogni voce con
+docs/guida-tecnica(catena-calcolo-e-normativa).md
+                              architettura, catena di calcolo, riferimento di ogni voce con
                               formula e norma, punti di intervento, verifica
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
                               atterra nel codice o nel workbook, stato di verifica, lacune

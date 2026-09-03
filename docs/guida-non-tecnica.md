@@ -1,6 +1,6 @@
 # Guida d'uso, senza gergo
 
-> Per chi vuole usare lo strumento senza sapere come è fatto. Si legge una volta, poi si tiene aperta accanto al file. Ogni voce spiega che cosa è, perché conta e da quale norma discende. La versione per chi mette le mani nel codice è in `guida-tecnica.md`.
+> Per chi vuole usare lo strumento senza sapere come è fatto. Si legge una volta, poi si tiene aperta accanto al file. Ogni voce spiega che cosa è, perché conta e da quale norma discende. La versione per chi mette le mani nel codice è in `guida-tecnica(catena-calcolo-e-normativa).md`.
 
 ## Che cosa è questo file e che cosa non è
 

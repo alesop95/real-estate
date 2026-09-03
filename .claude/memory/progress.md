@@ -2,6 +2,18 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-09-03, indice della documentazione, e una duplicazione dichiarata
+
+File toccati: `docs/README.md` nuovo, `CLAUDE.md`, `README.md`, `docs/da-zero.md`, `docs/fonti.md`, `docs/guida-non-tecnica.md`, `docs/manuale-operativo.md`, `.claude/memory/index.md`.
+
+L'utente ha rinominato `docs/guida-tecnica.md` in `docs/guida-tecnica(catena-calcolo-e-normativa).md`, e ha chiesto di orientarsi fra i documenti. Due cose da fare, e una da dichiarare.
+
+Riferimenti riparati. La rinomina aveva rotto sette riferimenti in sei file piu' la tabella delle schede nell'indice di stato. In `CLAUDE.md` il nome sta in un blocco preformattato con le descrizioni allineate in colonna, e i ventotto caratteri in piu' avevano disallineato la riga: ricomposta portando la descrizione a capo. La memoria storica non e' stata toccata, cioe' `progress.md` e le ADR conservano il nome che il file aveva quel giorno, perche' riscriverlo falsificherebbe il racconto di che cosa e' stato fatto quando.
+
+Indice della documentazione, `docs/README.md`. La cartella e' arrivata a quindici documenti e mancava il file che dice quale aprire. L'organizzazione scelta non e' per argomento ma per tipo di domanda, che e' la chiave dell'intera cartella: chi si chiede come si fa apre il manuale operativo, chi si chiede perche' un numero e' quel numero apre una scheda di dominio, chi si chiede come e' costruito apre la guida tecnica o la trattazione, chi deve spiegarlo a terzi apre una guida d'uso. Sopra le tabelle stanno quattro percorsi di lettura, uno per situazione.
+
+La duplicazione, che e' un errore mio e va dichiarata invece di essere lasciata da scoprire. `guida-per-il-socio.md`, scritta ieri su richiesta, ha lo stesso destinatario di `guida-non-tecnica.md`, cioe' una persona che usa il workbook senza toccare il codice, e copre lo stesso terreno: i colori delle celle, i fogli uno per uno, che cosa il modello non sa, le due voci da non lasciare al valore predefinito. Differiscono nella forma, narrativa la prima e tabellare la seconda, e la seconda aggiunge il giro su un immobile reale. L'ho scritta senza verificare che la prima esistesse gia', che e' esattamente il difetto contro cui il progetto tiene un indice dei satelliti in `CLAUDE.md`: l'indice c'era e non l'ho consultato. La sovrapposizione e' ora scritta in `docs/README.md` insieme all'altra, minore, fra manuale operativo e guida tecnica sulla verifica e i punti di intervento. La chiusura, cioe' fondere le due guide in una, e' una decisione dell'utente perche' comporta la scomparsa di un file, e resta da prendere.
+
 ## 2026-09-03, la guida per il socio come file locale, e il vincolo che ne discende
 
 File toccati: `docs/guida-per-il-socio.md` nuovo, `CLAUDE.md`, `README.md`, `docs/manuale-operativo.md`, memoria.

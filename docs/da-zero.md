@@ -143,7 +143,7 @@ Se la rigenerazione fallisce con un errore di permesso, è Excel rimasto aperto 
 
 ## Dove andare a leggere
 
-`guida-non-tecnica.md` accompagna foglio per foglio in linguaggio comune. `guida-tecnica.md` riporta architettura e riferimento di ogni voce con formula e norma. `fiscalita-acquisto.md` e `fiscalita-locazione.md` spiegano la materia. `due-diligence.md` spiega perché ogni verifica della checklist esiste. `comprare-in-piu-persone.md` copre l'acquisto in comproprietà. `fonti.md` dice da dove viene ogni numero.
+`guida-non-tecnica.md` accompagna foglio per foglio in linguaggio comune. `guida-tecnica(catena-calcolo-e-normativa).md` riporta architettura e riferimento di ogni voce con formula e norma. `fiscalita-acquisto.md` e `fiscalita-locazione.md` spiegano la materia. `due-diligence.md` spiega perché ogni verifica della checklist esiste. `comprare-in-piu-persone.md` copre l'acquisto in comproprietà. `fonti.md` dice da dove viene ogni numero.
 
 Chi vuole capire perché il modello è fatto così, e non solo come si usa, trovi in `.claude/context/studio-didattico-master.md` il racconto delle scelte di progetto, con i deep-dive nel codice reale.
 
