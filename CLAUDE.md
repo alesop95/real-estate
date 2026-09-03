@@ -1,16 +1,16 @@
 # real-estate
 
-> Istruzioni di team, versionate. Questo file e' l'indice del progetto: indicizza i soli file satellite tracciati e descrive la procedura di ripresa. Le preferenze personali vivono in `CLAUDE.local.md`, ignorato da git, non qui.
+> Istruzioni di team, versionate. Questo file è l'indice del progetto: indicizza i soli file satellite tracciati e descrive la procedura di ripresa. Le preferenze personali vivono in `CLAUDE.local.md`, ignorato da git, non qui.
 
-## Cos'e' questo progetto
+## Cos'è questo progetto
 
-Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel di ventun fogli con formule vive, quindi interattivo, che copre il cruscotto di sintesi, il costo reale dell'operazione, il mutuo con simulatore e piano di ammortamento, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilita', la simulazione probabilistica su mille scenari con analisi a tornado, la ripartizione fra comproprietari, la checklist delle verifiche legali e tecniche, il dossier dei documenti da farsi consegnare in trattativa, il costo reale di un'aggiudicazione all'asta, il registro degli immobili in valutazione e il registro delle fonti.
+Strumento locale per valutare l'acquisto di un immobile residenziale in Italia, in tutte e tre le destinazioni possibili: abitazione propria, messa a reddito, investimento puro. Produce un workbook Excel di ventun fogli con formule vive, quindi interattivo, che copre il cruscotto di sintesi, il costo reale dell'operazione, il mutuo con simulatore e piano di ammortamento, i regimi fiscali della locazione a confronto, la proiezione del flusso di cassa, gli indicatori di rendimento, il confronto con l'alternativa di non comprare, le tabelle di sensibilità, la simulazione probabilistica su mille scenari con analisi a tornado, la ripartizione fra comproprietari, la checklist delle verifiche legali e tecniche, il dossier dei documenti da farsi consegnare in trattativa, il costo reale di un'aggiudicazione all'asta, il registro degli immobili in valutazione e il registro delle fonti.
 
-Il perimetro e' deliberatamente definito. Sono coperti l'acquisto da privato e da impresa con IVA, la prima casa e le altre, l'acquisto in quota da parte di piu' soggetti, la nuova costruzione con le tutele del d.lgs. 122/2005. Non e' coperta la ristrutturazione come progetto a se', per scelta esplicita; resta invece modellata la ristrutturazione periodica di fine ciclo, perche' e' un costo ricorrente e ignorarlo falsa il rendimento.
+Il perimetro è deliberatamente definito. Sono coperti l'acquisto da privato e da impresa con IVA, la prima casa e le altre, l'acquisto in quota da parte di più soggetti, la nuova costruzione con le tutele del d.lgs. 122/2005. Non è coperta la ristrutturazione come progetto a sé, per scelta esplicita; resta invece modellata la ristrutturazione periodica di fine ciclo, perché è un costo ricorrente e ignorarlo falsa il rendimento.
 
-Il progetto adotta il sistema di progetto portabile del template `E:\template-claude-developing`: memoria e schede di contesto versionate, regole modulari, e il pacchetto `studio-didattico`, cioe' il registro delle evoluzioni di progetto con i relativi approfondimenti nel codice reale.
+Il progetto adotta il sistema di progetto portabile del template `E:\template-claude-developing`: memoria e schede di contesto versionate, regole modulari, e il pacchetto `studio-didattico`, cioè il registro delle evoluzioni di progetto con i relativi approfondimenti nel codice reale.
 
-Due invarianti del generatore, imparate correggendo difetti reali e non scelte a priori, vanno conosciute prima di toccare `excel_builder.py`. Un riferimento da un foglio a un altro si scrive per nome definito e mai per coordinata di cella; la riga di una tabella costruita da un helper si prende dal valore che l'helper restituisce e mai calcolandola come ancoraggio piu' una costante. La ragione, distesa in ADR-013 e nella voce 8 dello studio didattico, e' che le due forme vietate non sbagliano rumorosamente: producono un riferimento valido a una cella diversa, quindi un numero plausibile su un foglio che si apre senza errori.
+Due invarianti del generatore, imparate correggendo difetti reali e non scelte a priori, vanno conosciute prima di toccare `excel_builder.py`. Un riferimento da un foglio a un altro si scrive per nome definito e mai per coordinata di cella; la riga di una tabella costruita da un helper si prende dal valore che l'helper restituisce e mai calcolandola come ancoraggio più una costante. La ragione, distesa in ADR-013 e nella voce 8 dello studio didattico, è che le due forme vietate non sbagliano rumorosamente: producono un riferimento valido a una cella diversa, quindi un numero plausibile su un foglio che si apre senza errori.
 
 ## Contesto operativo
 
@@ -25,11 +25,11 @@ LaTeX:          TinyTeX user-local, engine pdflatex; manifesto in tex-packages.t
 Identita' git:  da impostare locale al repository, vedi CLAUDE.local.md
 ```
 
-L'identita' git, l'indirizzo dell'istanza Ollama e il remoto sono specifici della macchina e vivono in `CLAUDE.local.md`, che non e' versionato. Questo file, che finisce in una repository pubblica, non porta indirizzi di posta, recapiti, indirizzi di rete interni ne' percorsi personali.
+L'identità git, l'indirizzo dell'istanza Ollama e il remoto sono specifici della macchina e vivono in `CLAUDE.local.md`, che non è versionato. Questo file, che finisce in una repository pubblica, non porta indirizzi di posta, recapiti, indirizzi di rete interni né percorsi personali.
 
 ## Procedura di ripresa in una sessione nuova
 
-Lo stato del progetto e' interamente recuperabile su disco. Si legge per primo `.claude/memory/index.md`, che da' branch, stato di verifica di ogni scheda e punto di ripresa. Si legge poi `.claude/context/current-work.md` se c'e' una feature attiva. Le schede di dominio sotto `docs/` si aprono solo quando il task tocca la materia che descrivono, mai tutte insieme. Il registro `.claude/memory/progress.md` e quello delle decisioni `.claude/memory/decisions.md` forniscono storia e motivazioni quando servono.
+Lo stato del progetto è interamente recuperabile su disco. Si legge per primo `.claude/memory/index.md`, che da' branch, stato di verifica di ogni scheda e punto di ripresa. Si legge poi `.claude/context/current-work.md` se c'è una feature attiva. Le schede di dominio sotto `docs/` si aprono solo quando il task tocca la materia che descrivono, mai tutte insieme. Il registro `.claude/memory/progress.md` e quello delle decisioni `.claude/memory/decisions.md` forniscono storia e motivazioni quando servono.
 
 Prima di toccare un parametro fiscale si legge `docs/fonti.md` e si verifica la fonte: nessun numero entra nel modello senza una fonte citata e una data di verifica.
 
@@ -52,9 +52,9 @@ python tools/valuta.py llm stato                   raggiungibilita' del modello 
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```
 
-L'ultimo comando e' la verifica del workbook: apre il file con Excel, forza il ricalcolo completo e segnala ogni cella in errore. Va eseguito dopo ogni modifica a `excel_builder.py`, perche' la libreria che genera il file scrive le formule ma non le valuta. I test automatici si eseguono con `python -m pytest tests`, oppure lanciando direttamente i due file se pytest non e' installato.
+L'ultimo comando è la verifica del workbook: apre il file con Excel, forza il ricalcolo completo e segnala ogni cella in errore. Va eseguito dopo ogni modifica a `excel_builder.py`, perché la libreria che genera il file scrive le formule ma non le valuta. I test automatici si eseguono con `python -m pytest tests`, oppure lanciando direttamente i due file se pytest non è installato.
 
-Il materiale personale, cioe' il dossier delle trattative, i riferimenti di terzi e i segnalibri, vive sotto `_notes/` ed e' interamente ignorato da git. La mappa di cosa contiene, con trascritta l'informazione dei file che sono vuoti e la portano nel nome, sta in `_notes/INDICE-MATERIALE.md`.
+Il materiale personale, cioè il dossier delle trattative, i riferimenti di terzi e i segnalibri, vive sotto `_notes/` ed è interamente ignorato da git. La mappa di cosa contiene, con trascritta l'informazione dei file che sono vuoti e la portano nel nome, sta in `_notes/INDICE-MATERIALE.md`.
 
 ## Indice dei file satellite tracciati
 
@@ -65,7 +65,7 @@ README.md    descrizione del progetto per chi lo incontra la prima volta
 LICENSE      licenza MIT, con la nota che delimita cosa la licenza non garantisce
 ```
 
-Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. L'indice di questa cartella, con che cos'e' ciascun file, per chi e' scritto e quando si apre, sta in `docs/README.md`: e' il file da aprire quando non si sa dove cercare.
+Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. L'indice di questa cartella, con che cos'è ciascun file, per chi è scritto e quando si apre, sta in `docs/README.md`: è il file da aprire quando non si sa dove cercare.
 
 ```
 docs/README.md               indice della documentazione: i quattro percorsi di lettura,
@@ -89,11 +89,11 @@ docs/raccolta-annunci.md     registro degli annunci, vincoli dell'acquisizione a
 docs/comprare-in-piu-persone.md
                               acquisto in comproprieta': comunione o societa', maggioranze,
                               scioglimento, fisco pro quota, quando serve una societa'
-docs/guida-per-il-socio.md   guida per chi compra insieme e non ha il progetto sulla
-                              macchina: il percorso, i cinque colori, le cinquantuno celle
-                              di input una per una, un giro completo su un immobile reale
-docs/guida-non-tecnica.md    guida d'uso senza gergo, foglio per foglio, con il significato
-                              di ogni voce spiegato in linguaggio comune
+docs/guida-al-workbook.md    guida d'uso completa del foglio di calcolo, in tre parti: il giro
+                              guidato scheda per scheda, il riferimento delle cinquantuno celle
+                              di input una per una, e come si legge il risultato con un giro
+                              su un immobile reale. Nata dalla fusione di guida-non-tecnica
+                              e guida-per-il-socio, di cui conserva tutto il contenuto
 docs/matematica/matematica-finanziaria.tex
                               trattazione LaTeX: ogni formula del modello derivata da zero,
                               dalla capitalizzazione alla graduatoria, con la tavola che lega
@@ -105,6 +105,8 @@ docs/manuale-operativo.md    guida d'uso completa: installazione, ogni comando c
 docs/guida-tecnica(catena-calcolo-e-normativa).md
                               architettura, catena di calcolo, riferimento di ogni voce con
                               formula e norma, punti di intervento, verifica
+docs/vault-obsidian.md       prova di organizzazione in un vault Obsidian: struttura, hub,
+                              frontmatter, che cosa si rompe, configurazione minima
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
                               atterra nel codice o nel workbook, stato di verifica, lacune
 ```
@@ -129,7 +131,7 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 .claude/context/roadmap.md              direzione e priorita'
 ```
 
-Pacchetto `studio-didattico`, sotto `.claude/context/`. E' il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perche' era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perche' una scelta e' fatta cosi', prima di rifarla diversamente.
+Pacchetto `studio-didattico`, sotto `.claude/context/`. È il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perché era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perché una scelta è fatta così, prima di rifarla diversamente.
 
 ```
 studio-didattico-master.md                  indice narrativo, dodici voci numerate
@@ -151,12 +153,12 @@ Regole modulari sotto `.claude/rules/`. Lo standard di sistema completo resta in
 
 ## Vincoli di team
 
-Ogni prodotto di questo progetto resta un file su questa macchina. Non si pubblica nulla su servizi esterni, nemmeno in forma privata e nemmeno come pagina di sola lettura: non pagine web ospitate, non documenti su piattaforme di terzi, non caricamenti di alcun genere. Vale per la documentazione come per i dati, e vale anche quando il contenuto sembra innocuo, perche' il perimetro non lo decide il singolo contenuto: questo progetto tratta una trattativa reale, con prezzi obiettivo, recapiti di terzi e una strategia di acquisto, e la riservatezza di quel materiale e' una proprieta' del progetto e non di ciascun file. Quando serve un documento condivisibile, si scrive un file sotto `docs/` e lo condivide l'utente con i mezzi che sceglie.
+Ogni prodotto di questo progetto resta un file su questa macchina. Non si pubblica nulla su servizi esterni, nemmeno in forma privata e nemmeno come pagina di sola lettura: non pagine web ospitate, non documenti su piattaforme di terzi, non caricamenti di alcun genere. Vale per la documentazione come per i dati, e vale anche quando il contenuto sembra innocuo, perché il perimetro non lo decide il singolo contenuto: questo progetto tratta una trattativa reale, con prezzi obiettivo, recapiti di terzi e una strategia di acquisto, e la riservatezza di quel materiale è una proprietà del progetto e non di ciascun file. Quando serve un documento condivisibile, si scrive un file sotto `docs/` e lo condivide l'utente con i mezzi che sceglie.
 
-Le operazioni di `git add`, commit e push restano manuali dell'utente: l'agente prepara i file, non committa. L'identita' git va impostata a livello locale del repository secondo `.claude/rules/git-identity-and-repo.md`. Lo stile di documentazione e di interazione e' quello di `.claude/rules/interaction-style.md`, e vale per ogni file scritto qui dentro. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
+Le operazioni di `git add`, commit e push restano manuali dell'utente: l'agente prepara i file, non committa. L'identità git va impostata a livello locale del repository secondo `.claude/rules/git-identity-and-repo.md`. Lo stile di documentazione e di interazione è quello di `.claude/rules/interaction-style.md`, e vale per ogni file scritto qui dentro. Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
 
-Il materiale personale, raccolto sotto `_notes/` dopo il riordino del 28 agosto 2026, non e' versionato e non va pubblicato: contiene documentazione di trattative reali, fogli di calcolo di terzi e conversazioni. Nemmeno `data/annunci.csv` entra in git, perche' porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che e' la propria strategia di acquisto e non ha ragione di stare in una repository pubblica.
+Il materiale personale, raccolto sotto `_notes/` dopo il riordino del 28 agosto 2026, non è versionato e non va pubblicato: contiene documentazione di trattative reali, fogli di calcolo di terzi e conversazioni. Nemmeno `data/annunci.csv` entra in git, perché porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che è la propria strategia di acquisto e non ha ragione di stare in una repository pubblica.
 
 ## Avvertenza sul contenuto
 
-Il progetto produce uno strumento di analisi personale, non una consulenza fiscale, legale o finanziaria. Le aliquote implementate sono quelle vigenti alla data di revisione dichiarata in `src/immobiliare/parametri.py` e cambiano con ogni legge di bilancio. Prima di qualunque firma le posizioni soggettive vanno confermate da un notaio e da un commercialista, e la conformita' urbanistica da un tecnico abilitato.
+Il progetto produce uno strumento di analisi personale, non una consulenza fiscale, legale o finanziaria. Le aliquote implementate sono quelle vigenti alla data di revisione dichiarata in `src/immobiliare/parametri.py` e cambiano con ogni legge di bilancio. Prima di qualunque firma le posizioni soggettive vanno confermate da un notaio e da un commercialista, e la conformità urbanistica da un tecnico abilitato.

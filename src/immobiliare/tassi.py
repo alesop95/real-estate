@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """Tassi di mercato correnti sui mutui casa, dalla fonte ufficiale.
 
-Il modello prende il tasso come input, perche' il tasso che conta e' quello scritto
-sul preventivo. Serve pero' un metro per capire se quel preventivo e' buono, cattivo
+Il modello prende il tasso come input, perché il tasso che conta è quello scritto
+sul preventivo. Serve però un metro per capire se quel preventivo è buono, cattivo
 o normale, e per sapere che tasso mettere in una simulazione fatta prima di avere un
 preventivo in mano.
 
-La fonte e' il portale dati della Banca centrale europea, che pubblica le statistiche
+La fonte è il portale dati della Banca centrale europea, che pubblica le statistiche
 sui tassi bancari armonizzate, note come MIR. Sono dati ufficiali, pubblici, senza
-registrazione ne' chiave, aggiornati mensilmente, e riferiti alle nuove erogazioni
-in Italia: sono cioe' esattamente la media di quello che le banche italiane hanno
-davvero applicato, non un tasso pubblicitario ne' una stima.
+registrazione né chiave, aggiornati mensilmente, e riferiti alle nuove erogazioni
+in Italia: sono cioè esattamente la media di quello che le banche italiane hanno
+davvero applicato, non un tasso pubblicitario né una stima.
 
-Due avvertenze sull'uso. Il dato e' medio e ha uno o due mesi di ritardo, quindi dice
+Due avvertenze sull'uso. Il dato è medio e ha uno o due mesi di ritardo, quindi dice
 dove sta il mercato, non quale tasso otterrai tu: il tuo dipende da reddito, loan to
-value, eta' e banca. E la media include operazioni molto diverse fra loro, per cui il
+value, età e banca. E la media include operazioni molto diverse fra loro, per cui il
 confronto sensato si fa con la serie della propria tipologia, fisso lungo oppure
 variabile, non con la media generale.
 """
@@ -31,8 +31,8 @@ BASE = "https://data-api.ecb.europa.eu/service/data"
 TIMEOUT_SECONDI = 45
 
 # Serie MIR, tassi bancari sulle nuove erogazioni a famiglie per acquisto abitazione
-# in Italia. La quinta posizione della chiave e' il periodo di determinazione iniziale
-# del tasso, che e' cio' che distingue un fisso da un variabile.
+# in Italia. La quinta posizione della chiave è il periodo di determinazione iniziale
+# del tasso, che è ciò che distingue un fisso da un variabile.
 SERIE_MUTUI = {
     "media": ("MIR/M.IT.B.A2C.A.R.A.2250.EUR.N", "Media di tutte le nuove erogazioni"),
     "variabile": ("MIR/M.IT.B.A2C.F.R.A.2250.EUR.N", "Variabile, o rifissazione entro un anno"),
@@ -51,7 +51,7 @@ FONTE = "https://data.ecb.europa.eu/"
 
 
 class TassiNonDisponibili(RuntimeError):
-    """Il portale dati non risponde, o la serie richiesta non esiste piu'."""
+    """Il portale dati non risponde, o la serie richiesta non esiste più."""
 
 
 @dataclass
@@ -118,23 +118,23 @@ class Risalita:
     """La peggiore risalita osservata dell'indice su una finestra di N mesi.
 
     Serve a rispondere a una domanda che nel foglio di calcolo si risponde a
-    sentimento: quanto puo' salire un tasso variabile. La risposta a sentimento e'
-    di norma un punto percentuale, perche' e' l'ordine di grandezza che sembra
-    prudente. La risposta empirica e' che fra giugno 2022 e giugno 2023 l'Euribor a
-    tre mesi e' salito di 3,78 punti in dodici mesi, e chi aveva simulato un punto
-    aveva simulato un quinto dello scenario che si e' poi verificato.
+    sentimento: quanto può salire un tasso variabile. La risposta a sentimento è
+    di norma un punto percentuale, perché è l'ordine di grandezza che sembra
+    prudente. La risposta empirica è che fra giugno 2022 e giugno 2023 l'Euribor a
+    tre mesi è salito di 3,78 punti in dodici mesi, e chi aveva simulato un punto
+    aveva simulato un quinto dello scenario che si è poi verificato.
 
     La finestra si misura sulla serie mensile pubblicata dalla Banca centrale
     europea, che parte dal gennaio 1994, quindi copre tre cicli di politica
-    monetaria completi. Non e' una previsione e non e' un limite superiore: e' il
-    peggio che i dati disponibili contengono, che e' l'unico riferimento onesto in
-    assenza di una previsione, e va usato come misura di sostenibilita' e non di
-    probabilita'.
+    monetaria completi. Non è una previsione e non è un limite superiore: è il
+    peggio che i dati disponibili contengono, che è l'unico riferimento onesto in
+    assenza di una previsione, e va usato come misura di sostenibilità e non di
+    probabilità.
     """
 
     mesi: int
     variazione: float
-    """Punti percentuali di aumento, cioe' 3,78 e non 0,0378."""
+    """Punti percentuali di aumento, cioè 3,78 e non 0,0378."""
     periodo_iniziale: str
     periodo_finale: str
     valore_iniziale: float
@@ -153,12 +153,12 @@ def risalite_storiche(
 ) -> list[Risalita]:
     """Per ogni finestra, la peggiore risalita contenuta nella serie storica.
 
-    L'algoritmo e' una scansione lineare su tutte le posizioni di partenza, non un
+    L'algoritmo è una scansione lineare su tutte le posizioni di partenza, non un
     massimo sui soli picchi: cercare il massimo assoluto e sottrargli il minimo
-    assoluto darebbe un numero piu' grande e privo di significato, perche' i due
+    assoluto darebbe un numero più grande e privo di significato, perché i due
     estremi possono stare a vent'anni di distanza e nessun mutuo li attraversa
-    nella stessa finestra. Quello che serve e' la peggiore finestra di durata
-    fissata, che e' la cosa che un piano di ammortamento incontra davvero.
+    nella stessa finestra. Quello che serve è la peggiore finestra di durata
+    fissata, che è la cosa che un piano di ammortamento incontra davvero.
     """
     dati = serie(chiave, osservazioni)
     esito = []
@@ -186,11 +186,11 @@ def risalite_storiche(
 def estremi_storici(chiave: str = "euribor_3m", osservazioni: int = 400) -> dict:
     """Massimo, minimo e copertura temporale della serie, per contesto.
 
-    Il massimo storico serve a un controllo di sanita' che il solo scarto non da':
+    Il massimo storico serve a un controllo di sanità che il solo scarto non da':
     una risalita di quattro punti da un livello negativo arriva a un tasso che si
-    e' visto, mentre la stessa risalita dal livello di oggi arriverebbe a un tasso
+    è visto, mentre la stessa risalita dal livello di oggi arriverebbe a un tasso
     che nella serie non compare. La differenza va saputa prima di decidere se lo
-    scenario e' pessimistico o implausibile.
+    scenario è pessimistico o implausibile.
     """
     dati = serie(chiave, osservazioni)
     valori = [v for _, v in dati]
@@ -221,45 +221,45 @@ def catena_dei_tassi(tasso_preventivo: float | None = None) -> list[Gradino]:
     """Scompone il tasso di un mutuo negli anelli che lo determinano.
 
     Serve a rispondere a una domanda che il singolo numero non fa vedere: quando
-    una banca offre il tre virgola due per cento, quanto di quel numero e'
-    politica monetaria, quanto e' prezzo del tempo e del rischio di credito fra
-    banche, e quanto e' margine della banca. Le tre componenti si muovono per
+    una banca offre il tre virgola due per cento, quanto di quel numero è
+    politica monetaria, quanto è prezzo del tempo e del rischio di credito fra
+    banche, e quanto è margine della banca. Le tre componenti si muovono per
     ragioni diverse e su tempi diversi, e distinguerle cambia il modo di trattare:
     sul primo anello non si negozia, sul terzo si.
 
     I quattro anelli, in ordine.
 
-    Il primo e' l'euro short-term rate, che la Banca centrale europea pubblica
+    Il primo è l'euro short-term rate, che la Banca centrale europea pubblica
     ogni giorno lavorativo TARGET2 sulle operazioni non garantite a un giorno
-    concluse il giorno prima. E' un tasso a consuntivo calcolato su transazioni
-    davvero avvenute, non una quotazione dichiarata, ed e' il riferimento piu'
+    concluse il giorno prima. È un tasso a consuntivo calcolato su transazioni
+    davvero avvenute, non una quotazione dichiarata, ed è il riferimento più
     vicino al costo del denaro senza rischio di durata: al 1 settembre 2026 vale
     il 2,188 per cento su 895 transazioni per 61 miliardi fra 47 banche.
 
-    Il secondo e' l'Euribor a tre mesi, cioe' lo stesso mercato ma su una durata
-    di tre mesi invece di uno giorno. Lo scarto fra i due e' il prezzo di
+    Il secondo è l'Euribor a tre mesi, cioè lo stesso mercato ma su una durata
+    di tre mesi invece di uno giorno. Lo scarto fra i due è il prezzo di
     prestare per tre mesi invece che per una notte, e contiene sia l'attesa su
-    dove andra' la politica monetaria in quel trimestre sia il rischio che la
+    dove andrà la politica monetaria in quel trimestre sia il rischio che la
     controparte non restituisca. In un ciclo di rialzi atteso l'Euribor sta sopra
-    l'overnight, in uno di ribassi puo' starci sotto: il segno di questo scarto e'
+    l'overnight, in uno di ribassi può starci sotto: il segno di questo scarto è
     quindi una lettura di aspettativa, non una costante.
 
-    Il terzo e' il tasso medio che le banche italiane hanno davvero applicato
+    Il terzo è il tasso medio che le banche italiane hanno davvero applicato
     alle nuove erogazioni per acquisto di abitazione, dalle statistiche
-    armonizzate MIR. Lo scarto rispetto all'anello precedente e' il margine del
+    armonizzate MIR. Lo scarto rispetto all'anello precedente è il margine del
     sistema bancario, e comprende costo del capitale di vigilanza, rischio di
     credito del mutuatario, costi operativi e profitto.
 
-    Il quarto, se lo si passa, e' il tasso del proprio preventivo, e lo scarto
+    Il quarto, se lo si passa, è il tasso del proprio preventivo, e lo scarto
     rispetto alla media dice se si sta trattando meglio o peggio del mercato.
 
-    Un'avvertenza sulla comparabilita' che va detta perche' la scomposizione la
+    Un'avvertenza sulla comparabilità che va detta perché la scomposizione la
     suggerisce e i dati non la sostengono del tutto. Le due serie di mercato sono
-    giornaliera e mensile, la serie MIR e' mensile con uno o due mesi di ritardo,
+    giornaliera e mensile, la serie MIR è mensile con uno o due mesi di ritardo,
     quindi gli anelli non sono contemporanei e gli scarti si leggono come ordini
-    di grandezza. E un mutuo a tasso fisso non e' indicizzato all'Euribor ma
+    di grandezza. E un mutuo a tasso fisso non è indicizzato all'Euribor ma
     all'IRS di pari durata, che questo progetto non legge: sul fisso la catena
-    resta valida come scomposizione concettuale e non come identita' numerica.
+    resta valida come scomposizione concettuale e non come identità numerica.
     """
     anelli = []
 
@@ -286,7 +286,7 @@ def catena_dei_tassi(tasso_preventivo: float | None = None) -> list[Gradino]:
                 nome="Euribor 3 mesi",
                 valore=eur3.valore,
                 periodo=eur3.periodo,
-                spiegazione="Lo stesso mercato su tre mesi invece di un giorno: lo scarto e' il prezzo della durata piu' il rischio di controparte, e riflette dove il mercato si aspetta che vada la politica monetaria",
+                spiegazione="Lo stesso mercato su tre mesi invece di un giorno: lo scarto è il prezzo della durata più il rischio di controparte, e riflette dove il mercato si aspetta che vada la politica monetaria",
                 scarto_dal_precedente=None if precedente is None else eur3.valore - precedente,
             )
         )
@@ -301,7 +301,7 @@ def catena_dei_tassi(tasso_preventivo: float | None = None) -> list[Gradino]:
                 nome="Mutui a tasso variabile, media Italia",
                 valore=mir.valore,
                 periodo=mir.periodo,
-                spiegazione="Quello che le banche italiane hanno davvero applicato: lo scarto sull'indice e' il margine del sistema, cioe' costo del capitale di vigilanza, rischio di credito, costi operativi e profitto",
+                spiegazione="Quello che le banche italiane hanno davvero applicato: lo scarto sull'indice è il margine del sistema, cioè costo del capitale di vigilanza, rischio di credito, costi operativi e profitto",
                 scarto_dal_precedente=None if precedente is None else mir.valore - precedente,
             )
         )
@@ -315,7 +315,7 @@ def catena_dei_tassi(tasso_preventivo: float | None = None) -> list[Gradino]:
                 nome="Il tuo preventivo",
                 valore=tasso_preventivo * 100,
                 periodo="oggi",
-                spiegazione="Lo scarto sulla media e' l'unico anello su cui si tratta, e vale la pena chiedere un secondo preventivo se e' positivo",
+                spiegazione="Lo scarto sulla media è l'unico anello su cui si tratta, e vale la pena chiedere un secondo preventivo se è positivo",
                 scarto_dal_precedente=None if precedente is None else tasso_preventivo * 100 - precedente,
             )
         )
@@ -379,7 +379,7 @@ def confronta_preventivo(
 ) -> Confronto:
     """Confronta il tasso di un preventivo con la media di mercato della sua tipologia.
 
-    Traduce lo scarto in euro di interessi sull'intera durata, che e' l'unica forma in
+    Traduce lo scarto in euro di interessi sull'intera durata, che è l'unica forma in
     cui un decimo di punto diventa una cifra su cui vale la pena trattare.
     """
     from .calcoli import rata_francese

@@ -2,18 +2,18 @@
 """Registro degli annunci in valutazione, con acquisizione rispettosa delle regole.
 
 Il modulo tiene un archivio CSV di annunci e sa arricchirlo in tre modi, in ordine
-di preferenza decrescente. Il primo e' l'inserimento manuale, che non tocca nessun
-sito. Il secondo e' l'incolla del testo dell'annuncio gia' aperto nel browser, che
+di preferenza decrescente. Il primo è l'inserimento manuale, che non tocca nessun
+sito. Il secondo è l'incolla del testo dell'annuncio già aperto nel browser, che
 viene strutturato in locale da un modello linguistico sulla rete di casa, quindi
 senza che il contenuto esca dalla macchina. Il terzo, disattivato per impostazione
-predefinita, e' il prelievo diretto della pagina, consentito solo quando il file
+predefinita, è il prelievo diretto della pagina, consentito solo quando il file
 `robots.txt` del sito lo permette per il percorso richiesto.
 
-Sul terzo punto la posizione del modulo e' deliberatamente restrittiva. Il
-`robots.txt` viene letto e rispettato senza eccezioni, la frequenza e' limitata a
-una richiesta ogni pochi secondi, lo user agent dichiara chi e' e a cosa serve, e
+Sul terzo punto la posizione del modulo è deliberatamente restrittiva. Il
+`robots.txt` viene letto e rispettato senza eccezioni, la frequenza è limitata a
+una richiesta ogni pochi secondi, lo user agent dichiara chi è e a cosa serve, e
 non esiste alcun meccanismo per aggirare protezioni anti bot: se un sito risponde
-con un blocco, la risposta corretta e' fermarsi, non travestirsi. I dati raccolti
+con un blocco, la risposta corretta è fermarsi, non travestirsi. I dati raccolti
 sono i soli attributi economici e tecnici dell'immobile, mai i dati di contatto
 delle persone fisiche, che sono dati personali e il cui trattamento massivo
 richiederebbe una base giuridica che qui non esiste.
@@ -55,10 +55,10 @@ class Annuncio:
     contatto: str = ""
     """Riferimento dell'agenzia o del venditore, inserito a mano.
 
-    Non e' un dato raccolto dal prelievo automatico, che per scelta non estrae
-    recapiti di persone fisiche: e' il contatto con cui si sta trattando, che chi
+    Non è un dato raccolto dal prelievo automatico, che per scelta non estrae
+    recapiti di persone fisiche: è il contatto con cui si sta trattando, che chi
     compra annota comunque e che serve a sapere chi richiamare. La differenza fra
-    annotare un recapito ricevuto e raccoglierne a strascico e' esattamente la
+    annotare un recapito ricevuto e raccoglierne a strascico è esattamente la
     differenza fra un'agenda e una banca dati.
     """
     link: str = ""
@@ -68,10 +68,10 @@ class Annuncio:
     indirizzo: str = ""
     tipologia: str = ""
     destinazione_uso: str = ""
-    """Classificazione ministeriale, cioe' la destinazione d'uso dichiarata.
+    """Classificazione ministeriale, cioè la destinazione d'uso dichiarata.
 
-    Un monolocale accatastato come ufficio non e' un'abitazione: cambia le imposte,
-    la possibilita' di prendervi la residenza e quella di locarlo a uso abitativo,
+    Un monolocale accatastato come ufficio non è un'abitazione: cambia le imposte,
+    la possibilità di prendervi la residenza e quella di locarlo a uso abitativo,
     e il cambio di destinazione ha un costo che va messo nel prezzo.
     """
     nuova_costruzione: str = "NO"
@@ -91,63 +91,63 @@ class Annuncio:
     asta: str = "NO"
     """SI se l'immobile viene da una vendita giudiziaria.
 
-    Cambia tutto cio' che sta a valle: non c'e' garanzia per i vizi, non c'e'
-    provvigione di agenzia, il prezzo non e' trattabile ma si costruisce per
+    Cambia tutto ciò che sta a valle: non c'è garanzia per i vizi, non c'e'
+    provvigione di agenzia, il prezzo non è trattabile ma si costruisce per
     rilanci, i gravami si cancellano per decreto e i tempi sono dettati dal
     tribunale. Un'asta valutata con il modello del libero mercato da' un numero
-    che sembra ottimo e non lo e'.
+    che sembra ottimo e non lo è.
     """
     base_asta: float = 0.0
-    """Prezzo base d'asta. Non e' il prezzo che si paghera': e' il punto di partenza."""
+    """Prezzo base d'asta. Non è il prezzo che si paghera': è il punto di partenza."""
     data_asta: str = ""
     tribunale_procedura: str = ""
     """Tribunale e numero di procedura, per esempio Macerata RGE 123/2024."""
     stato_occupazione: str = ""
     """Libero, occupato dal debitore, locato con contratto opponibile, occupato senza titolo.
 
-    E' la variabile che separa un'asta conveniente da un contenzioso: l'articolo
+    È la variabile che separa un'asta conveniente da un contenzioso: l'articolo
     2923 del codice civile rende opponibile all'acquirente la locazione con data
     certa anteriore al pignoramento, e l'articolo 560 del codice di procedura
     lascia il debitore e i familiari conviventi nel possesso fino al decreto di
     trasferimento.
     """
     punteggio: int = 0
-    """Priorita' da 0 a 10, assegnata a mano da chi valuta.
+    """Priorità da 0 a 10, assegnata a mano da chi valuta.
 
-    Non e' un punteggio calcolato: il modello ha gia' metriche per quello, e
-    sovrapporne una sintetica servirebbe solo a nascondere il ragionamento. E'
+    Non è un punteggio calcolato: il modello ha già metriche per quello, e
+    sovrapporne una sintetica servirebbe solo a nascondere il ragionamento. È
     l'ordine in cui si vogliono guardare gli immobili, che dipende anche da cose
     che il modello non sa, come la vicinanza a chi ci deve abitare o il fatto che
-    il venditore abbia fretta. Dieci e' massima priorita', zero e' il valore di
+    il venditore abbia fretta. Dieci è massima priorità, zero è il valore di
     chi entra a registro senza averlo ancora deciso.
     """
     note: str = ""
     prima_casa: str = ""
     """SI, NO, oppure vuoto per ereditare il regime del foglio Immobile.
 
-    Non e' una caratteristica dell'immobile ma della posizione di chi compra
-    rispetto a quell'immobile: lo stesso appartamento e' prima casa per chi non
-    ha altre abitazioni nel Comune e non lo e' per chi ce le ha, e la differenza
-    vale qualche migliaio di euro di imposte. Sta nel registro perche' quando si
-    confrontano piu' immobili la risposta puo' cambiare da riga a riga, tipico il
+    Non è una caratteristica dell'immobile ma della posizione di chi compra
+    rispetto a quell'immobile: lo stesso appartamento è prima casa per chi non
+    ha altre abitazioni nel Comune e non lo è per chi ce le ha, e la differenza
+    vale qualche migliaio di euro di imposte. Sta nel registro perché quando si
+    confrontano più immobili la risposta può cambiare da riga a riga, tipico il
     caso di un immobile nel Comune di residenza accanto a uno fuori.
 
-    Il vuoto e' un terzo stato e non un sinonimo di NO: significa che la riga non
+    Il vuoto è un terzo stato e non un sinonimo di NO: significa che la riga non
     dichiara nulla e il foglio di confronto le applica il regime impostato nel
-    foglio Immobile, cioe' esattamente il comportamento precedente. Un registro
-    scritto prima che questo campo esistesse continua percio' a dare gli stessi
+    foglio Immobile, cioè esattamente il comportamento precedente. Un registro
+    scritto prima che questo campo esistesse continua perciò a dare gli stessi
     numeri di prima.
     """
     venditore_impresa: str = ""
     """SI, NO, oppure vuoto per ereditare il regime del foglio Immobile.
 
     Discrimina l'acquisto soggetto a IVA da quello con l'imposta di registro, che
-    e' il salto piu' grosso fra due righe della stessa lista: sullo stesso prezzo
+    è il salto più grosso fra due righe della stessa lista: sullo stesso prezzo
     l'IVA si applica per intero mentre il registro con il prezzo-valore si applica
-    al valore catastale, che di norma e' una frazione. Confrontare un usato da
+    al valore catastale, che di norma è una frazione. Confrontare un usato da
     privato e un nuovo da costruttore senza questa distinzione produce una
-    graduatoria sbagliata nel verso peggiore, perche' fa sembrare piu' conveniente
-    proprio l'immobile che porta l'imposta piu' alta.
+    graduatoria sbagliata nel verso peggiore, perché fa sembrare più conveniente
+    proprio l'immobile che porta l'imposta più alta.
     """
 
     CAMPI_SI_NO = ("asta", "nuova_costruzione", "prima_casa", "venditore_impresa")
@@ -155,11 +155,11 @@ class Annuncio:
 
     Excel confronta il testo senza distinguere le maiuscole, quindi una cella che
     contiene si minuscolo si comporta correttamente. Non si comporta correttamente
-    una cella che contiene true, yes oppure 1, che e' esattamente cio' che un
+    una cella che contiene true, yes oppure 1, che è esattamente ciò che un
     modello linguistico restituisce quando gli si chiede un booleano: il foglio la
-    legge come diversa da SI, cioe' come un NO, senza segnalare nulla. La
+    legge come diversa da SI, cioè come un NO, senza segnalare nulla. La
     normalizzazione esiste per questo, e lascia intatto quello che non riconosce,
-    perche' un valore strano che resta visibile e' preferibile a un valore strano
+    perché un valore strano che resta visibile è preferibile a un valore strano
     tradotto per ipotesi in una delle due risposte.
     """
 
@@ -213,14 +213,14 @@ class Registro:
         return [f.name for f in fields(Annuncio)]
 
     def carica(self) -> None:
-        # La lista si azzera prima di leggere. Il costruttore chiama gia' questo
+        # La lista si azzera prima di leggere. Il costruttore chiama già questo
         # metodo, quindi chi lo richiama per rileggere il file da disco, cosa
         # legittima e naturale, si ritroverebbe ogni annuncio due volte: nessun
         # errore, solo un registro che conta il doppio e un confronto fra immobili
         # con le righe duplicate.
         self.annunci = []
-        # Il punto e virgola e' il separatore che Excel italiano apre senza chiedere
-        # nulla, ed e' quindi quello con cui il file viene scritto. In lettura si
+        # Il punto e virgola è il separatore che Excel italiano apre senza chiedere
+        # nulla, ed è quindi quello con cui il file viene scritto. In lettura si
         # riconosce comunque anche la virgola, per i file arrivati da altrove.
         with self.percorso.open("r", encoding="utf-8-sig", newline="") as f:
             prima = f.readline()
@@ -290,7 +290,7 @@ class Registro:
         return len(self.annunci) < prima
 
     def ordina_per_convenienza(self) -> list[Annuncio]:
-        """Ordina per rendimento lordo decrescente, a parita' di dati disponibili."""
+        """Ordina per rendimento lordo decrescente, a parità di dati disponibili."""
         return sorted(self.annunci, key=lambda a: a.rendimento_lordo, reverse=True)
 
 
@@ -305,9 +305,9 @@ class ProbitaRifiutata(Exception):
 def robots_consente(url: str, user_agent: str = USER_AGENT) -> tuple[bool, str]:
     """Verifica il robots.txt del sito per il percorso richiesto.
 
-    Restituisce la coppia consenso e motivazione. Se il robots.txt non e'
-    raggiungibile la risposta e' negativa: in assenza di un permesso esplicito il
-    comportamento prudente e' astenersi, non presumere.
+    Restituisce la coppia consenso e motivazione. Se il robots.txt non è
+    raggiungibile la risposta è negativa: in assenza di un permesso esplicito il
+    comportamento prudente è astenersi, non presumere.
     """
     pezzi = urllib.parse.urlparse(url)
     if pezzi.scheme not in ("http", "https"):
@@ -338,12 +338,12 @@ def _attendi_il_turno(dominio: str) -> None:
 
 
 class PrelievoBloccato(RuntimeError):
-    """Il sito ha risposto con un blocco, e la risposta corretta e' fermarsi.
+    """Il sito ha risposto con un blocco, e la risposta corretta è fermarsi.
 
-    E' distinta da `ProbitaRifiutata`, che riguarda il permesso dichiarato nel
-    `robots.txt`, perche' i due casi si risolvono diversamente. Qui il permesso
+    È distinta da `ProbitaRifiutata`, che riguarda il permesso dichiarato nel
+    `robots.txt`, perché i due casi si risolvono diversamente. Qui il permesso
     c'era e il server ha comunque negato, tipicamente con una protezione anti
-    bot: non c'e' nulla da correggere nella richiesta, e insistere significherebbe
+    bot: non c'è nulla da correggere nella richiesta, e insistere significherebbe
     aggirare la protezione, che il progetto non fa.
     """
 
@@ -352,14 +352,14 @@ def scarica_pagina(url: str, forza: bool = False) -> str:
     """Preleva una pagina solo se il robots.txt lo consente.
 
     Il parametro `forza` non aggira il robots.txt: serve soltanto a saltare il
-    controllo quando l'URL e' di un sito proprio o di un'agenzia che ha dato
-    autorizzazione esplicita, e resta responsabilita' di chi lo usa.
+    controllo quando l'URL è di un sito proprio o di un'agenzia che ha dato
+    autorizzazione esplicita, e resta responsabilità di chi lo usa.
 
-    Un blocco del server non e' un errore da riprovare. I portali maggiori
+    Un blocco del server non è un errore da riprovare. I portali maggiori
     dichiarano nel `robots.txt` percorsi consentiti e poi rispondono comunque
     403 alle richieste che non arrivano da un browser: il permesso c'era, il
     server ha negato lo stesso. L'eccezione dedicata serve a far arrivare a chi
-    usa lo strumento la sola informazione utile, cioe' quali sono le due vie
+    usa lo strumento la sola informazione utile, cioè quali sono le due vie
     alternative, invece di un errore HTTP grezzo che sembra un guasto.
     """
     if not forza:
@@ -398,7 +398,7 @@ def scarica_pagina(url: str, forza: bool = False) -> str:
 def testo_da_html(html: str) -> str:
     """Estrae il testo visibile, senza dipendenze esterne.
 
-    Non e' un parser HTML completo e non pretende di esserlo: serve solo a ridurre
+    Non è un parser HTML completo e non pretende di esserlo: serve solo a ridurre
     una pagina a un blocco di testo che il modello locale possa strutturare.
     """
     import re
@@ -417,10 +417,10 @@ def testo_da_html(html: str) -> str:
 CAMPI_BLOCCANTI = (
     # campo, che cosa blocca la sua assenza, come si ottiene
     ("mq", "prezzo al metro quadro, quindi lo scarto sulla zona e la graduatoria",
-     "dall'annuncio, verificando se e' commerciale o calpestabile"),
-    ("prezzo_richiesto", "qualunque calcolo: senza prezzo non c'e' operazione",
+     "dall'annuncio, verificando se è commerciale o calpestabile"),
+    ("prezzo_richiesto", "qualunque calcolo: senza prezzo non c'è operazione",
      "dall'annuncio"),
-    ("rendita_catastale", "il prezzo-valore, cioe' la leva fiscale piu' grossa dell'operazione",
+    ("rendita_catastale", "il prezzo-valore, cioè la leva fiscale più grossa dell'operazione",
      "si chiede all'agenzia con la visura, oppure la si legge in una visura propria"),
     ("zona_omi", "lo scarto sulla quotazione di zona: senza, si usa la forbice dell'intero Comune",
      'python tools/valuta.py omi zone --comune "..."'),
@@ -435,13 +435,13 @@ CAMPI_BLOCCANTI = (
 )
 """I campi la cui assenza blocca un calcolo, in ordine di importanza decrescente.
 
-Non e' l'elenco dei campi vuoti, che sarebbe inutile su un registro di
-trentacinque colonne dove molti campi sono facoltativi per costruzione: e'
+Non è l'elenco dei campi vuoti, che sarebbe inutile su un registro di
+trentacinque colonne dove molti campi sono facoltativi per costruzione: è
 l'elenco di quelli che, mancando, rendono muto un pezzo del modello, e per
 ciascuno dice quale pezzo e come si ottiene il dato.
 
 La costante ha due consumatori, il comando che risponde alla domanda "che cosa
-manca" e la scheda di trattativa che elenca cosa chiedere, ed e' la ragione per
+manca" e la scheda di trattativa che elenca cosa chiedere, ed è la ragione per
 cui vive qui accanto alla dataclass invece che dentro uno dei due: due copie di
 un elenco divergono, e la loro divergenza non produce un errore ma una scheda
 che dice di chiedere una cosa diversa da quella che il comando segnala.
@@ -464,42 +464,42 @@ divergenti: il menu a tendina della colonna Stato nel foglio Annunci e l'aiuto
 dell'opzione `--stato` della riga di comando. Le due copie dicevano cose diverse,
 la seconda offriva "contattata", "scartata" e "in trattativa", che nel foglio non
 esistono, e la conseguenza era concreta: un valore scritto dalla riga di comando
-finiva nella cella senza passare per la validazione, quindi restava li' senza
+finiva nella cella senza passare per la validazione, quindi restava lì senza
 errore, ma il menu a tendina non lo conteneva e un filtro per stato non lo
 trovava dove chi lo aveva scritto lo cercava.
 
-L'ordine e' quello dell'avanzamento e non alfabetico, perche' e' l'ordine in cui
+L'ordine è quello dell'avanzamento e non alfabetico, perché è l'ordine in cui
 il menu li presenta e in cui una trattativa li attraversa.
 """
 
 
 CAMPI_ESTRAIBILI = {
     "comune": "il Comune in cui si trova l'immobile",
-    "indirizzo": "via e numero civico, o la zona se il civico non c'e'",
+    "indirizzo": "via e numero civico, o la zona se il civico non c'è",
     "tipologia": "monolocale, bilocale, trilocale, quadrilocale, villetta, attico",
     "mq": "superficie in metri quadri, solo il numero",
     "prezzo_richiesto": "prezzo richiesto in euro, solo il numero senza separatori",
     "piano": "il piano dell'immobile",
     "classe_energetica": "la classe energetica, una lettera fra A4 e G",
     "spese_condominio_anno": "spese condominiali annue in euro, solo il numero",
-    "nuova_costruzione": "SI se e' di nuova costruzione o in costruzione, altrimenti NO",
+    "nuova_costruzione": "SI se è di nuova costruzione o in costruzione, altrimenti NO",
     # I tre campi seguenti compaiono raramente in un annuncio, ma quando ci sono
-    # valgono piu' di tutti gli altri messi insieme: la rendita catastale sblocca
-    # il prezzo-valore, che e' la leva fiscale piu' grossa dell'operazione; la
+    # valgono più di tutti gli altri messi insieme: la rendita catastale sblocca
+    # il prezzo-valore, che è la leva fiscale più grossa dell'operazione; la
     # categoria decide il moltiplicatore e l'esclusione dall'agevolazione; il
-    # canone gia' in essere determina l'intero calcolo del rendimento. Ometterli
+    # canone già in essere determina l'intero calcolo del rendimento. Ometterli
     # dallo schema significa non trovarli mai, anche quando sono scritti in
-    # chiaro nel testo, ed e' un'omissione che non produce alcun errore.
+    # chiaro nel testo, ed è un'omissione che non produce alcun errore.
     "rendita_catastale": "rendita catastale in euro, solo il numero, se indicata",
     "categoria": "categoria catastale, per esempio A/2 o A/3, se indicata",
-    "canone_atteso_mese": "canone di locazione mensile in euro se l'immobile e' gia' locato o se l'annuncio ne indica uno, solo il numero",
+    "canone_atteso_mese": "canone di locazione mensile in euro se l'immobile è già locato o se l'annuncio ne indica uno, solo il numero",
     "provincia": "sigla della provincia, due lettere",
     "destinazione_uso": "abitazione, ufficio, negozio, box",
     "data_consegna": "data prevista di consegna se in costruzione, altrimenti vuoto",
     # Il regime del venditore si estrae, quello dell'acquirente no: che la vendita
     # sia diretta dal costruttore o soggetta a IVA sta scritto nell'annuncio, mentre
     # essere o non essere in prima casa dipende da chi compra e il testo non lo sa.
-    "venditore_impresa": "SI se la vendita e' diretta dal costruttore o da un'impresa, o se l'annuncio indica il prezzo soggetto a IVA, altrimenti vuoto",
+    "venditore_impresa": "SI se la vendita è diretta dal costruttore o da un'impresa, o se l'annuncio indica il prezzo soggetto a IVA, altrimenti vuoto",
     "note": "una sintesi in una riga delle caratteristiche rilevanti",
 }
 
@@ -509,14 +509,14 @@ def _testo_per_il_modello(testo: str, limite: int = 24_000) -> str:
 
     Chi copia un annuncio dal browser prende spesso l'intera pagina, menu e piede
     compresi, e su un portale sono decine di migliaia di caratteri. Il troncamento
-    ingenuo taglia la fine, ma e' proprio in fondo che sta la tabella delle
-    caratteristiche, cioe' spese condominiali, classe energetica, rendita e
-    categoria catastale: i campi che valgono piu' di tutti gli altri messi insieme.
+    ingenuo taglia la fine, ma è proprio in fondo che sta la tabella delle
+    caratteristiche, cioè spese condominiali, classe energetica, rendita e
+    categoria catastale: i campi che valgono più di tutti gli altri messi insieme.
     Tagliare la coda significa perderli senza che nulla lo segnali.
 
     Si tiene quindi la testa, dove stanno titolo e prezzo, e la coda, dove stanno i
-    dati tabellari, dichiarando l'omissione nel mezzo perche' il modello sappia che
-    il testo non e' continuo e non provi a ricucirlo.
+    dati tabellari, dichiarando l'omissione nel mezzo perché il modello sappia che
+    il testo non è continuo e non provi a ricucirlo.
     """
     if len(testo) <= limite:
         return testo
@@ -566,7 +566,7 @@ def _json_dal_testo(testo: str) -> dict:
 
 
 def _numero(valore) -> float:
-    """Converte in numero una stringa che puo' contenere separatori e valuta."""
+    """Converte in numero una stringa che può contenere separatori e valuta."""
     if isinstance(valore, (int, float)):
         return float(valore)
     testo = str(valore)
@@ -581,7 +581,7 @@ def _numero(valore) -> float:
         tenuto = tenuto.replace(".", "")
     elif "." in tenuto:
         # Un solo punto e nessuna virgola: in un annuncio italiano quasi sempre
-        # e' il separatore delle migliaia, non il decimale. La discriminante e'
+        # è il separatore delle migliaia, non il decimale. La discriminante è
         # quante cifre lo seguono: tre sono migliaia, 175.000 vale
         # centosettantacinquemila; una o due sono decimali, 612.45 vale
         # seicentododici e quarantacinque. Senza questa distinzione un prezzo
@@ -597,17 +597,17 @@ def _numero(valore) -> float:
 
 
 # I campi del registro che alimentano una cella di input del workbook, mappati
-# sul nome definito della cella. La mappa e' l'intero contratto di questa
-# funzione, ed e' scritta per nome e non per coordinata per la ragione di
+# sul nome definito della cella. La mappa è l'intero contratto di questa
+# funzione, ed è scritta per nome e non per coordinata per la ragione di
 # ADR-013: un nome inesistente fallisce a voce alta, una coordinata sbagliata
 # scrive un prezzo in una cella di manutenzione senza che nulla protesti.
 #
-# Le tre voci con `trasformazione` esistono perche' il registro e il workbook
-# esprimono la stessa cosa in unita' diverse: il registro tiene il canone al
+# Le tre voci con `trasformazione` esistono perché il registro e il workbook
+# esprimono la stessa cosa in unità diverse: il registro tiene il canone al
 # mese e le spese condominiali all'anno, il workbook vuole il canone al mese e
-# le spese all'anno, quindi la conversione e' l'identita'; il prezzo, invece, va
-# scelto fra obiettivo e richiesto, e la scelta e' la stessa che fa il foglio di
-# confronto, cosi' che i due non divergano.
+# le spese all'anno, quindi la conversione è l'identità; il prezzo, invece, va
+# scelto fra obiettivo e richiesto, e la scelta è la stessa che fa il foglio di
+# confronto, così che i due non divergano.
 PRECOMPILAZIONE = (
     # nome definito, campo del registro, formato di stampa, significato dell'assenza
     ("prezzo", "prezzo_da_usare", "euro", "da_chiedere"),
@@ -617,9 +617,9 @@ PRECOMPILAZIONE = (
     ("comune", "comune", "testo", "da_chiedere"),
     ("canone_mese", "canone_atteso_mese", "euro", "da_chiedere"),
     ("condominio", "spese_condominio_anno", "euro", "da_chiedere"),
-    # Le tre voci seguenti hanno un'assenza che non e' una lacuna. Il vuoto dei
-    # due campi del regime di acquisto e' il terzo stato di ADR-014, che
-    # significa eredita dal foglio Immobile, e non e' un dato da chiedere:
+    # Le tre voci seguenti hanno un'assenza che non è una lacuna. Il vuoto dei
+    # due campi del regime di acquisto è il terzo stato di ADR-014, che
+    # significa eredita dal foglio Immobile, e non è un dato da chiedere:
     # `prima_casa` in particolare dipende da chi compra e non dall'immobile,
     # quindi nessuna agenzia lo sa. La base d'asta riguarda solo le vendite
     # giudiziarie, quindi su un immobile di libero mercato deve restare vuota.
@@ -636,60 +636,60 @@ def precompila_workbook(
 ) -> dict:
     """Scrive nelle celle di input del workbook i dati di un annuncio a registro.
 
-    Toglie il passaggio piu' noioso e piu' pericoloso del percorso di lavoro.
+    Toglie il passaggio più noioso e più pericoloso del percorso di lavoro.
     Scelto l'immobile dalla graduatoria, i suoi dati stavano nel registro e
     andavano ridigitati a mano nei fogli di input: un lavoro di due minuti che
-    introduce l'unica classe di errore contro cui il modello non ha difese, cioe'
+    introduce l'unica classe di errore contro cui il modello non ha difese, cioè
     la trascrizione. Un prezzo con una cifra in meno produce un'operazione che
     sembra ottima, e nessuna cella va in errore per dirlo.
 
     Due presidi rendono l'operazione sicura, e sono la ragione per cui questa
-    funzione e' piu' lunga di un ciclo di assegnazioni.
+    funzione è più lunga di un ciclo di assegnazioni.
 
-    Il primo e' che si scrive per nome definito. Un nome che non esiste piu',
-    perche' il generatore e' cambiato, fa fallire la funzione con un messaggio
+    Il primo è che si scrive per nome definito. Un nome che non esiste più,
+    perché il generatore è cambiato, fa fallire la funzione con un messaggio
     che dice quale nome manca; una coordinata sbagliata scriverebbe il valore in
     una cella qualunque.
 
-    Il secondo e' che si rifiuta di scrivere in una cella che contiene una
+    Il secondo è che si rifiuta di scrivere in una cella che contiene una
     formula. Le celle di input del workbook sono gialle e le calcolate grigie,
     ma la distinzione vive nel colore e non nel tipo: niente impedisce a un nome
     di puntare a una cella calcolata, e sovrascriverla romperebbe la catena in
     silenzio. La funzione controlla il contenuto prima di scrivere e riporta le
     celle che ha saltato, invece di fidarsi della convenzione.
 
-    Il terzo presidio riguarda cio' che il registro non ha, ed e' la ragione del
+    Il terzo presidio riguarda ciò che il registro non ha, ed è la ragione del
     parametro `azzera_assenti`. Un workbook appena generato porta valori di
     esempio in tutte le celle di input, che servono a mostrare il formato atteso
     e a far funzionare il modello a vuoto. In un file dedicato a un immobile
     reale quei valori diventano pericolosi: se il registro non ha la rendita
     catastale, la cella conserva i 450 euro dell'esempio, il modello applica il
-    prezzo-valore su una base inventata, e i controlli di plausibilita' del
-    Cruscotto non se ne accorgono perche' guardano se il valore e' zero, non se
-    e' vero. Il risultato e' un numero plausibile calcolato su un dato falso, che
-    e' precisamente la classe di difetto contro cui il resto del progetto e'
+    prezzo-valore su una base inventata, e i controlli di plausibilità del
+    Cruscotto non se ne accorgono perché guardano se il valore è zero, non se
+    è vero. Il risultato è un numero plausibile calcolato su un dato falso, che
+    è precisamente la classe di difetto contro cui il resto del progetto è
     costruito.
 
-    Con `azzera_assenti` attivo, che e' il default, i campi mancanti vengono
-    quindi azzerati invece di essere lasciati all'esempio. La conseguenza e'
+    Con `azzera_assenti` attivo, che è il default, i campi mancanti vengono
+    quindi azzerati invece di essere lasciati all'esempio. La conseguenza è
     voluta e va capita: il foglio mostrera' un modello visibilmente incompleto,
     con rendimenti a zero e controlli non superati, invece di un modello
-    apparentemente sano. Fra le due, la prima e' l'unica onesta.
+    apparentemente sano. Fra le due, la prima è l'unica onesta.
 
-    L'azzeramento riguarda solo i campi la cui assenza e' una lacuna. I due campi
+    L'azzeramento riguarda solo i campi la cui assenza è una lacuna. I due campi
     del regime di acquisto e la base d'asta hanno un'assenza che significa
-    qualcosa, cioe' eredita dal foglio Immobile e non e' un'asta, e azzerarli
+    qualcosa, cioè eredita dal foglio Immobile e non è un'asta, e azzerarli
     cambierebbe il modello invece di dichiararlo incompleto.
 
-    Restituisce un rapporto di cio' che ha scritto, cio' che ha azzerato, cio'
-    che ha saltato e cio' che ha rifiutato perche' la cella era calcolata. Il rapporto e' il valore di
-    ritorno e non un effetto collaterale stampato, cosi' che chi chiama decida
-    come mostrarlo, e distingue due tipi di assenza: quella che e' una lacuna da
-    colmare e quella che non lo e'. La distinzione non e' cosmetica: elencare
-    `prima_casa` fra i campi da chiedere sarebbe fuorviante due volte, perche'
-    il suo vuoto significa eredita dal foglio Immobile ed e' un comportamento
-    corretto, e perche' quel dato dipende da chi compra e non dall'immobile,
-    quindi non c'e' nessuno a cui chiederlo.
+    Restituisce un rapporto di ciò che ha scritto, ciò che ha azzerato, ciò
+    che ha saltato e ciò che ha rifiutato perché la cella era calcolata. Il rapporto è il valore di
+    ritorno e non un effetto collaterale stampato, così che chi chiama decida
+    come mostrarlo, e distingue due tipi di assenza: quella che è una lacuna da
+    colmare e quella che non lo è. La distinzione non è cosmetica: elencare
+    `prima_casa` fra i campi da chiedere sarebbe fuorviante due volte, perché
+    il suo vuoto significa eredita dal foglio Immobile ed è un comportamento
+    corretto, e perché quel dato dipende da chi compra e non dall'immobile,
+    quindi non c'è nessuno a cui chiederlo.
     """
     from openpyxl import load_workbook
 
@@ -765,7 +765,7 @@ def esporta_in_excel(registro: Registro, percorso_workbook: str) -> int:
 
     # L'ordine deve corrispondere colonna per colonna a quello del foglio Annunci in
     # `excel_builder.foglio_annunci`. I `None` sono le colonne calcolate da formula,
-    # che non si toccano mai perche' sovrascriverle le distruggerebbe.
+    # che non si toccano mai perché sovrascriverle le distruggerebbe.
     ordine = [
         "id", "data", "stato", "fonte", "agenzia", "contatto", "link", "comune",
         "provincia", "zona_omi", "indirizzo", "tipologia", "destinazione_uso",
@@ -792,15 +792,15 @@ def esporta_in_excel(registro: Registro, percorso_workbook: str) -> int:
                 except ValueError:
                     pass
             # L'assegnazione va fatta sull'attributo e non passando `value` a
-            # `cell()`, perche' quella scorciatoia salta l'assegnazione quando il
-            # valore e' None e lascerebbe in cella il contenuto precedente: un
+            # `cell()`, perché quella scorciatoia salta l'assegnazione quando il
+            # valore è None e lascerebbe in cella il contenuto precedente: un
             # campo azzerato non si ripulirebbe e l'annuncio esportato erediterebbe
             # in silenzio il dato di quello che occupava prima la riga.
             ws.cell(row=riga, column=colonna).value = valore if valore != 0 else None
         riga += 1
         scritti += 1
 
-    # Ripulisce le righe rimaste da un'esportazione precedente piu' lunga.
+    # Ripulisce le righe rimaste da un'esportazione precedente più lunga.
     for residua in range(riga, intestazione + 201):
         for colonna in range(1, totale_colonne + 1):
             if colonna not in colonne_calcolate:

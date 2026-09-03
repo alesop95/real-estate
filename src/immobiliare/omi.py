@@ -7,12 +7,12 @@ locazione. Sono la sola base pubblica e verificabile per dire se un prezzo
 richiesto sta dentro il mercato della zona o fuori, e vanno preferite a qualunque
 stima commerciale, che ha per definizione un interesse nel risultato.
 
-Sulla via di accesso ai dati va detta una cosa netta, perche' cambia il modo di
+Sulla via di accesso ai dati va detta una cosa netta, perché cambia il modo di
 usare questo modulo. La fornitura ufficiale e aggiornata passa dall'area riservata
-di Fisconline o Entratel: e' gratuita ma richiede un'autenticazione personale che
-uno script non puo' e non deve simulare, quindi il file va scaricato a mano una
+di Fisconline o Entratel: è gratuita ma richiede un'autenticazione personale che
+uno script non può e non deve simulare, quindi il file va scaricato a mano una
 volta a semestre e passato qui con `carica`. Il mirror open data di ondata, che
-questo modulo sa scaricare da solo, e' ripubblicazione della stessa fonte ma si
+questo modulo sa scaricare da solo, è ripubblicazione della stessa fonte ma si
 ferma al secondo semestre 2018: serve per l'andamento storico di una zona, non per
 il prezzo di oggi. La consultazione puntuale a video, infine, resta sempre
 disponibile senza registrazione sul geopoi dell'Agenzia.
@@ -40,9 +40,9 @@ SEMESTRI_MIRROR = {
 }
 
 # Le condizioni della fornitura impongono di citare la fonte quando i dati
-# vengono usati. Non e' una cortesia bibliografica: e' un obbligo assunto
+# vengono usati. Non è una cortesia bibliografica: è un obbligo assunto
 # accettando le condizioni generali di accesso, e va assolto ovunque i valori
-# compaiano, cioe' nell'uscita a video e nel foglio delle fonti del workbook.
+# compaiano, cioè nell'uscita a video e nel foglio delle fonti del workbook.
 ATTRIBUZIONE = "Agenzia Entrate - OMI"
 
 CONSULTAZIONE_A_VIDEO = "https://www1.agenziaentrate.gov.it/servizi/geopoi_omi/index.php"
@@ -77,9 +77,9 @@ class Quotazione:
     def rendimento_lordo_implicito(self) -> float:
         """Rendimento lordo che il mercato della zona esprime, canone su prezzo.
 
-        E' il metro di paragone piu' onesto per un singolo annuncio: se l'immobile
-        promette molto di piu' della sua zona, o e' un affare o c'e' qualcosa che
-        non si e' capito, e la seconda ipotesi va esclusa prima di credere alla prima.
+        È il metro di paragone più onesto per un singolo annuncio: se l'immobile
+        promette molto di più della sua zona, o è un affare o c'è qualcosa che
+        non si è capito, e la seconda ipotesi va esclusa prima di credere alla prima.
         """
         if not self.compravendita_media:
             return 0.0
@@ -98,12 +98,12 @@ def _numero(valore: str) -> float:
 def _leggi_testo(percorso: Path) -> str:
     """Legge un CSV OMI riconoscendo la codifica invece di darla per scontata.
 
-    Il mirror pubblica file gia' in UTF-8 e lo dichiara nel nome. La fornitura
+    Il mirror pubblica file già in UTF-8 e lo dichiara nel nome. La fornitura
     ufficiale dell'area riservata arriva invece nella codifica ANSI di Windows, e
     decodificarla come UTF-8 non solleva alcun errore: sostituisce ogni carattere
     accentato con il segnaposto di rimpiazzo. Il file si carica, le quotazioni si
     calcolano, e un Comune come FORLI' o una zona con l'apostrofo diventano
-    irriconoscibili alla ricerca per nome. E' un difetto che non si vede finche'
+    irriconoscibili alla ricerca per nome. È un difetto che non si vede finché
     non si cerca proprio quel Comune, quindi si presidia qui.
     """
     grezzo = percorso.read_bytes()
@@ -138,7 +138,7 @@ def _apri_csv(percorso: Path):
 
 
 def carica(percorso_valori: str | Path, percorso_zone: str | Path = "") -> list[Quotazione]:
-    """Carica un file VALORI, arricchendolo con le descrizioni del file ZONE se c'e'."""
+    """Carica un file VALORI, arricchendolo con le descrizioni del file ZONE se c'è."""
     percorso_valori = Path(percorso_valori)
     descrizioni: dict[tuple[str, str], str] = {}
     if percorso_zone:
@@ -175,13 +175,13 @@ def semestre_del_file(percorso: Path) -> str:
     cinque cifre, poi la riga di metadati che alcune forniture antepongono al
     tracciato, e infine la data di modifica del file.
 
-    L'ordine e' scelto perche' l'errore da evitare ha una direzione. Se il
+    L'ordine è scelto perché l'errore da evitare ha una direzione. Se il
     semestre restasse ignoto, il confronto lo ordinerebbe sotto qualunque valore
     noto, e una fornitura nuova con un nome inatteso perderebbe contro i file
-    vecchi gia' in cache: il programma continuerebbe a rispondere con dati di
+    vecchi già in cache: il programma continuerebbe a rispondere con dati di
     anni prima senza dire nulla. Il ripiego sulla data di modifica sbaglia al
-    massimo attribuendo il file al semestre corrente, che e' l'errore innocuo,
-    perche' lo fa vincere e non perdere.
+    massimo attribuendo il file al semestre corrente, che è l'errore innocuo,
+    perché lo fa vincere e non perdere.
     """
     for pezzo in percorso.stem.split("_"):
         if len(pezzo) == 5 and pezzo.isdigit() and pezzo[-1] in "12":
@@ -207,13 +207,13 @@ def semestre_del_file(percorso: Path) -> str:
 
 
 def file_correnti(cartella: str | Path) -> list[tuple[Path, Path | None]]:
-    """Coppie valori e zone del semestre piu' recente presente in cache.
+    """Coppie valori e zone del semestre più recente presente in cache.
 
     Restituisce tutte le coppie di quel semestre, non una sola: chi scarica per
     provincia si ritrova un file per provincia, e leggerne uno solo significava
     cercare un Comune in una provincia diversa e concludere che non esistesse.
     L'accoppiamento fra un file di valori e il suo file di zone passa per il
-    prefisso comune, perche' nella fornitura i due condividono l'identificativo.
+    prefisso comune, perché nella fornitura i due condividono l'identificativo.
     """
     cartella = Path(cartella)
     valori = sorted(cartella.glob("*VALORI*.csv"))
@@ -232,16 +232,16 @@ def file_correnti(cartella: str | Path) -> list[tuple[Path, Path | None]]:
         prefisso = f.name.replace("VALORI", "ZONE")
         gemello = next((z for z in zone if z.name == prefisso), None)
         if gemello is None:
-            # Ripiego: una sola zona dello stesso semestre, se c'e'.
+            # Ripiego: una sola zona dello stesso semestre, se c'è.
             gemello = next((z for z in zone if semestre_del_file(z) == semestre_del_file(f)), None)
         coppie.append((f, gemello))
     return coppie
 
 
 def carica_cartella(cartella: str | Path) -> tuple[list[Quotazione], list[str]]:
-    """Carica tutte le quotazioni del semestre piu' recente in cache.
+    """Carica tutte le quotazioni del semestre più recente in cache.
 
-    Restituisce anche i nomi dei file letti, perche' su questi dati sapere da
+    Restituisce anche i nomi dei file letti, perché su questi dati sapere da
     quale fornitura viene un numero fa parte del numero.
     """
     quotazioni: list[Quotazione] = []
@@ -284,14 +284,14 @@ def scarica_dal_mirror(semestre: str, cartella: str | Path = "data/omi") -> tupl
 def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi") -> list[Path]:
     """Ingerisce la fornitura ufficiale scaricata a mano dall'area riservata.
 
-    E' la via corretta e l'unica aggiornata. La fornitura si ottiene autenticandosi
-    ai servizi telematici dell'Agenzia, che e' un'autenticazione personale: uno
-    script non puo' simularla e non deve provarci. La consultazione a video del
-    servizio geopoi, dal canto suo, e' un'applicazione senza API documentata e
+    È la via corretta e l'unica aggiornata. La fornitura si ottiene autenticandosi
+    ai servizi telematici dell'Agenzia, che è un'autenticazione personale: uno
+    script non può simularla e non deve provarci. La consultazione a video del
+    servizio geopoi, dal canto suo, è un'applicazione senza API documentata e
     senza `robots.txt`, quindi in assenza di un permesso esplicito ci si astiene
     dall'automatizzarla.
 
-    Questa funzione accetta l'archivio zip cosi' come arriva, oppure i CSV gia'
+    Questa funzione accetta l'archivio zip così come arriva, oppure i CSV già
     estratti, li normalizza nella cartella di cache e restituisce i percorsi utili.
 
     Il percorso a video, una volta sola per semestre:
@@ -340,7 +340,7 @@ def elenca_zone(quotazioni: list[Quotazione], comune: str) -> list[tuple[str, st
 
 
 def normalizza_comune(nome: str) -> str:
-    """Riduce un nome di Comune alla forma con cui si puo' confrontare.
+    """Riduce un nome di Comune alla forma con cui si può confrontare.
 
     Nella fornitura i nomi non sono scritti come li scrive una persona. Gli
     apostrofi possono essere accento grave o apostrofo tipografico invece di
@@ -348,7 +348,7 @@ def normalizza_comune(nome: str) -> str:
     nella stessa provincia convivono SANT`ELPIDIO A MARE e S BENEDETTO DEL
     TRONTO. Un confronto letterale su questi nomi risponde "nessuna quotazione"
     a chi digita il nome corretto, e quel silenzio si legge come "Comune non
-    coperto", che e' una conclusione sbagliata presa su una risposta plausibile.
+    coperto", che è una conclusione sbagliata presa su una risposta plausibile.
     """
     testo = (nome or "").strip().upper()
     for apostrofo in ("`", "’", "´", "'"):
@@ -367,7 +367,7 @@ def comuni_simili(quotazioni: list[Quotazione], comune: str, massimo: int = 8) -
     """Nomi presenti nei dati che somigliano a quello cercato.
 
     Serve a trasformare un risultato vuoto in un suggerimento. Confronta prima
-    la forma normalizzata, poi l'inclusione di una parola significativa, cosi'
+    la forma normalizzata, poi l'inclusione di una parola significativa, così
     che chi cerca Porto Sant'Elpidio trovi PORTO SANT`ELPIDIO anche digitando
     l'apostrofo giusto, e chi cerca San Benedetto del Tronto arrivi comunque a
     S BENEDETTO DEL TRONTO.
@@ -420,14 +420,14 @@ def quotazione_di_riferimento(
 ) -> tuple[float, float, str]:
     """Intervallo di prezzo da usare come riferimento per un annuncio.
 
-    Restituisce minimo, massimo e una dicitura che dice da dove vengono, perche'
+    Restituisce minimo, massimo e una dicitura che dice da dove vengono, perché
     i due numeri da soli non bastano a giudicarli. Con la zona indicata si usa
-    quella zona, ed e' il confronto giusto; senza, si ripiega sull'intero Comune,
+    quella zona, ed è il confronto giusto; senza, si ripiega sull'intero Comune,
     che su un Comune di costa mette insieme il lungomare e le zone agricole e
-    produce una forbice cosi' larga da non dire quasi nulla. La dicitura serve a
+    produce una forbice così larga da non dire quasi nulla. La dicitura serve a
     ricordarlo a chi legge il numero un mese dopo.
 
-    Sullo stato conservativo la scelta e' di restare su NORMALE quando c'e':
+    Sullo stato conservativo la scelta è di restare su NORMALE quando c'è:
     OTTIMO descrive un immobile ristrutturato di recente, e assumerlo come
     riferimento farebbe sembrare a buon mercato qualunque cosa.
     """

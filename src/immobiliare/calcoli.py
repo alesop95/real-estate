@@ -4,7 +4,7 @@
 Il modulo non conosce Excel e non legge file: prende numeri, restituisce numeri.
 Serve a due scopi, tenere il dominio verificabile con i test e produrre il
 riepilogo testuale della CLI, mentre il workbook generato da `excel_builder`
-replica le stesse regole in formule vive, cosi' che chi apre il file possa
+replica le stesse regole in formule vive, così che chi apre il file possa
 cambiare gli input senza rieseguire Python.
 """
 
@@ -37,7 +37,7 @@ class Immobile:
 
     L'IVA si applica quando la cessione avviene entro cinque anni dall'ultimazione
     dei lavori, o oltre i cinque anni se l'impresa opta per l'imponibilita' in atto.
-    Fuori da questi casi la cessione e' esente e si torna all'imposta di registro.
+    Fuori da questi casi la cessione è esente e si torna all'imposta di registro.
     """
 
 
@@ -99,7 +99,7 @@ class Gestione:
 def valore_catastale(rendita: float, prima_casa: bool) -> float:
     """Base imponibile del registro con la regola prezzo-valore.
 
-    Rendita rivalutata del cinque per cento, moltiplicata per 110 se l'acquisto e'
+    Rendita rivalutata del cinque per cento, moltiplicata per 110 se l'acquisto è
     agevolato prima casa e per 120 negli altri casi.
     """
     t = P.IMPOSTE_TRASFERIMENTO
@@ -113,7 +113,7 @@ def agevolazione_applicabile(immobile: Immobile, acquirente: Acquirente) -> bool
     Non basta che l'acquirente la chieda: le categorie A/1, A/8 e A/9 ne sono escluse
     per definizione, e l'esclusione si riflette anche sul moltiplicatore catastale,
     che torna a centoventi. Tenere la verifica in una funzione sola evita che il
-    moltiplicatore e l'aliquota si disallineino, che e' il modo tipico in cui questo
+    moltiplicatore e l'aliquota si disallineino, che è il modo tipico in cui questo
     errore si presenta.
     """
     di_lusso = immobile.categoria in IMPOSTE_LUSSO
@@ -124,7 +124,7 @@ def base_imponibile_registro(immobile: Immobile, acquirente: Acquirente) -> floa
     """Sceglie fra valore catastale e prezzo secondo l'opzione prezzo-valore.
 
     La regola prezzo-valore vale solo fuori campo IVA e solo se la si chiede in atto;
-    senza rendita catastale nota si ripiega sul prezzo, che e' il caso peggiore.
+    senza rendita catastale nota si ripiega sul prezzo, che è il caso peggiore.
     """
     if not acquirente.prezzo_valore or immobile.rendita_catastale <= 0:
         return immobile.prezzo
@@ -165,8 +165,8 @@ def imposte_acquisto(immobile: Immobile, acquirente: Acquirente) -> ImposteAcqui
             aliquota = t.iva_lusso
         else:
             aliquota = t.iva_ordinaria
-        # In regime IVA la base e' sempre il prezzo pattuito: il prezzo-valore non
-        # si applica, perche' e' una regola dell'imposta di registro.
+        # In regime IVA la base è sempre il prezzo pattuito: il prezzo-valore non
+        # si applica, perché è una regola dell'imposta di registro.
         return ImposteAcquisto(
             imponibile=immobile.prezzo,
             iva=immobile.prezzo * aliquota,
@@ -232,7 +232,7 @@ class CostoOperazione:
 
     @property
     def costo_totale(self) -> float:
-        """Prezzo piu' tutti i costi: e' il denominatore corretto dei rendimenti."""
+        """Prezzo più tutti i costi: è il denominatore corretto dei rendimenti."""
         return self.prezzo + self.costi_accessori
 
     @property
@@ -278,8 +278,8 @@ def costo_operazione(
 def rata_francese(importo: float, tasso_annuo: float, durata_anni: int, rate_per_anno: int = 12) -> float:
     """Rata costante dell'ammortamento alla francese.
 
-    Con tasso nullo la rata e' la semplice divisione del capitale per il numero di
-    rate; il caso va isolato perche' la formula generale divide per zero.
+    Con tasso nullo la rata è la semplice divisione del capitale per il numero di
+    rate; il caso va isolato perché la formula generale divide per zero.
     """
     n = durata_anni * rate_per_anno
     if n <= 0:
@@ -338,9 +338,9 @@ def interessi_per_anno(piano: Sequence[RataAmmortamento]) -> dict[int, float]:
 def detrazione_interessi(interessi_anno: float, quota: float = 1.0, abitazione_principale: bool = True) -> float:
     """Detrazione IRPEF del 19% sugli interessi, entro il massimale di 4.000 euro.
 
-    Il massimale e' riferito all'immobile e va ripartito fra i cointestatari del
+    Il massimale è riferito all'immobile e va ripartito fra i cointestatari del
     mutuo: con due intestatari al cinquanta per cento ciascuno detrae il 19% su
-    2.000 euro, non su 4.000. La detrazione spetta solo se l'immobile e' adibito ad
+    2.000 euro, non su 4.000. La detrazione spetta solo se l'immobile è adibito ad
     abitazione principale, quindi non spetta sull'immobile comprato per affittarlo.
     """
     if not abitazione_principale:
@@ -355,7 +355,7 @@ def taeg_approssimato(
 ) -> float:
     """TAEG stimato, come tasso che azzera il valore attuale dei flussi.
 
-    E' un'approssimazione dichiarata: il TAEG di legge segue la convenzione della
+    È un'approssimazione dichiarata: il TAEG di legge segue la convenzione della
     Banca d'Italia sull'inclusione delle singole voci, qui si includono i costi
     iniziali e un costo annuo ricorrente ripartito sulle rate.
     """
@@ -402,10 +402,10 @@ def irpef_lorda(imponibile: float) -> float:
 def imposta_sul_canone(canone_annuo: float, regime: str, reddito_altro: float = 0.0) -> float:
     """Imposta sul reddito da locazione secondo il regime scelto.
 
-    In cedolare secca l'imposta e' proporzionale e sostituisce IRPEF, addizionali,
+    In cedolare secca l'imposta è proporzionale e sostituisce IRPEF, addizionali,
     registro e bollo. In regime ordinario il canone concorre al reddito complessivo
-    con l'abbattimento forfettario, e l'imposta e' la differenza fra l'IRPEF con e
-    senza il canone, cosi' da catturare l'aliquota marginale effettiva.
+    con l'abbattimento forfettario, e l'imposta è la differenza fra l'IRPEF con e
+    senza il canone, così da catturare l'aliquota marginale effettiva.
     """
     l = P.LOCAZIONE
     if regime.startswith("cedolare") or regime.startswith("breve"):
@@ -427,7 +427,7 @@ def imposta_sul_canone(canone_annuo: float, regime: str, reddito_altro: float = 
             canone_annuo * (1 - l.riduzione_base_registro_concordato) * l.registro_annuo,
             l.registro_minimo,
         )
-    # L'imposta di registro e' dovuta per meta' da ciascuna parte, salvo patto.
+    # L'imposta di registro è dovuta per metà da ciascuna parte, salvo patto.
     return marginale + addizionali + registro / 2
 
 
@@ -441,7 +441,7 @@ def imu_annua(
 ) -> float:
     """IMU dovuta sull'immobile.
 
-    L'abitazione principale non di lusso e' esente. Le riduzioni per canone
+    L'abitazione principale non di lusso è esente. Le riduzioni per canone
     concordato e per comodato si applicano all'imposta e alla base rispettivamente,
     secondo la disciplina vigente.
     """
@@ -474,7 +474,7 @@ class ContoEconomico:
     imposta: float
     ristrutturazione: float = 0.0
     """Accantonamento annuo per la ristrutturazione di fine ciclo. Vedi ADR-005:
-    e' un costo ricorrente, non un evento futuro da tenere fuori dal rendimento."""
+    è un costo ricorrente, non un evento futuro da tenere fuori dal rendimento."""
 
     @property
     def canone_effettivo(self) -> float:
@@ -540,8 +540,8 @@ def conto_economico(immobile: Immobile, gestione: Gestione, reddito_altro: float
 def tir(flussi: Sequence[float], tolleranza: float = 1e-7, iterazioni: int = 200) -> float:
     """Tasso interno di rendimento, per bisezione su un intervallo ampio.
 
-    La bisezione e' preferita a Newton perche' non diverge sui flussi immobiliari,
-    dove il primo termine e' un esborso grande e i successivi sono piccoli e di segno
+    La bisezione è preferita a Newton perché non diverge sui flussi immobiliari,
+    dove il primo termine è un esborso grande e i successivi sono piccoli e di segno
     costante. Restituisce zero se non esiste un cambio di segno nell'intervallo.
     """
     def van(tasso: float) -> float:
@@ -588,8 +588,8 @@ def metriche(
 ) -> Metriche:
     """Indicatori calcolati sul costo totale, non sul solo prezzo.
 
-    La distinzione e' sostanziale: usare il prezzo come denominatore gonfia il
-    rendimento del dieci-quindici per cento, perche' ignora imposte, notaio e
+    La distinzione è sostanziale: usare il prezzo come denominatore gonfia il
+    rendimento del dieci-quindici per cento, perché ignora imposte, notaio e
     provvigione, che sono capitale immobilizzato a tutti gli effetti.
     """
     cash_flow = conto.utile_netto - rata_annua
@@ -611,25 +611,25 @@ def metriche(
 def tasso_reale(tasso_nominale: float, inflazione: float) -> float:
     """Tasso reale esatto, per l'equazione di Fisher: (1+r)/(1+i)-1.
 
-    La forma che si vede scritta quasi sempre e' la sottrazione, cioe' r meno i,
-    e non e' la definizione: e' la sua approssimazione al primo ordine. Le due
-    coincidono solo nel limite di tassi piccoli, perche' la differenza fra loro
+    La forma che si vede scritta quasi sempre è la sottrazione, cioè r meno i,
+    e non è la definizione: è la sua approssimazione al primo ordine. Le due
+    coincidono solo nel limite di tassi piccoli, perché la differenza fra loro
     vale i*(1+r_reale)/(1+i) circa, quindi cresce col prodotto dei due tassi.
 
-    Sui numeri di questo dominio la differenza non e' trascurabile come sembra.
+    Sui numeri di questo dominio la differenza non è trascurabile come sembra.
     Con un rendimento nominale del cinque per cento e un'inflazione del due, la
     sottrazione da' il tre per cento e la formula esatta il 2,94: sei centesimi
-    di punto, cioe' il due per cento del rendimento reale stesso. Su venticinque
+    di punto, cioè il due per cento del rendimento reale stesso. Su venticinque
     anni di capitalizzazione quella differenza si compone e sposta il montante
     finale di alcuni punti percentuali. Il modello usa quindi sempre la forma
-    esatta, e mostra accanto l'errore che si commetterebbe con l'altra, perche'
-    la sottrazione resta utile per il conto a mente e va saputa per quello che e'.
+    esatta, e mostra accanto l'errore che si commetterebbe con l'altra, perché
+    la sottrazione resta utile per il conto a mente e va saputa per quello che è.
 
-    La ragione per cui la forma esatta e' quella giusta si vede scrivendo cosa
-    significa un rendimento reale: e' il rapporto fra il potere d'acquisto finale
+    La ragione per cui la forma esatta è quella giusta si vede scrivendo cosa
+    significa un rendimento reale: è il rapporto fra il potere d'acquisto finale
     e quello iniziale. Un euro investito diventa (1+r) euro nominali, che al
     livello dei prezzi finale comprano (1+r)/(1+i) volte quello che comprava un
-    euro all'inizio. Il rendimento reale e' quel rapporto meno uno, per
+    euro all'inizio. Il rendimento reale è quel rapporto meno uno, per
     definizione e non per approssimazione.
     """
     if inflazione <= -1:
@@ -640,10 +640,10 @@ def tasso_reale(tasso_nominale: float, inflazione: float) -> float:
 def deflaziona(valore_nominale: float, inflazione: float, anni: float) -> float:
     """Riporta un importo futuro al potere d'acquisto di oggi.
 
-    E' l'operazione che distingue un patrimonio finale da un patrimonio finale
+    È l'operazione che distingue un patrimonio finale da un patrimonio finale
     utilizzabile. Duecentomila euro fra venticinque anni con un'inflazione del
     due per cento comprano quello che oggi comprano circa centoventiduemila: la
-    differenza non e' una perdita contabile, e' potere d'acquisto che non c'e'.
+    differenza non è una perdita contabile, è potere d'acquisto che non c'è.
     """
     return valore_nominale / (1 + inflazione) ** anni
 
@@ -656,22 +656,22 @@ def fattore_rendita_crescente(crescita: float, sconto: float, anni: int) -> floa
 
         F = somma per k da 1 a n di (1+g)^(k-1) / (1+s)^k
 
-    ed e' una serie geometrica di ragione q = (1+g)/(1+s), che si chiude in
+    ed è una serie geometrica di ragione q = (1+g)/(1+s), che si chiude in
 
         F = q * (1 - q^n) / ((1+g) * (1 - q))
 
     La forma chiusa esiste per una ragione pratica e non estetica: la stessa
     grandezza serve dentro il workbook, dove una somma su n termini con n
     variabile richiederebbe una formula matriciale oppure una colonna di
-    appoggio, e nessuna delle due e' ispezionabile come una cella singola. Il
+    appoggio, e nessuna delle due è ispezionabile come una cella singola. Il
     workbook usa quindi la forma chiusa, questo modulo tiene anche la somma
-    esplicita in `effetto_inflazione`, e un test verifica che coincidano: e' la
+    esplicita in `effetto_inflazione`, e un test verifica che coincidano: è la
     doppia implementazione applicata a una formula invece che a un modello.
 
-    Il caso q uguale a uno, cioe' crescita pari al tasso di sconto, annulla il
+    Il caso q uguale a uno, cioè crescita pari al tasso di sconto, annulla il
     denominatore e va trattato a parte: allora ogni termine vale 1/(1+g) e la
-    somma e' n/(1+g). Non e' un caso di scuola, perche' assumere una crescita del
-    canone pari al tasso di sconto reale e' un'ipotesi che qualcuno fa davvero.
+    somma è n/(1+g). Non è un caso di scuola, perché assumere una crescita del
+    canone pari al tasso di sconto reale è un'ipotesi che qualcuno fa davvero.
     """
     if sconto <= -1 or crescita <= -1:
         raise ValueError("tassi non ammissibili")
@@ -685,15 +685,15 @@ def fattore_rendita_crescente(crescita: float, sconto: float, anni: int) -> floa
 class EffettoInflazione:
     """Che cosa fa l'inflazione a questa operazione, voce per voce.
 
-    Il risultato interessante e' che l'inflazione non agisce nella stessa
+    Il risultato interessante è che l'inflazione non agisce nella stessa
     direzione su tutte le componenti, e in un acquisto a leva le direzioni si
-    compensano solo in parte. Il debito e' nominale, quindi l'inflazione lo
-    erode a favore di chi lo ha contratto; la rata di un mutuo a tasso fisso e'
+    compensano solo in parte. Il debito è nominale, quindi l'inflazione lo
+    erode a favore di chi lo ha contratto; la rata di un mutuo a tasso fisso è
     nominale, quindi si alleggerisce in termini reali anno dopo anno; il canone
-    e' indicizzabile solo in parte e solo in alcuni regimi, quindi perde terreno;
+    è indicizzabile solo in parte e solo in alcuni regimi, quindi perde terreno;
     l'immobile si rivaluta nominalmente, e in termini reali solo se la
     rivalutazione supera l'inflazione, cosa che nel mercato residenziale italiano
-    degli ultimi vent'anni non e' accaduta.
+    degli ultimi vent'anni non è accaduta.
     """
 
     inflazione: float
@@ -732,17 +732,17 @@ def effetto_inflazione(
 ) -> EffettoInflazione:
     """Scompone l'effetto dell'inflazione sulle grandezze dell'operazione.
 
-    Sull'ultima voce vale una nota, perche' quantifica una scelta fiscale che di
+    Sull'ultima voce vale una nota, perché quantifica una scelta fiscale che di
     solito si fa guardando solo l'aliquota. La cedolare secca sostituisce
-    l'IRPEF sul canone con un'aliquota fissa, ed e' quasi sempre conveniente sul
+    l'IRPEF sul canone con un'aliquota fissa, ed è quasi sempre conveniente sul
     breve; in cambio, per l'articolo 3 comma 11 del d.lgs. 23/2011, chi la opta
     rinuncia per la durata dell'opzione all'aggiornamento ISTAT del canone. Su un
-    contratto quattro piu' quattro con un'inflazione del due per cento, la
+    contratto quattro più quattro con un'inflazione del due per cento, la
     rinuncia costa un canone che a fine periodo vale in termini reali il quindici
     per cento in meno, e su un orizzonte di venticinque anni la somma attualizzata
-    di quel mancato aggiornamento e' confrontabile con il risparmio d'imposta che
+    di quel mancato aggiornamento è confrontabile con il risparmio d'imposta che
     l'aveva motivata. Il modello calcola l'una e l'altra grandezza e lascia il
-    confronto a chi decide, perche' dipende dall'aliquota marginale personale.
+    confronto a chi decide, perché dipende dall'aliquota marginale personale.
     """
     reale = tasso_reale(rendimento_netto_nominale, inflazione)
     valore_finale = prezzo * (1 + rivalutazione_immobile) ** orizzonte_anni
@@ -786,7 +786,7 @@ def plusvalenza_su_rivendita(
 
     Restituisce la coppia plusvalenza lorda e imposta. L'imponibilita' decade oltre
     i cinque anni, o oltre i dieci per gli immobili con superbonus, e non scatta se
-    l'immobile e' stato abitazione principale per la maggior parte del periodo.
+    l'immobile è stato abitazione principale per la maggior parte del periodo.
     """
     p = P.PLUSVALENZA
     plus = max(prezzo_vendita - costo_acquisto, 0.0)
@@ -825,7 +825,7 @@ def confronto_compra_o_affitta(
     costi_ricorrenti_proprietario: float = 0.0,
     inflazione_canone: float = P.FINANZA.inflazione_attesa,
 ) -> EsitoConfronto:
-    """Confronta il patrimonio finale nei due scenari, a parita' di esborso.
+    """Confronta il patrimonio finale nei due scenari, a parità di esborso.
 
     L'impostazione riprende quella dei fogli di Paolo Coletti: chi compra immobilizza
     l'anticipo e paga rata e costi ricorrenti, chi affitta investe l'anticipo e ogni

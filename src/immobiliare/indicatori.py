@@ -5,9 +5,9 @@ Sono le due grandezze che il modello usa come assunzione e che quasi nessuno
 verifica prima di lasciarle al valore predefinito. L'inflazione attesa entra
 nella proiezione del flusso di cassa, nella rivalutazione dell'immobile e nel
 confronto con il portafoglio alternativo, e un punto di scarto su venticinque
-anni sposta il risultato piu' di quasi ogni altra ipotesi. Il tasso a breve
-serve a un'altra domanda, cioe' se la media mensile sui mutui, che esce con due
-mesi di ritardo, sia gia' vecchia e in che direzione.
+anni sposta il risultato più di quasi ogni altra ipotesi. Il tasso a breve
+serve a un'altra domanda, cioè se la media mensile sui mutui, che esce con due
+mesi di ritardo, sia già vecchia e in che direzione.
 
 Nessuna delle due fonti richiede chiave o registrazione, ed entrambe degradano
 senza bloccare il resto: se non rispondono, i valori restano quelli dichiarati
@@ -16,9 +16,9 @@ in `parametri.py` e il workbook funziona lo stesso.
 L'idea di seguire queste due grandezze insieme viene dal canale open source
 `finanza-che-conta` (https://github.com/Loenus/finanza-che-conta), che pubblica
 l'euro short-term rate ogni lunedi' e l'inflazione ISTAT a ogni comunicato, ed
-e' anche la fonte da cui e' stato individuato l'identificativo del flusso SDMX
-dei prezzi al consumo. Il repository non dichiara una licenza, quindi non ne e'
-stato ripreso codice: qui c'e' un client scritto da zero sullo stesso endpoint
+è anche la fonte da cui è stato individuato l'identificativo del flusso SDMX
+dei prezzi al consumo. Il repository non dichiara una licenza, quindi non ne è
+stato ripreso codice: qui c'è un client scritto da zero sullo stesso endpoint
 pubblico.
 """
 
@@ -35,7 +35,7 @@ TIMEOUT_SECONDI = 60
 # un timeout tarato sulla BCE lo farebbe fallire sempre.
 TIMEOUT_ISTAT = 180
 
-# Euro short-term rate, pubblicato dalla BCE stessa ogni giorno lavorativo. E'
+# Euro short-term rate, pubblicato dalla BCE stessa ogni giorno lavorativo. È
 # l'unica grandezza di questo modulo davvero aggiornata al giorno prima, e per
 # questo serve da termometro rispetto alle medie mensili sui mutui.
 BASE_BCE = "https://data-api.ecb.europa.eu/service/data"
@@ -46,22 +46,22 @@ SERIE_HICP = {
     "hicp_italia_core": ("ICP/M.IT.N.XEF000.4.ANR", "Indice armonizzato Italia al netto di energia e alimentari"),
 }
 
-# Prezzi al consumo per l'intera collettivita', il NIC, dal servizio SDMX di
+# Prezzi al consumo per l'intera collettività, il NIC, dal servizio SDMX di
 # ISTAT. Il vecchio endpoint `sdmx.istat.it/SDMXWS` oggi rimanda alla home:
-# l'indirizzo vivo e' quello sotto. L'ordine delle dimensioni, verificato sul
-# data structure definition, e' FREQ.REF_AREA.DATA_TYPE.MEASURE.COICOP, e la
+# l'indirizzo vivo è quello sotto. L'ordine delle dimensioni, verificato sul
+# data structure definition, è FREQ.REF_AREA.DATA_TYPE.MEASURE.COICOP, e la
 # chiave con i punti vuoti chiede tutte le combinazioni per l'Italia mensile.
 BASE_ISTAT = "https://esploradati.istat.it/SDMXWS/rest/data"
 FLUSSO_NIC = "IT1,167_744_DF_DCSP_NIC1B2015_1,1.0"
 CHIAVE_NIC = "M.IT..."
 
-# Codici della dimensione MEASURE nel flusso NIC. La corrispondenza e' stata
+# Codici della dimensione MEASURE nel flusso NIC. La corrispondenza è stata
 # verificata sui valori: a dicembre 2025 la misura 7 vale 1,2 per cento, che
 # coincide con l'indice armonizzato Italia dello stesso mese letto dalla BCE.
 MISURE_NIC = {
     "4": ("indice", "Indice generale NIC, base 2015 uguale a cento"),
     "6": ("congiunturale", "Variazione percentuale sul mese precedente"),
-    "7": ("tendenziale", "Variazione percentuale sullo stesso mese dell'anno precedente, cioe' l'inflazione"),
+    "7": ("tendenziale", "Variazione percentuale sullo stesso mese dell'anno precedente, cioè l'inflazione"),
 }
 
 FONTI = {
@@ -74,14 +74,14 @@ FONTI = {
 
 
 class IndicatoriNonDisponibili(RuntimeError):
-    """La fonte non risponde, o la serie richiesta non esiste piu'."""
+    """La fonte non risponde, o la serie richiesta non esiste più."""
 
 
 @dataclass(frozen=True)
 class Osservazione:
     """Un valore con il suo periodo e la sua fonte.
 
-    Il periodo non e' un ornamento: e' la meta' dell'informazione. Un tasso di
+    Il periodo non è un ornamento: è la metà dell'informazione. Un tasso di
     inflazione senza la data a cui si riferisce non dice se la si sta usando
     come dato corrente o come reperto.
     """
@@ -113,7 +113,7 @@ def _preleva(url: str, etichetta: str) -> list[tuple[str, float]]:
     except (urllib.error.URLError, TimeoutError, OSError) as e:
         # `TimeoutError` sul socket non discende da `URLError`: catturare solo
         # quest'ultima farebbe uscire l'eccezione dal modulo e cadere l'intero
-        # comando invece di degradare, che e' il contratto di questo file.
+        # comando invece di degradare, che è il contratto di questo file.
         raise IndicatoriNonDisponibili(f"{etichetta} non raggiungibile: {e}") from e
 
     esito: list[tuple[str, float]] = []
@@ -175,13 +175,13 @@ def nic_istat(osservazioni: int = 1) -> list[Osservazione]:
     Restituisce le misure disponibili per l'ultimo periodo pubblicato. Il
     periodo va guardato: ISTAT ribasa l'indice ogni cinque anni e il flusso
     della base precedente smette di ricevere osservazioni, quindi un valore
-    fermo a un dicembre e' il segnale che la serie corrente e' altrove.
+    fermo a un dicembre è il segnale che la serie corrente è altrove.
     """
     righe = _misure_nic(osservazioni)
     esito: list[Osservazione] = []
     for riga in righe:
         coicop = riga.get("E_COICOP_REV_ISTAT", "")
-        # 00 e' l'indice generale; le altre voci sono le divisioni di spesa.
+        # 00 è l'indice generale; le altre voci sono le divisioni di spesa.
         if coicop != "00":
             continue
         misura = riga.get("MEASURE", "")

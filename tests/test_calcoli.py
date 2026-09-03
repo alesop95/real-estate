@@ -2,12 +2,12 @@
 """Test del motore di calcolo.
 
 Congelano il caso di riferimento descritto in `.claude/context/dev-testing.md` e le
-verifiche di dominio che intercettano gli errori piu' probabili: scaglioni rimasti
+verifiche di dominio che intercettano gli errori più probabili: scaglioni rimasti
 a un'annualita' precedente, minimo di legge dell'imposta di registro ignorato,
 prezzo-valore applicato dove non spetta, detrazione concessa dove non spetta.
 
 Si eseguono con `python -m pytest tests` dalla radice del progetto, oppure con
-`python tests/test_calcoli.py` se pytest non e' installato.
+`python tests/test_calcoli.py` se pytest non è installato.
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ def test_prezzo_valore_abbassa_la_base():
 
 
 def test_prezzo_valore_non_si_applica_con_iva():
-    """Il prezzo-valore e' una regola dell'imposta di registro: con l'IVA la base
+    """Il prezzo-valore è una regola dell'imposta di registro: con l'IVA la base
     resta il prezzo, e applicarlo comunque sottostimerebbe l'imposta."""
     immobile, acquirente, _ = caso_di_riferimento()
     immobile.venditore_impresa = True
@@ -118,7 +118,7 @@ def test_rata_francese():
 
 
 def test_rata_a_tasso_nullo():
-    """Il caso va isolato perche' la formula generale dividerebbe per zero."""
+    """Il caso va isolato perché la formula generale dividerebbe per zero."""
     assert C.rata_francese(120_000, 0.0, 10) == 1_000.0
 
 
@@ -137,7 +137,7 @@ def test_detrazione_interessi_solo_su_abitazione_principale():
 
 
 def test_massimale_detrazione_scala_con_la_quota():
-    """Il massimale e' riferito all'immobile, non alla persona: con due
+    """Il massimale è riferito all'immobile, non alla persona: con due
     cointestatari al cinquanta per cento ciascuno detrae su duemila euro."""
     assert C.detrazione_interessi(10_000, quota=1.0) == 4_000 * 0.19
     assert C.detrazione_interessi(10_000, quota=0.5) == 2_000 * 0.19
@@ -146,7 +146,7 @@ def test_massimale_detrazione_scala_con_la_quota():
 # --- IRPEF ------------------------------------------------------------------
 
 def test_scaglioni_irpef_2026():
-    # 28.000 al 23 per cento piu' 2.000 al 33 per cento
+    # 28.000 al 23 per cento più 2.000 al 33 per cento
     assert C.irpef_lorda(30_000) == 7_100.0
     assert C.irpef_lorda(28_000) == 6_440.0
     # oltre i 50.000 entra il terzo scaglione al 43 per cento
@@ -167,7 +167,7 @@ def test_locazione_breve_prima_e_altre_unita():
 
 def test_irpef_ordinaria_include_registro_e_addizionali():
     imposta = C.imposta_sul_canone(6_000, "irpef_ordinario", reddito_altro=32_000)
-    # Marginale al 33 per cento sul 95 per cento, piu' addizionali, piu' meta' registro.
+    # Marginale al 33 per cento sul 95 per cento, più addizionali, più metà registro.
     atteso = 6_000 * 0.95 * 0.33 + 6_000 * 0.95 * (P.IRPEF.addizionale_regionale_tipica + P.IRPEF.addizionale_comunale_tipica) + max(6_000 * 0.02, 67) / 2
     assert round(imposta, 2) == round(atteso, 2)
 
@@ -189,7 +189,7 @@ def test_imu_ridotta_con_canone_concordato():
 
 def test_accantonamento_ristrutturazione_nel_conto_economico():
     """Un rifacimento completo ogni quarant'anni, ripartito. Vedi ADR-005: senza,
-    il rendimento netto risulta piu' che doppio di quello vero."""
+    il rendimento netto risulta più che doppio di quello vero."""
     immobile, _, _ = caso_di_riferimento()
     conto = C.conto_economico(immobile, C.Gestione(canone_mensile=500, regime="cedolare_libero"))
     assert round(conto.ristrutturazione, 2) == round(120_000 / 3 / 40, 2)
@@ -278,15 +278,15 @@ def test_confronto_reagisce_al_rendimento_del_portafoglio():
 
 
 def test_omi_legge_la_fornitura_in_codifica_ansi():
-    """La fornitura ufficiale non e' UTF-8, e leggerla male non solleva errori.
+    """La fornitura ufficiale non è UTF-8, e leggerla male non solleva errori.
 
-    Il mirror open data pubblica file gia' in UTF-8; la fornitura scaricata
+    Il mirror open data pubblica file già in UTF-8; la fornitura scaricata
     dall'area riservata arriva nella codifica ANSI di Windows. Decodificarla come
     UTF-8 sostituendo i caratteri illeciti non fallisce: mette il segnaposto di
     rimpiazzo al posto di ogni accento, il file si carica, le quotazioni si
     calcolano, e un Comune accentato diventa irreperibile alla ricerca per nome.
-    E' il modello di difetto che produce un risultato plausibile invece di un
-    errore, cioe' quello contro cui vale la pena scrivere un test.
+    È il modello di difetto che produce un risultato plausibile invece di un
+    errore, cioè quello contro cui vale la pena scrivere un test.
     """
     import tempfile
 
@@ -304,7 +304,7 @@ def test_omi_legge_la_fornitura_in_codifica_ansi():
 
     quotazioni = O.carica(percorso)
     assert len(quotazioni) == 1
-    assert quotazioni[0].comune == accentato, "il nome del Comune e' stato corrotto in lettura"
+    assert quotazioni[0].comune == accentato, "il nome del Comune è stato corrotto in lettura"
     assert chr(0xFFFD) not in quotazioni[0].comune
 
     # Il separatore decimale italiano e il punto delle migliaia vanno interpretati.
@@ -315,13 +315,13 @@ def test_omi_legge_la_fornitura_in_codifica_ansi():
     assert len(O.cerca(quotazioni, comune=accentato)) == 1
 
 def test_indicatori_degradano_senza_rete():
-    """Il contratto del modulo e' che una fonte irraggiungibile non propaghi.
+    """Il contratto del modulo è che una fonte irraggiungibile non propaghi.
 
     Tutte le funzioni di rete del progetto devono fallire con l'eccezione di
     dominio, mai con quella del socket, altrimenti il comando cade invece di
-    degradare. Il caso insidioso e' `TimeoutError`, che non discende da
+    degradare. Il caso insidioso è `TimeoutError`, che non discende da
     `URLError`: una cattura scritta sulla sola `URLError` sembra corretta e
-    lascia passare proprio il fallimento piu' frequente.
+    lascia passare proprio il fallimento più frequente.
     """
     import urllib.error
     import urllib.request
@@ -338,7 +338,7 @@ def test_indicatori_degradano_senza_rete():
         try:
             for chiamata in (N.estr, N.hicp, N.nic_istat, N.quadro):
                 if chiamata is N.quadro:
-                    # `quadro` assorbe tutto e restituisce cio' che ha raccolto.
+                    # `quadro` assorbe tutto e restituisce ciò che ha raccolto.
                     assert chiamata() == []
                 else:
                     try:
@@ -351,10 +351,10 @@ def test_indicatori_degradano_senza_rete():
 
 
 def test_misure_nic_coprono_indice_e_variazioni():
-    """La mappa delle misure e' il punto in cui il flusso ISTAT diventa leggibile.
+    """La mappa delle misure è il punto in cui il flusso ISTAT diventa leggibile.
 
-    I codici della dimensione MEASURE sono numeri senza significato finche' non
-    li si traduce, e la traduzione e' stata verificata sui valori: a dicembre
+    I codici della dimensione MEASURE sono numeri senza significato finché non
+    li si traduce, e la traduzione è stata verificata sui valori: a dicembre
     2025 la misura 7 vale 1,2 per cento e coincide con l'indice armonizzato
     Italia dello stesso mese letto dalla BCE. Se la mappa perde una voce, il
     comando stampa un'etichetta generica invece di dire quale sia l'inflazione.
@@ -378,10 +378,10 @@ def test_omi_legge_tutte_le_province_dello_stesso_semestre():
     La versione precedente leggeva il solo ultimo file in ordine alfabetico, e
     l'effetto era che cercare un Comune di una provincia diversa da quella
     sorteggiata dall'ordinamento restituiva "nessuna quotazione". Non un errore:
-    una risposta sbagliata, che si sarebbe letta come "quel Comune non e'
+    una risposta sbagliata, che si sarebbe letta come "quel Comune non è
     coperto". Il test costruisce due province e un semestre vecchio, e verifica
     che entrambe le province correnti si vedano e che il semestre superato resti
-    fuori, perche' mescolare periodi diversi falserebbe il confronto.
+    fuori, perché mescolare periodi diversi falserebbe il confronto.
     """
     import tempfile
 
@@ -428,7 +428,7 @@ def test_omi_trova_i_comuni_scritti_come_li_scrive_la_fornitura():
     posto dell'apostrofo, e S BENEDETTO DEL TRONTO, con il prefisso abbreviato.
     Un confronto letterale risponde "nessuna quotazione" a chi scrive il nome
     corretto, e quel silenzio si legge come "Comune non coperto": una
-    conclusione sbagliata tratta da una risposta plausibile, che e' il modo in
+    conclusione sbagliata tratta da una risposta plausibile, che è il modo in
     cui questo genere di difetto fa danno.
     """
     import tempfile
@@ -472,10 +472,10 @@ def test_omi_riconosce_il_semestre_anche_senza_token_nel_nome():
 
     Il rischio ha una direzione precisa. Se il semestre di una fornitura nuova
     restasse ignoto, il confronto lo ordinerebbe sotto qualunque valore noto, e
-    i file del 2018 gia' in cache continuerebbero a essere quelli letti: il
+    i file del 2018 già in cache continuerebbero a essere quelli letti: il
     programma risponderebbe con dati di anni prima senza segnalare nulla. Per
     questo il riconoscimento ha tre vie in cascata, e l'ultima sbaglia al
-    massimo attribuendo il file al semestre corrente, cioe' facendolo vincere.
+    massimo attribuendo il file al semestre corrente, cioè facendolo vincere.
     """
     import tempfile
 
@@ -518,8 +518,8 @@ def test_omi_quotazione_di_riferimento_preferisce_lo_stato_normale():
 
     OTTIMO nella fornitura descrive l'immobile ristrutturato di recente.
     Prenderlo come termine di paragone farebbe sembrare a buon mercato qualunque
-    cosa, che e' il modo piu' rapido di convincersi che un prezzo alto sia
-    giusto. La funzione restituisce anche la provenienza, perche' due numeri
+    cosa, che è il modo più rapido di convincersi che un prezzo alto sia
+    giusto. La funzione restituisce anche la provenienza, perché due numeri
     senza l'indicazione della zona da cui vengono si rileggono un mese dopo come
     se fossero della zona giusta.
     """
@@ -556,7 +556,7 @@ def test_omi_quotazione_di_riferimento_preferisce_lo_stato_normale():
     assert (minimo, massimo) == (1_650, 3_000), f"ottenuto {minimo}-{massimo}"
     assert "B1" in provenienza and "normale" in provenienza
 
-    # Senza zona: tutto il Comune, con l'avvertenza che la forbice e' larga.
+    # Senza zona: tutto il Comune, con l'avvertenza che la forbice è larga.
     minimo, massimo, provenienza = O.quotazione_di_riferimento(quotazioni, "Civitanova Marche")
     assert (minimo, massimo) == (1_200, 3_000)
     assert "indicare la zona" in provenienza
@@ -567,15 +567,15 @@ def test_omi_quotazione_di_riferimento_preferisce_lo_stato_normale():
 def test_risalita_storica_cerca_la_finestra_e_non_gli_estremi():
     """La peggiore finestra di N mesi, non il massimo meno il minimo della serie.
 
-    E' la distinzione che rende il numero utilizzabile. Massimo assoluto meno
-    minimo assoluto da' sempre un valore piu' grande e privo di significato,
-    perche' i due estremi possono stare a decenni di distanza e nessun piano di
-    ammortamento li attraversa nella stessa finestra: cio' che un mutuo incontra
-    davvero e' la peggiore finestra di durata fissata. La serie sintetica di questo
-    test e' costruita perche' le due misure divergano, con il minimo assoluto
-    all'inizio e il massimo alla fine, lontani fra loro piu' della finestra.
+    È la distinzione che rende il numero utilizzabile. Massimo assoluto meno
+    minimo assoluto da' sempre un valore più grande e privo di significato,
+    perché i due estremi possono stare a decenni di distanza e nessun piano di
+    ammortamento li attraversa nella stessa finestra: ciò che un mutuo incontra
+    davvero è la peggiore finestra di durata fissata. La serie sintetica di questo
+    test è costruita perché le due misure divergano, con il minimo assoluto
+    all'inizio e il massimo alla fine, lontani fra loro più della finestra.
 
-    Il test non tocca la rete: sostituisce la funzione che scarica la serie, che e'
+    Il test non tocca la rete: sostituisce la funzione che scarica la serie, che è
     l'unico punto di contatto con il portale dati.
     """
     from immobiliare import tassi as T
@@ -601,23 +601,23 @@ def test_risalita_storica_cerca_la_finestra_e_non_gli_estremi():
     assert abs(estremi["massimo"] - estremi["minimo"] - 6.0) < 1e-9
 
     # Su sei mesi la peggiore finestra vale meno di quell'escursione: la risalita
-    # e' graduale, quindi nessuna finestra di sei mesi la contiene per intero.
+    # è graduale, quindi nessuna finestra di sei mesi la contiene per intero.
     assert 6 in risalite
     assert risalite[6].variazione < 6.0
     assert abs(risalite[6].variazione - 5.0) < 1e-9, risalite[6].variazione
     assert risalite[6].valore_iniziale == 0.0 and risalite[6].valore_finale == 5.0
 
-    # Su dodici mesi la finestra e' piu' larga e cattura piu' risalita, ma resta
-    # comunque sotto l'escursione totale, perche' il minimo assoluto sta troppo
+    # Su dodici mesi la finestra è più larga e cattura più risalita, ma resta
+    # comunque sotto l'escursione totale, perché il minimo assoluto sta troppo
     # indietro per rientrare nella stessa finestra del massimo.
     assert risalite[12].variazione > risalite[6].variazione
     assert risalite[12].variazione < 6.0
 
-    # La proprieta' che rende il valore leggibile nel modello: punti percentuali
-    # nella fonte, frazione pronta per i calcoli nella proprieta'.
+    # La proprietà che rende il valore leggibile nel modello: punti percentuali
+    # nella fonte, frazione pronta per i calcoli nella proprietà.
     assert abs(risalite[6].punti - risalite[6].variazione / 100) < 1e-12
 
-    # Una finestra piu' lunga della serie non produce una voce inventata.
+    # Una finestra più lunga della serie non produce una voce inventata.
     T.serie = lambda chiave="euribor_3m", osservazioni=400: finta
     try:
         assert T.risalite_storiche(finestre=(500,)) == []
@@ -630,17 +630,17 @@ def test_risalite_congelate_coerenti_con_la_documentazione():
 
     Le note del foglio Simulatore mutuo sono generate interpolando questi campi,
     quindi un valore cambiato nel codice e non riverificato sulla serie finirebbe
-    scritto nel workbook come se fosse un dato osservato. Il test non puo'
-    verificare la fonte, che richiede rete: verifica la coerenza interna, cioe'
+    scritto nel workbook come se fosse un dato osservato. Il test non può
+    verificare la fonte, che richiede rete: verifica la coerenza interna, cioè
     che i numeri stiano nell'ordine e nel dominio che la fonte impone.
     """
     r = P.RISALITE_EURIBOR
 
-    # Una finestra piu' lunga contiene quelle piu' corte, quindi la risalita su
-    # ventiquattro mesi non puo' essere inferiore a quella su dodici.
+    # Una finestra più lunga contiene quelle più corte, quindi la risalita su
+    # ventiquattro mesi non può essere inferiore a quella su dodici.
     assert r.risalita_24_mesi >= r.risalita_12_mesi
 
-    # Nessuna finestra puo' superare l'escursione totale della serie.
+    # Nessuna finestra può superare l'escursione totale della serie.
     assert max(r.risalita_12_mesi, r.risalita_24_mesi, r.risalita_36_mesi) <= r.massimo_storico - r.minimo_storico
 
     # Il livello corrente sta fra gli estremi, e gli estremi sono nell'ordine.
@@ -652,13 +652,13 @@ def test_risalite_congelate_coerenti_con_la_documentazione():
 
 
 def test_effetto_inflazione_usa_fisher_esatto_e_non_la_sottrazione():
-    """Il rendimento reale e' un rapporto di poteri d'acquisto, non una differenza.
+    """Il rendimento reale è un rapporto di poteri d'acquisto, non una differenza.
 
-    La forma che si vede scritta quasi sempre e' r meno i, che e' l'approssimazione
+    La forma che si vede scritta quasi sempre è r meno i, che è l'approssimazione
     al primo ordine della definizione. Il test fissa tre cose: che il modello usi
     la forma esatta, che l'errore dell'approssimazione sia riportato e abbia il
-    segno giusto, e che le identita' che rendono la formula riconoscibile valgano,
-    cioe' che con inflazione nulla nominale e reale coincidano e che con
+    segno giusto, e che le identità che rendono la formula riconoscibile valgano,
+    cioè che con inflazione nulla nominale e reale coincidano e che con
     rivalutazione pari all'inflazione la rivalutazione reale sia esattamente zero.
     """
     # Definizione: (1+r)/(1+i)-1, e non r-i.
@@ -668,12 +668,12 @@ def test_effetto_inflazione_usa_fisher_esatto_e_non_la_sottrazione():
     # La sottrazione sovrastima sempre, quando entrambi i tassi sono positivi.
     assert (0.05 - 0.02) > C.tasso_reale(0.05, 0.02)
 
-    # Con inflazione nulla non c'e' niente da correggere. Il confronto e' con
-    # tolleranza e non esatto perche' la divisione per 1.0 in binario non e'
-    # l'identita' sui decimali che non hanno rappresentazione finita.
+    # Con inflazione nulla non c'è niente da correggere. Il confronto è con
+    # tolleranza e non esatto perché la divisione per 1.0 in binario non è
+    # l'identità sui decimali che non hanno rappresentazione finita.
     assert abs(C.tasso_reale(0.037, 0.0) - 0.037) < 1e-15
 
-    # Un'inflazione che annullerebbe il livello dei prezzi non e' ammissibile.
+    # Un'inflazione che annullerebbe il livello dei prezzi non è ammissibile.
     try:
         C.tasso_reale(0.05, -1.0)
         raise AssertionError("un'inflazione di meno cento per cento doveva essere rifiutata")
@@ -694,7 +694,7 @@ def test_effetto_inflazione_usa_fisher_esatto_e_non_la_sottrazione():
         tasso_sconto=0.03,
     )
 
-    # Rivalutazione nominale pari all'inflazione: rivalutazione reale nulla, ed e'
+    # Rivalutazione nominale pari all'inflazione: rivalutazione reale nulla, ed è
     # il caso del mercato residenziale italiano degli ultimi vent'anni.
     assert abs(e.rivalutazione_reale_immobile) < 1e-15
 
@@ -705,11 +705,11 @@ def test_effetto_inflazione_usa_fisher_esatto_e_non_la_sottrazione():
     # cento reale l'anno, nella forma esatta.
     assert abs(e.erosione_reale_canone - (1 / 1.02 - 1)) < 1e-15
 
-    # L'errore dell'approssimazione e' positivo, perche' la sottrazione sovrastima.
+    # L'errore dell'approssimazione è positivo, perché la sottrazione sovrastima.
     assert e.errore_approssimazione > 0
     assert abs(e.errore_approssimazione - ((0.05 - 0.02) - C.tasso_reale(0.05, 0.02))) < 1e-15
 
-    # Lo sconto che l'inflazione fa sul debito e' positivo con inflazione positiva,
+    # Lo sconto che l'inflazione fa sul debito è positivo con inflazione positiva,
     # e vale la differenza fra il debito nominale e il suo valore in euro di oggi.
     assert e.sconto_inflazione_sul_debito > 0
     assert abs(e.debito_residuo_reale - 40_000 / 1.02 ** 25) < 1e-9
@@ -719,10 +719,10 @@ def test_effetto_inflazione_usa_fisher_esatto_e_non_la_sottrazione():
 def test_fattore_rendita_crescente_coincide_con_la_somma_esplicita():
     """La forma chiusa usata nel workbook e la somma esplicita devono coincidere.
 
-    E' la doppia implementazione applicata a una formula. Il workbook non puo'
+    È la doppia implementazione applicata a una formula. Il workbook non può
     sommare n termini con n variabile in una cella singola e usa la forma chiusa
-    della serie geometrica; il motore tiene la somma esplicita, che e' leggibile
-    e verificabile a occhio. Se le due divergono, la formula del foglio e'
+    della serie geometrica; il motore tiene la somma esplicita, che è leggibile
+    e verificabile a occhio. Se le due divergono, la formula del foglio è
     sbagliata e nessuna cella andrebbe in errore per dirlo.
     """
     def somma_esplicita(crescita, sconto, anni):
@@ -747,7 +747,7 @@ def test_fattore_rendita_crescente_coincide_con_la_somma_esplicita():
     # Il caso singolare non deve passare per il denominatore nullo.
     assert abs(C.fattore_rendita_crescente(0.03, 0.03, 25) - 25 / 1.03) < 1e-12
 
-    # Rendita costante: il fattore e' l'annualita' ordinaria.
+    # Rendita costante: il fattore è l'annualita' ordinaria.
     atteso = (1 - 1.03 ** -25) / 0.03
     assert abs(C.fattore_rendita_crescente(0.0, 0.03, 25) - atteso) < 1e-12
 
@@ -779,7 +779,7 @@ def test_scheda_sfugge_i_dati_e_non_inventa_il_prezzo_massimo():
     stampava alla lettera.
 
     La seconda riguarda i numeri che dipendono da un dato assente. Il prezzo
-    massimo sostenibile e' il prezzo a cui il rendimento raggiunge l'obiettivo,
+    massimo sostenibile è il prezzo a cui il rendimento raggiunge l'obiettivo,
     quindi dipende dal canone: senza canone la prima versione stampava meno
     seimila euro e annunciava uno sconto da ottenere del centoquattro per cento
     del prezzo. Aritmeticamente corretto, operativamente assurdo, e con la faccia
@@ -803,35 +803,35 @@ def test_scheda_sfugge_i_dati_e_non_inventa_il_prezzo_massimo():
     assert r"100\% ok" in sorgente
     assert r"B\_5" in sorgente
 
-    # E la marcatura prodotta dalla scheda non e' stata sfuggita: se lo fosse,
+    # E la marcatura prodotta dalla scheda non è stata sfuggita: se lo fosse,
     # comparirebbe la forma con la barra rovesciata resa visibile.
     assert r"\textbackslash{}textbf" not in sorgente
     assert r"\textbf{Costo totale}" in sorgente
 
-    # Il documento e' completo e a pagina singola.
+    # Il documento è completo e a pagina singola.
     assert sorgente.startswith("\\documentclass")
     assert sorgente.rstrip().endswith(r"\end{document}")
     assert sorgente.count(r"\begin{document}") == 1
 
     # Con tutti i dati, il prezzo massimo si calcola e la casella lo riporta.
     assert "Il numero da portare in trattativa" in sorgente
-    assert "non e' calcolabile" not in sorgente
+    assert "non è calcolabile" not in sorgente
 
-    # Senza canone, la stessa casella si rifiuta e dice perche'.
+    # Senza canone, la stessa casella si rifiuta e dice perché.
     senza_canone = A.Annuncio(
         id="house_y", comune="Comune di prova", mq=60, prezzo_richiesto=100_000,
         rendita_catastale=400, categoria="A/3", spese_condominio_anno=900,
         zona_omi="B5",
     )
     sorgente2 = S.costruisci(senza_canone)
-    assert "non e' calcolabile" in sorgente2
+    assert "non è calcolabile" in sorgente2
     assert "Scheda incompleta" in sorgente2
     # E i rendimenti non compaiono affatto, invece di comparire a zero.
     assert "Rendimento netto reale" not in sorgente2
     assert "Cash flow annuo" not in sorgente2
 
     # Senza rendita catastale la scheda dichiara che il prezzo-valore non si
-    # applica, che e' la voce che cambia di piu' il costo dell'operazione.
+    # applica, che è la voce che cambia di più il costo dell'operazione.
     senza_rendita = A.Annuncio(
         id="house_z", comune="Comune di prova", mq=60, prezzo_richiesto=100_000,
         canone_atteso_mese=500, categoria="A/3", spese_condominio_anno=900, zona_omi="B5",
@@ -839,7 +839,7 @@ def test_scheda_sfugge_i_dati_e_non_inventa_il_prezzo_massimo():
     sorgente3 = S.costruisci(senza_rendita)
     assert "prezzo-valore non si applica" in sorgente3
 
-    # La mappa dei campi bloccanti e' condivisa col comando che li elenca: una
+    # La mappa dei campi bloccanti è condivisa col comando che li elenca: una
     # copia locale divergerebbe, e la scheda direbbe di chiedere cose diverse.
     assert S.CAMPI_BLOCCANTI is A.CAMPI_BLOCCANTI
 

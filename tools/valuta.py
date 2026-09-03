@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Interfaccia a riga di comando del progetto.
 
-Un solo eseguibile con sottocomandi, cosi' che non ci siano piu' script che si
+Un solo eseguibile con sottocomandi, così che non ci siano più script che si
 somigliano e che divergono nel tempo. Il workbook resta il luogo dove si lavora,
 la riga di comando serve a generarlo, a popolarlo e a fare un controllo rapido
 senza aprire Excel.
@@ -54,13 +54,13 @@ def pct(x: float) -> str:
 # ---------------------------------------------------------------------------
 
 def cartella_immobile(identificativo: str):
-    """La cartella che raccoglie tutto cio' che riguarda un immobile.
+    """La cartella che raccoglie tutto ciò che riguarda un immobile.
 
-    Esiste perche' un immobile produce piu' di un file: il workbook
+    Esiste perché un immobile produce più di un file: il workbook
     precompilato, il sorgente della scheda, il PDF della scheda e gli ausiliari
     di compilazione. Tenerli in cartelle diverse per tipo, come si faceva
     all'inizio con un `output/schede/` separato, ha il difetto di dividere per
-    formato cio' che si consulta per immobile: chi apre la cartella di house_6
+    formato ciò che si consulta per immobile: chi apre la cartella di house_6
     vuole vedere tutto di house_6, non i sorgenti LaTeX di quattordici immobili
     mescolati.
     """
@@ -68,11 +68,11 @@ def cartella_immobile(identificativo: str):
 
 
 def cmd_excel(args) -> int:
-    # Con `--da-annuncio` la destinazione predefinita e' la cartella
+    # Con `--da-annuncio` la destinazione predefinita è la cartella
     # dell'immobile e non il file-modello. La versione precedente scriveva sul
     # modello, quindi un `excel --da-annuncio house_6` senza `--output` lo
     # sostituiva con un file dedicato a quell'immobile, e il modello da cui
-    # partire per il successivo non c'era piu'.
+    # partire per il successivo non c'era più.
     if args.output:
         destinazione = Path(args.output)
     elif args.da_annuncio:
@@ -118,11 +118,11 @@ def cmd_excel(args) -> int:
         neutri = [(n, c) for n, c, natura in esito["assenti"] if natura == "neutro"]
         if da_chiedere:
             print()
-            print("  Azzerati perche' il registro non li ha: sono i campi da chiedere. Le")
-            print("  celle sono state svuotate invece di lasciare il valore di esempio, cosi'")
+            print("  Azzerati perché il registro non li ha: sono i campi da chiedere. Le")
+            print("  celle sono state svuotate invece di lasciare il valore di esempio, così")
             print("  che il foglio mostri un modello visibilmente incompleto invece di uno")
             print("  apparentemente sano calcolato su dati inventati. I controlli di")
-            print("  plausibilita' del Cruscotto li segnalano tutti.")
+            print("  plausibilità del Cruscotto li segnalano tutti.")
             for nome, campo in da_chiedere:
                 precedente = next((p for n, _, p in esito["azzerati"] if n == nome), None)
                 nota = "" if precedente in (None, "") else f"   (l'esempio diceva {precedente})"
@@ -141,7 +141,7 @@ def cmd_excel(args) -> int:
                 print(f"    {nome:<16}{ragione}")
         print()
         print("  Restano da compilare a mano le voci che il registro non porta e che")
-        print("  cambiano di piu' il risultato: aliquota IMU dalla delibera del Comune,")
+        print("  cambiano di più il risultato: aliquota IMU dalla delibera del Comune,")
         print("  importo e tasso del mutuo dal preventivo, e la verifica che le spese")
         print("  condominiali vengano dal consuntivo e non dalla stima dell'agenzia.")
 
@@ -185,7 +185,7 @@ def cmd_scheda(args) -> int:
         print()
         print(f"La scheda e' marcata incompleta: mancano {len(mancanti)} dati bloccanti")
         print(f"  {', '.join(mancanti)}")
-        print("I numeri restano calcolati su cio' che c'e', e la scheda lo dichiara in testa.")
+        print("I numeri restano calcolati su ciò che c'è, e la scheda lo dichiara in testa.")
 
     print()
     print("Per ottenere il PDF:")
@@ -193,8 +193,8 @@ def cmd_scheda(args) -> int:
     print(f"  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\build.ps1 -Main {relativo}")
     print(f"  bash scripts/build.sh --main {str(relativo).replace(chr(92), '/')}")
     print()
-    print("La cartella output non e' versionata, ed e' voluto: la scheda porta il prezzo")
-    print("obiettivo, che e' la propria strategia di acquisto.")
+    print("La cartella output non è versionata, ed è voluto: la scheda porta il prezzo")
+    print("obiettivo, che è la propria strategia di acquisto.")
     return 0
 
 
@@ -256,7 +256,7 @@ def cmd_riepilogo(args) -> int:
         print(f"  Loan to value             {pct(finanziamento.importo / immobile.prezzo)}")
         print(f"  Interessi totali          {euro(interessi)}")
         detrazione = C.detrazione_interessi(per_anno[1], acquirente.quota, args.abitazione_principale)
-        print(f"  Detrazione primo anno     {euro(detrazione)}" + ("" if args.abitazione_principale else "   (nulla: non e' abitazione principale)"))
+        print(f"  Detrazione primo anno     {euro(detrazione)}" + ("" if args.abitazione_principale else "   (nulla: non è abitazione principale)"))
     else:
         rata = 0.0
 
@@ -272,7 +272,7 @@ def cmd_riepilogo(args) -> int:
             # Senza un canone concordato esplicito si applica lo sconto tipico
             # dichiarato in `parametri`. Usare lo stesso canone del libero darebbe al
             # concordato l'aliquota ridotta senza il minor canone che la giustifica,
-            # e lo farebbe vincere sempre: un confronto cosi' non e' un confronto.
+            # e lo farebbe vincere sempre: un confronto così non è un confronto.
             if regime.endswith("concordato"):
                 canone = args.canone_concordato or args.canone * (1 - P.LOCAZIONE.sconto_canone_concordato)
             else:
@@ -285,7 +285,7 @@ def cmd_riepilogo(args) -> int:
                 aliquota_imu=args.imu,
             )
             conto = C.conto_economico(immobile, gestione, acquirente.reddito_imponibile_irpef)
-            # Il conto economico include gia' l'accantonamento per la ristrutturazione
+            # Il conto economico include già l'accantonamento per la ristrutturazione
             # di fine ciclo, che pesa uguale su ogni regime ma va sottratto: ignorarlo
             # gonfia tutti i rendimenti. Vedi ADR-005.
             print(f"  {etichetta:<24}{conto.noi:>12,.0f} EUR{conto.utile_netto:>12,.0f} EUR{conto.utile_netto / costo.costo_totale:>15.2%}".replace(",", "."))
@@ -322,7 +322,7 @@ def cmd_riepilogo(args) -> int:
         print(f"  TIR su {args.orizzonte} anni            {pct(C.tir(flussi))}")
         print()
         print("  Il TIR qui assume un cash flow costante nel tempo. Il foglio Cash flow del")
-        print("  workbook indicizza invece i costi all'inflazione e da' un valore piu' basso:")
+        print("  workbook indicizza invece i costi all'inflazione e da' un valore più basso:")
         print("  per una decisione vale quello, questo serve solo a scremare in fretta.")
 
     print()
@@ -339,15 +339,15 @@ def cmd_annunci(args) -> int:
     if args.azione == "mancanti":
         """Che cosa manca su ogni immobile, e che cosa quel dato blocca.
 
-        Il registro accetta un immobile col solo link, ed e' giusto, perche'
-        altrimenti non si registrerebbe nulla. La conseguenza e' che a meta'
-        percorso non si sa piu' quale immobile sia pronto per la valutazione e
+        Il registro accetta un immobile col solo link, ed è giusto, perché
+        altrimenti non si registrerebbe nulla. La conseguenza è che a metà
+        percorso non si sa più quale immobile sia pronto per la valutazione e
         quale aspetti un dato, e la domanda non ha una risposta a vista: le
         celle vuote di un CSV di trentacinque colonne non si contano a occhio.
         Questo comando la risponde, e non elenca i campi vuoti ma quelli che
         bloccano un calcolo, dicendo quale.
         """
-        # La mappa vive in `annunci.CAMPI_BLOCCANTI`, perche' la usa anche la
+        # La mappa vive in `annunci.CAMPI_BLOCCANTI`, perché la usa anche la
         # scheda di trattativa: due copie divergerebbero, e la divergenza non
         # produrrebbe un errore ma una scheda che dice di chiedere una cosa
         # diversa da quella che questo comando segnala.
@@ -367,7 +367,7 @@ def cmd_annunci(args) -> int:
                 pronti.append(a)
 
         # Una riga per immobile. L'informazione su cosa blocca un campo e come si
-        # ottiene e' per campo e non per immobile, quindi sta nella legenda in
+        # ottiene è per campo e non per immobile, quindi sta nella legenda in
         # fondo e non ripetuta quattordici volte: ripeterla trasformerebbe una
         # risposta da dieci secondi in centoventisei righe da leggere.
         print("CHE COSA MANCA, un immobile per riga")
@@ -384,8 +384,8 @@ def cmd_annunci(args) -> int:
         for a in pronti:
             print(f"  {a.id:<10}{a.punteggio:>4}  {a.comune[:19]:<20}{0:>6}  pronto per la valutazione completa")
 
-        # La legenda: solo i campi che mancano davvero a qualcuno, perche' una
-        # legenda che spiega campi che nessuno deve chiedere e' rumore.
+        # La legenda: solo i campi che mancano davvero a qualcuno, perché una
+        # legenda che spiega campi che nessuno deve chiedere è rumore.
         da_chiedere = {campo for _, mancano in incompleti for campo, _, _ in mancano}
         if da_chiedere:
             print()
@@ -409,7 +409,7 @@ def cmd_annunci(args) -> int:
             print("Su uno dei pronti si genera il workbook precompilato con:")
             print(f"  python tools/valuta.py excel --con-annunci --da-annuncio {pronti[0].id}")
         else:
-            print("Il lavoro utile adesso e' chiedere i dati mancanti, non rifare i conti.")
+            print("Il lavoro utile adesso è chiedere i dati mancanti, non rifare i conti.")
             comuni = sorted({a.comune for a, _ in incompleti if a.comune})
             senza_rendita = [a.id for a, m in incompleti
                              if "rendita_catastale" in {c for c, _, _ in m}]
@@ -426,10 +426,10 @@ def cmd_annunci(args) -> int:
     if args.azione == "confronta":
         """Graduatoria degli immobili a registro, ordinata per scarto sulla zona.
 
-        Risponde alla domanda che viene prima di ogni altra, cioe' quale merita
+        Risponde alla domanda che viene prima di ogni altra, cioè quale merita
         un'ora di lavoro, e la risponde senza aprire Excel. Il criterio di
-        ordinamento e' lo scarto sulla quotazione di zona e non il prezzo,
-        perche' fra immobili di taglia diversa il prezzo non dice nulla.
+        ordinamento è lo scarto sulla quotazione di zona e non il prezzo,
+        perché fra immobili di taglia diversa il prezzo non dice nulla.
         """
         quotazioni, _ = O.carica_cartella(RADICE / "data" / "omi")
         completi = [a for a in registro.annunci if a.mq and a.prezzo_richiesto]
@@ -454,10 +454,10 @@ def cmd_annunci(args) -> int:
         def segnalazioni(annuncio):
             """Bandiere rosse ricavate dalle note, che restano testo libero.
 
-            E' un'euristica dichiarata, non una classificazione: le note le
+            È un'euristica dichiarata, non una classificazione: le note le
             scrive una persona e queste parole chiave sono quelle che quella
             persona ha usato finora. Serve a non perdere di vista un immobile
-            gia' locato o da ristrutturare mentre si guarda una tabella.
+            già locato o da ristrutturare mentre si guarda una tabella.
             """
             note = (annuncio.note or "").lower()
             trovate = []
@@ -477,9 +477,9 @@ def cmd_annunci(args) -> int:
                 trovate.append("uso non abitativo")
             if "discordante" in note or "contraddizione" in note or "incoerenti" in note:
                 trovate.append("dati incoerenti")
-            # Questa non viene dalle note ma dal campo, e non e' un difetto
-            # dell'immobile: e' l'avviso che quella riga non e' commensurabile
-            # alle altre a colpo d'occhio, perche' paga l'IVA sul prezzo intero
+            # Questa non viene dalle note ma dal campo, e non è un difetto
+            # dell'immobile: è l'avviso che quella riga non è commensurabile
+            # alle altre a colpo d'occhio, perché paga l'IVA sul prezzo intero
             # invece dell'imposta di registro sul valore catastale.
             if annuncio.venditore_impresa == "SI":
                 trovate.append("IVA, non registro")
@@ -525,9 +525,9 @@ def cmd_annunci(args) -> int:
         print(f"e' quanto la zona paga per quella superficie. Fonte: {O.ATTRIBUZIONE}.")
         return 0
     if args.azione == "omi":
-        # Aggancia il registro alla fornitura in cache. E' il passo che rende
+        # Aggancia il registro alla fornitura in cache. È il passo che rende
         # utile la colonna dello scarto nel workbook, che senza quotazioni resta
-        # vuota e fa sembrare il confronto fra immobili piu' povero di quanto sia.
+        # vuota e fa sembrare il confronto fra immobili più povero di quanto sia.
         cartella_omi = RADICE / "data" / "omi"
         quotazioni, letti = O.carica_cartella(cartella_omi)
         if not quotazioni:
@@ -625,7 +625,7 @@ def cmd_annunci(args) -> int:
             "tipologia": args.tipologia, "mq": args.mq, "prezzo_richiesto": args.prezzo,
             "prezzo_obiettivo": args.obiettivo, "canone_atteso_mese": args.canone,
             "agenzia": args.agenzia, "contatto": args.contatto, "note": args.note,
-            # I campi bloccanti, aggiunti perche' senza di loro il percorso si
+            # I campi bloccanti, aggiunti perché senza di loro il percorso si
             # interrompeva: `annunci mancanti` li chiedeva e nulla li accettava.
             "rendita_catastale": args.rendita, "categoria": args.categoria,
             "spese_condominio_anno": args.condominio, "piano": args.piano,
@@ -664,7 +664,7 @@ def cmd_annunci(args) -> int:
             print(f"Controllo robots.txt: {motivo}")
             if not consentito:
                 print()
-                print("Il prelievo automatico non e' consentito da questo sito. Le vie corrette sono")
+                print("Il prelievo automatico non è consentito da questo sito. Le vie corrette sono")
                 print("due: aprire la pagina nel browser, copiare il testo dell'annuncio in un file e")
                 print("passarlo con --file, oppure inserire i dati a mano con il sottocomando aggiungi.")
                 return 2
@@ -672,8 +672,8 @@ def cmd_annunci(args) -> int:
                 testo = A.testo_da_html(A.scarica_pagina(args.link))
             except A.PrelievoBloccato as e:
                 # Il robots.txt consentiva il percorso e il server ha negato lo
-                # stesso: e' la protezione anti bot, non un guasto, e non si
-                # insiste. Il messaggio dell'eccezione porta gia' le alternative.
+                # stesso: è la protezione anti bot, non un guasto, e non si
+                # insiste. Il messaggio dell'eccezione porta già le alternative.
                 print(str(e))
                 return 2
             except Exception as e:
@@ -729,7 +729,7 @@ def cmd_omi(args) -> int:
             return 2
         try:
             # Il percorso di destinazione va ancorato alla radice del progetto:
-            # il valore predefinito del modulo e' relativo, e lanciando il comando
+            # il valore predefinito del modulo è relativo, e lanciando il comando
             # da un'altra cartella l'archivio finirebbe in un `data/omi` diverso da
             # quello che gli altri sottocomandi leggono, con l'effetto di
             # un'importazione riuscita e una ricerca che non trova nulla.
@@ -808,7 +808,7 @@ def cmd_omi(args) -> int:
 
 
 def _a_capo(testo: str, larghezza: int) -> list[str]:
-    """Manda a capo un testo lungo su piu' righe, senza spezzare le parole."""
+    """Manda a capo un testo lungo su più righe, senza spezzare le parole."""
     righe, corrente = [], ""
     for parola in testo.split():
         if corrente and len(corrente) + 1 + len(parola) > larghezza:
@@ -837,8 +837,8 @@ def cmd_tassi(args) -> int:
     for o in quadro:
         print(f"  {o.descrizione:<40}{o.periodo:>10}{o.valore:>9.2f}%")
 
-    # La catena. Sta prima del confronto col preventivo perche' risponde alla
-    # domanda che viene prima: di che cosa e' fatto il tasso che ti offrono.
+    # La catena. Sta prima del confronto col preventivo perché risponde alla
+    # domanda che viene prima: di che cosa è fatto il tasso che ti offrono.
     catena = T.catena_dei_tassi(args.tasso)
     if catena:
         print()
@@ -854,10 +854,10 @@ def cmd_tassi(args) -> int:
             for riga in _a_capo(g.spiegazione, 88):
                 print(f"    {riga}")
         print()
-        print("  Gli anelli non sono contemporanei: l'overnight e' del giorno lavorativo")
-        print("  precedente, l'Euribor e' mensile, la media dei mutui e' mensile con uno o due")
+        print("  Gli anelli non sono contemporanei: l'overnight è del giorno lavorativo")
+        print("  precedente, l'Euribor è mensile, la media dei mutui è mensile con uno o due")
         print("  mesi di ritardo. Gli scarti si leggono come ordini di grandezza, non come")
-        print("  identita' contabili. E un mutuo a tasso fisso non e' indicizzato all'Euribor")
+        print("  identità contabili. E un mutuo a tasso fisso non è indicizzato all'Euribor")
         print("  ma all'IRS di pari durata: sul fisso la catena vale come scomposizione")
         print("  concettuale, non come somma esatta.")
         print()
@@ -879,11 +879,11 @@ def cmd_tassi(args) -> int:
         print(f"  Scarto                    {confronto.scarto * 100:>+13.2f} punti   ({confronto.giudizio})")
         print(f"  Rata a mercato            {euro(confronto.rata_riferimento)}")
         print(f"  Rata del preventivo       {euro(confronto.rata_offerta)}")
-        print(f"  Interessi in piu' o meno  {euro(confronto.differenza_interessi)}   sull'intera durata")
+        print(f"  Interessi in più o meno  {euro(confronto.differenza_interessi)}   sull'intera durata")
         print()
-        print("  Il dato di mercato e' una media con uno o due mesi di ritardo: dice dove sta")
+        print("  Il dato di mercato è una media con uno o due mesi di ritardo: dice dove sta")
         print("  il mercato, non quale tasso otterrai tu, che dipende da reddito, loan to value,")
-        print("  eta' e banca. Serve a sapere se vale la pena chiedere un altro preventivo.")
+        print("  età e banca. Serve a sapere se vale la pena chiedere un altro preventivo.")
 
     if getattr(args, "risalita", False):
         try:
@@ -896,7 +896,7 @@ def cmd_tassi(args) -> int:
 
         atteso = P.RISALITE_EURIBOR
         print()
-        print("RISALITE STORICHE DELL'INDICE, cioe' quanto puo' salire un variabile")
+        print("RISALITE STORICHE DELL'INDICE, cioè quanto può salire un variabile")
         print(f"  Serie                     {T.SERIE_INDICI[args.indice][1]}")
         print(f"  Copertura                 {estremi['da']} / {estremi['a']}, {estremi['osservazioni']} osservazioni mensili")
         print(f"  Livello corrente          {estremi['corrente']:>13.2f}%")
@@ -910,8 +910,8 @@ def cmd_tassi(args) -> int:
                   f"{ri.periodo_iniziale:>10}{ri.valore_iniziale:>9.2f}%"
                   f"{ri.periodo_finale:>10}{ri.valore_finale:>9.2f}%")
 
-        # Il confronto con la costante congelata in parametri.py e' il punto del
-        # comando: dice se il valore scritto nel workbook e' ancora quello che i
+        # Il confronto con la costante congelata in parametri.py è il punto del
+        # comando: dice se il valore scritto nel workbook è ancora quello che i
         # dati contengono, oppure se la serie ha prodotto una finestra peggiore.
         congelate = {12: atteso.risalita_12_mesi, 24: atteso.risalita_24_mesi, 36: atteso.risalita_36_mesi}
         print()
@@ -928,20 +928,20 @@ def cmd_tassi(args) -> int:
                 disallineate.append(ri)
         if disallineate:
             print()
-            print("  I valori nel codice non coincidono piu' con la serie: aggiornare")
+            print("  I valori nel codice non coincidono più con la serie: aggiornare")
             print("  RISALITE_EURIBOR in src/immobiliare/parametri.py, spostare verificato_il")
-            print("  e rigenerare il workbook, perche' le note del foglio Simulatore mutuo")
+            print("  e rigenerare il workbook, perché le note del foglio Simulatore mutuo")
             print("  citano quei numeri.")
         else:
             print()
-            print("  Nessuna finestra peggiore di quelle gia' registrate: il workbook e' allineato.")
+            print("  Nessuna finestra peggiore di quelle già registrate: il workbook è allineato.")
 
         print()
         print("  Come si usa questo numero. Nel foglio Simulatore mutuo si compila il percorso")
         print("  del tasso a gradini con un terzo, due terzi e l'intera risalita, si legge la")
-        print("  rata massima raggiunta e si decide se e' sostenibile. Non e' una previsione:")
-        print("  e' il peggio che i dati contengono, che in assenza di previsione e' il solo")
-        print("  riferimento onesto per una prova di sostenibilita'.")
+        print("  rata massima raggiunta e si decide se è sostenibile. Non è una previsione:")
+        print("  è il peggio che i dati contengono, che in assenza di previsione è il solo")
+        print("  riferimento onesto per una prova di sostenibilità.")
 
     print()
     print(f"Fonte: {T.FONTE}")
@@ -951,9 +951,9 @@ def cmd_tassi(args) -> int:
 def cmd_indicatori(args) -> int:
     """Indicatori di contesto: tasso a breve dell'area euro e inflazione italiana.
 
-    Serve a decidere se le due assunzioni piu' pesanti del modello, cioe'
+    Serve a decidere se le due assunzioni più pesanti del modello, cioè
     l'inflazione attesa e il tasso, siano ancora ragionevoli. Ogni valore esce
-    con il suo periodo, perche' un dato senza data non dice se lo si sta usando
+    con il suo periodo, perché un dato senza data non dice se lo si sta usando
     come corrente o come reperto.
     """
     print("Indicatori di contesto")
@@ -994,11 +994,11 @@ def cmd_indicatori(args) -> int:
     print(f"  Inflazione assunta nel modello: {P.FINANZA.inflazione_attesa:.1%}")
     print("  Si cambia in parametri.py, oppure nella cella gialla del foglio Parametri.")
     print()
-    print("  Il periodo va guardato. L'euro short-term rate e' del giorno lavorativo")
+    print("  Il periodo va guardato. L'euro short-term rate è del giorno lavorativo")
     print("  precedente; le serie mensili escono con qualche settimana di ritardo e")
     print("  ISTAT ribasa il NIC ogni cinque anni, quindi una serie ferma a un dicembre")
     print("  significa che il dato corrente sta in un flusso diverso, non che l'inflazione")
-    print("  si sia fermata. Il comunicato di riferimento e' su www.istat.it.")
+    print("  si sia fermata. Il comunicato di riferimento è su www.istat.it.")
     return 0
 
 
@@ -1011,7 +1011,7 @@ def cmd_llm(args) -> int:
         modelli = cliente.modelli()
     except LlmNonDisponibile as e:
         print(f"Non raggiungibile: {e}")
-        print("L'importazione automatica degli annunci restera' indisponibile;")
+        print("L'importazione automatica degli annunci resterà indisponibile;")
         print("l'inserimento manuale e tutto il resto del progetto funzionano lo stesso.")
         return 1
     print(f"Modello predefinito: {cliente.modello}" + ("" if cliente.modello in modelli else "  (non installato)"))
@@ -1095,13 +1095,13 @@ def principale(argomenti=None) -> int:
     p.add_argument("--canone", type=float)
     p.add_argument("--note")
     p.add_argument("--stato", help="uno fra: " + ", ".join(A.STATI_ANNUNCIO))
-    p.add_argument("--punteggio", type=int, help="priorita' da 0 a 10, 10 e' la massima")
+    p.add_argument("--punteggio", type=int, help="priorità da 0 a 10, 10 è la massima")
     p.add_argument("--zona", dest="zona_omi", help="zona OMI, per agganciare la quotazione giusta")
     # I campi che `annunci mancanti` indica come bloccanti devono essere
     # scrivibili da qui: fino al 2 settembre 2026 il comando diceva di
     # procurarsi rendita catastale, categoria e spese condominiali, e poi non
     # c'era modo di scriverle se non aprendo il CSV a mano. Un comando che
-    # chiede un dato e non lo accetta e' un percorso interrotto a meta'.
+    # chiede un dato e non lo accetta è un percorso interrotto a metà.
     p.add_argument("--rendita", type=float, help="rendita catastale in euro, dalla visura: sblocca il prezzo-valore")
     p.add_argument("--categoria", help="categoria catastale, per esempio A/2 o A/3")
     p.add_argument("--condominio", type=float, help="spese condominiali annue, dal consuntivo")

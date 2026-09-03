@@ -50,39 +50,39 @@
 \begin{abstract}
 \noindent Questo documento formalizza la matematica che il modello di valutazione immobiliare esegue, dalla definizione di capitalizzazione fino alla graduatoria fra immobili, senza dare per scontato alcun passaggio. Ogni formula implementata nel codice compare qui con la sua derivazione, la sua notazione, le sue ipotesi e i suoi limiti; ogni scelta fra due forme algebricamente vicine ma numericamente diverse è motivata. L'ultimo capitolo contiene una tavola di corrispondenza fra i simboli usati qui, i nomi definiti nel workbook Excel e le funzioni Python del motore, così che ogni numero del modello sia rintracciabile fino alla sua formula. Il caso di riferimento del progetto è svolto per intero in appendice, con tutti i valori intermedi.
 
-Il documento non è una dispensa di matematica finanziaria generale: è la matematica \emph{di questo problema}. Ciò che serve viene derivato, ciò che non serve non compare, e dove il dominio impone una complicazione — un'imposta a tratti, un'indicizzazione parziale, una convenzione contrattuale italiana — la complicazione è nel testo e non nascosta in una nota.
+Il documento non è una dispensa di matematica finanziaria generale: è la matematica \emph{di questo problema}. Ciò che serve viene derivato, ciò che non serve non compare, e dove il dominio impone una complicazione - un'imposta a tratti, un'indicizzazione parziale, una convenzione contrattuale italiana - la complicazione è nel testo e non nascosta in una nota.
 \end{abstract}
 
 \tableofcontents
 \newpage
 
-\section{Come si legge questo documento, se non si e' abituati alle formule}
+\section{Come si legge questo documento, se non si è abituati alle formule}
 
-Questa sezione esiste perche' il resto del documento sarebbe illeggibile senza. Non spiega finanza: spiega i segni. Chi ha familiarita' con la notazione matematica puo' saltarla, e chi non ce l'ha dovrebbe leggerla per intero, perche' dopo di essa ogni formula del documento si legge come una frase.
+Questa sezione esiste perché il resto del documento sarebbe illeggibile senza. Non spiega finanza: spiega i segni. Chi ha familiarità con la notazione matematica può saltarla, e chi non ce l'ha dovrebbe leggerla per intero, perché dopo di essa ogni formula del documento si legge come una frase.
 
-\subsection{Una lettera e' il nome di un numero}
+\subsection{Una lettera è il nome di un numero}
 
-Quando si scrive $P = 120\,000$ si sta dando un nome a un numero, esattamente come si fa con una cella di un foglio di calcolo a cui si assegna un'etichetta. La lettera $P$ non e' un'incognita da trovare: e' un'abbreviazione. Si usa una lettera invece di scrivere ogni volta la parola prezzo per una ragione pratica: le formule diventano abbastanza corte da vedersi tutte insieme, e vedere tutta una formula insieme e' ciò che permette di accorgersi se ha senso.
+Quando si scrive $P = 120\,000$ si sta dando un nome a un numero, esattamente come si fa con una cella di un foglio di calcolo a cui si assegna un'etichetta. La lettera $P$ non è un'incognita da trovare: è un'abbreviazione. Si usa una lettera invece di scrivere ogni volta la parola prezzo per una ragione pratica: le formule diventano abbastanza corte da vedersi tutte insieme, e vedere tutta una formula insieme è ciò che permette di accorgersi se ha senso.
 
-La scelta delle lettere non e' casuale nel documento: la tabella della sezione seguente le elenca tutte, e conviene tenerla aperta accanto le prime volte. Le lettere greche indicano tipicamente delle quote o delle aliquote, cioe' numeri fra zero e uno: $\pi$ e' l'inflazione, $\theta$ un'aliquota d'imposta, $\rho$ una rivalutazione. Le lettere latine indicano importi in euro o conteggi: $P$ il prezzo, $C$ il costo totale, $n$ un numero di rate.
+La scelta delle lettere non è casuale nel documento: la tabella della sezione seguente le elenca tutte, e conviene tenerla aperta accanto le prime volte. Le lettere greche indicano tipicamente delle quote o delle aliquote, cioè numeri fra zero e uno: $\pi$ è l'inflazione, $\theta$ un'aliquota d'imposta, $\rho$ una rivalutazione. Le lettere latine indicano importi in euro o conteggi: $P$ il prezzo, $C$ il costo totale, $n$ un numero di rate.
 
-\subsection{Il pedice e' un'etichetta che dice quale}
+\subsection{Il pedice è un'etichetta che dice quale}
 
-Quando si scrive $D_k$ si intende il debito residuo dopo la rata numero $k$. Il numeretto in basso, il pedice, non moltiplica e non eleva: e' un'etichetta. $D_0$ e' il debito all'inizio, $D_1$ dopo la prima rata, $D_{300}$ dopo la trecentesima. Se in un foglio di calcolo il debito residuo occupa una colonna, allora $D_k$ e' semplicemente la cella di quella colonna alla riga $k$.
+Quando si scrive $D_k$ si intende il debito residuo dopo la rata numero $k$. Il numeretto in basso, il pedice, non moltiplica e non eleva: è un'etichetta. $D_0$ è il debito all'inizio, $D_1$ dopo la prima rata, $D_{300}$ dopo la trecentesima. Se in un foglio di calcolo il debito residuo occupa una colonna, allora $D_k$ è semplicemente la cella di quella colonna alla riga $k$.
 
-Un pedice puo' anche essere una parola abbreviata invece di un numero, e allora distingue due grandezze parenti: $L$ e' il canone potenziale e $L_e$ e' il canone effettivo, quello che entra davvero dopo lo sfitto. La $e$ non e' un numero, e' l'iniziale di effettivo.
+Un pedice può anche essere una parola abbreviata invece di un numero, e allora distingue due grandezze parenti: $L$ è il canone potenziale e $L_e$ è il canone effettivo, quello che entra davvero dopo lo sfitto. La $e$ non è un numero, è l'iniziale di effettivo.
 
-\subsection{L'esponente e' una moltiplicazione ripetuta}
+\subsection{L'esponente è una moltiplicazione ripetuta}
 
 $(1+i)^n$ significa: prendi il numero $(1+i)$ e moltiplicalo per se stesso $n$ volte. Con $i = 0{,}03$ e $n = 2$ vale $1{,}03 \times 1{,}03 = 1{,}0609$.
 
-Questo e' il segno piu' importante di tutto il documento, e vale capire perche' compare cosi' spesso. Un capitale che rende il tre per cento all'anno non cresce del tre per cento moltiplicato per gli anni, perche' nel secondo anno rende il tre per cento anche su quello che ha guadagnato nel primo. Dopo due anni non e' cresciuto del sei per cento ma del $6{,}09$, e dopo venticinque non del settantacinque per cento ma del centonove. La differenza fra moltiplicare e elevare e' tutta l'aritmetica dell'interesse composto, e in un orizzonte di venticinque anni non e' un dettaglio: e' il fenomeno principale.
+Questo è il segno più importante di tutto il documento, e vale capire perché compare così spesso. Un capitale che rende il tre per cento all'anno non cresce del tre per cento moltiplicato per gli anni, perché nel secondo anno rende il tre per cento anche su quello che ha guadagnato nel primo. Dopo due anni non è cresciuto del sei per cento ma del $6{,}09$, e dopo venticinque non del settantacinque per cento ma del centonove. La differenza fra moltiplicare e elevare è tutta l'aritmetica dell'interesse composto, e in un orizzonte di venticinque anni non è un dettaglio: è il fenomeno principale.
 
-L'esponente negativo, che compare come $(1+s)^{-n}$, significa dividere invece di moltiplicare: $(1+s)^{-n}$ e' un altro modo di scrivere $1/(1+s)^n$. Serve a fare il cammino inverso, cioe' a chiedersi quanto vale oggi un importo che arrivera' fra $n$ anni.
+L'esponente negativo, che compare come $(1+s)^{-n}$, significa dividere invece di moltiplicare: $(1+s)^{-n}$ è un altro modo di scrivere $1/(1+s)^n$. Serve a fare il cammino inverso, cioè a chiedersi quanto vale oggi un importo che arriverà fra $n$ anni.
 
 \subsection{Il segno di somma}
 
-Il segno $\sum$, che e' la lettera greca sigma maiuscola, e' un'istruzione: somma tanti addendi costruiti tutti con la stessa regola. Si legge da tre punti.
+Il segno $\sum$, che è la lettera greca sigma maiuscola, è un'istruzione: somma tanti addendi costruiti tutti con la stessa regola. Si legge da tre punti.
 
 \[
 \underbrace{\sum_{k=1}^{4}}_{\text{per k che va da 1 a 4}} \underbrace{\frac{100}{(1{,}05)^k}}_{\text{somma questo}}
@@ -91,9 +91,9 @@ Il segno $\sum$, che e' la lettera greca sigma maiuscola, e' un'istruzione: somm
 \;=\; 354{,}60
 \]
 
-Sotto il segno c'e' da dove parte il contatore, sopra dove arriva, a destra la cosa da sommare scritta una volta sola in funzione del contatore. E' esattamente cio' che fa un foglio di calcolo quando si scrive una formula in una cella, la si trascina in basso per quattro righe e poi si somma la colonna: la somma con il sigma e' quella stessa operazione, scritta in una riga invece che in cinque celle.
+Sotto il segno c'è da dove parte il contatore, sopra dove arriva, a destra la cosa da sommare scritta una volta sola in funzione del contatore. È esattamente ciò che fa un foglio di calcolo quando si scrive una formula in una cella, la si trascina in basso per quattro righe e poi si somma la colonna: la somma con il sigma è quella stessa operazione, scritta in una riga invece che in cinque celle.
 
-Nel documento il contatore si chiama quasi sempre $k$ quando conta rate o periodi e $t$ quando conta anni. Non c'e' nessuna differenza matematica fra le due lettere: e' una convenzione per far capire a colpo d'occhio di che periodo si stia parlando.
+Nel documento il contatore si chiama quasi sempre $k$ quando conta rate o periodi e $t$ quando conta anni. Non c'è nessuna differenza matematica fra le due lettere: è una convenzione per far capire a colpo d'occhio di che periodo si stia parlando.
 
 \subsection{La parentesi graffa che divide i casi}
 
@@ -107,31 +107,31 @@ P, & \text{altrimenti.}
 \end{cases}
 \]
 
-Si legge cosi': la base imponibile $B$, che dipende dal prezzo $P$, vale $V_c$ nel primo caso e $P$ nel secondo. E' la stessa cosa che in un foglio di calcolo si scrive con un \texttt{SE}, e in un programma con un \texttt{if}. Le condizioni sono a destra, i valori a sinistra.
+Si legge così: la base imponibile $B$, che dipende dal prezzo $P$, vale $V_c$ nel primo caso e $P$ nel secondo. È la stessa cosa che in un foglio di calcolo si scrive con un \texttt{SE}, e in un programma con un \texttt{if}. Le condizioni sono a destra, i valori a sinistra.
 
-\subsection{$f(x)$ non e' una moltiplicazione}
+\subsection{$f(x)$ non è una moltiplicazione}
 
-Quando si scrive $C(P)$ non si sta moltiplicando $C$ per $P$: si sta dicendo che la grandezza $C$, il costo totale, dipende da $P$, il prezzo. La parentesi indica dipendenza, non prodotto. Serve quando la stessa grandezza va guardata a prezzi diversi, che e' esattamente il problema del capitolo sull'inversione: si scrive $C(P)$ perche' bisogna poter chiedere quanto vale il costo totale se il prezzo fosse un altro.
+Quando si scrive $C(P)$ non si sta moltiplicando $C$ per $P$: si sta dicendo che la grandezza $C$, il costo totale, dipende da $P$, il prezzo. La parentesi indica dipendenza, non prodotto. Serve quando la stessa grandezza va guardata a prezzi diversi, che è esattamente il problema del capitolo sull'inversione: si scrive $C(P)$ perché bisogna poter chiedere quanto vale il costo totale se il prezzo fosse un altro.
 
-Quando invece si intende una moltiplicazione, il documento la scrive con il punto, come in $R \cdot \kappa$, oppure accostando i simboli, come in $P\,p$. L'accostamento e' la convenzione usuale in matematica e non e' ambigua perche' le parentesi sono riservate alla dipendenza.
+Quando invece si intende una moltiplicazione, il documento la scrive con il punto, come in $R \cdot \kappa$, oppure accostando i simboli, come in $P\,p$. L'accostamento è la convenzione usuale in matematica e non è ambigua perché le parentesi sono riservate alla dipendenza.
 
 \subsection{Massimo, minimo e valore assoluto}
 
-$\max(a,b)$ e' il piu' grande fra i due numeri, $\min(a,b)$ il piu' piccolo. Compaiono perche' le norme fiscali sono spesso scritte in quella forma: l'imposta di registro e' la maggiore fra l'aliquota applicata alla base e un minimo di legge, cioe' $\max(B\,\tau,\,T_{\min})$, che si legge come prendi l'aliquota sulla base, ma se viene meno del minimo di legge paghi il minimo.
+$\max(a,b)$ è il più grande fra i due numeri, $\min(a,b)$ il più piccolo. Compaiono perché le norme fiscali sono spesso scritte in quella forma: l'imposta di registro è la maggiore fra l'aliquota applicata alla base e un minimo di legge, cioè $\max(B\,\tau,\,T_{\min})$, che si legge come prendi l'aliquota sulla base, ma se viene meno del minimo di legge paghi il minimo.
 
-Il valore assoluto, scritto $|x|$, e' il numero senza il suo segno: $|-3| = 3$. Serve quando interessa quanto una cosa cambia e non in che direzione, per esempio nell'ordinare le variabili di un diagramma a tornado.
+Il valore assoluto, scritto $|x|$, è il numero senza il suo segno: $|-3| = 3$. Serve quando interessa quanto una cosa cambia e non in che direzione, per esempio nell'ordinare le variabili di un diagramma a tornado.
 
 \subsection{Che cosa sono una proposizione e una dimostrazione}
 
 Il documento contiene alcuni riquadri intitolati Proposizione, seguiti da un blocco che inizia con Dimostrazione. Non sono decorazioni accademiche e vale spiegare a cosa servono in un documento operativo.
 
-Una proposizione e' un'affermazione precisa che si sostiene essere vera, per esempio che la rata di un mutuo alla francese vale una certa espressione. La dimostrazione e' il ragionamento che la sostiene, scritto in modo che chi legge possa verificarlo passo per passo invece di fidarsi. La differenza rispetto a una formula presentata senza dimostrazione e' pratica e non filosofica: una formula che si prende per buona si puo' solo confrontare con un'altra fonte, mentre una formula dimostrata si puo' controllare da soli, e se il ragionamento ha un buco lo si vede.
+Una proposizione è un'affermazione precisa che si sostiene essere vera, per esempio che la rata di un mutuo alla francese vale una certa espressione. La dimostrazione è il ragionamento che la sostiene, scritto in modo che chi legge possa verificarlo passo per passo invece di fidarsi. La differenza rispetto a una formula presentata senza dimostrazione è pratica e non filosofica: una formula che si prende per buona si può solo confrontare con un'altra fonte, mentre una formula dimostrata si può controllare da soli, e se il ragionamento ha un buco lo si vede.
 
 Il simbolo che chiude una dimostrazione, un quadratino, significa soltanto qui finisce il ragionamento.
 
 \subsection{Un consiglio di lettura}
 
-Nessuna formula di questo documento va imparata a memoria e nessuna va accettata sulla fiducia. Ognuna e' seguita da un paragrafo intitolato In parole che la rilegge come una frase italiana, di norma con un numero concreto preso dal caso di riferimento del progetto. Se una formula non torna, il paragrafo In parole dice cosa dovrebbe dire; se non torna nemmeno quello, la formula e' sbagliata o e' spiegata male, e in entrambi i casi vale segnalarlo.
+Nessuna formula di questo documento va imparata a memoria e nessuna va accettata sulla fiducia. Ognuna è seguita da un paragrafo intitolato In parole che la rilegge come una frase italiana, di norma con un numero concreto preso dal caso di riferimento del progetto. Se una formula non torna, il paragrafo In parole dice cosa dovrebbe dire; se non torna nemmeno quello, la formula è sbagliata o è spiegata male, e in entrambi i casi vale segnalarlo.
 
 \section{Notazione e convenzioni}
 
@@ -207,7 +207,7 @@ j_{\text{composto}} = (1+i)^{1/12} - 1 .
 \label{eq:conversione}
 \end{equation}
 
-\paragraph{In parole.} La prima riga dice: per ottenere il tasso di un mese, dividi il tasso dell'anno per dodici. Su un tasso annuo del $3{,}2$ per cento fa $0{,}032/12 = 0{,}0026667$, cioe' circa un quarto di punto al mese. La seconda dice: prendi il numero $1{,}032$, estraine la radice dodicesima, e togli uno. Fa $0{,}0026281$. Le due rispondono alla stessa domanda e danno numeri diversi perche' la prima ignora che gli interessi del primo mese producono interessi negli undici successivi. La banca italiana usa la prima, quindi il modello usa la prima, ma la mostra come cella modificabile perche' chi confronta un mutuo italiano con un prodotto estero deve sapere che le due convenzioni non sono la stessa cosa.
+\paragraph{In parole.} La prima riga dice: per ottenere il tasso di un mese, dividi il tasso dell'anno per dodici. Su un tasso annuo del $3{,}2$ per cento fa $0{,}032/12 = 0{,}0026667$, cioè circa un quarto di punto al mese. La seconda dice: prendi il numero $1{,}032$, estraine la radice dodicesima, e togli uno. Fa $0{,}0026281$. Le due rispondono alla stessa domanda e danno numeri diversi perché la prima ignora che gli interessi del primo mese producono interessi negli undici successivi. La banca italiana usa la prima, quindi il modello usa la prima, ma la mostra come cella modificabile perché chi confronta un mutuo italiano con un prodotto estero deve sapere che le due convenzioni non sono la stessa cosa.
 
 Il secondo è il tasso \emph{finanziariamente equivalente}, cioè quello che capitalizzato dodici volte restituisce esattamente $i$: $(1+j_{\text{composto}})^{12} = 1+i$. Il primo non ha questa proprietà, perché $(1+i/12)^{12} > 1+i$ per $i>0$: dividere per dodici e poi capitalizzare dodici volte produce più di quanto si è dichiarato.
 
@@ -230,9 +230,9 @@ a_{n,s} \;=\; \sum_{k=1}^{n} \frac{1}{(1+s)^k} \;=\; \frac{1-(1+s)^{-n}}{s} .
 \label{eq:annualita}
 \end{equation}
 
-\paragraph{In parole.} A sinistra c'e' la domanda: quanto vale oggi ricevere un euro alla fine di ognuno dei prossimi $n$ anni. A destra c'e' la risposta in forma compatta. La somma dice di attualizzare ogni euro per il numero di anni che lo separa da oggi e poi sommare tutto; la forma chiusa dice che quella somma si calcola in un colpo, senza scrivere gli $n$ addendi.
+\paragraph{In parole.} A sinistra c'è la domanda: quanto vale oggi ricevere un euro alla fine di ognuno dei prossimi $n$ anni. A destra c'è la risposta in forma compatta. La somma dice di attualizzare ogni euro per il numero di anni che lo separa da oggi e poi sommare tutto; la forma chiusa dice che quella somma si calcola in un colpo, senza scrivere gli $n$ addendi.
 
-Con $n = 25$ anni e $s = 3$ per cento il fattore vale $17{,}41$: venticinque euro incassati uno all'anno per venticinque anni valgono oggi diciassette euro e quaranta, non venticinque. La differenza di sette euro e sessanta e' il prezzo dell'attesa, e cresce con il tasso di sconto: al sei per cento lo stesso flusso vale $12{,}78$.
+Con $n = 25$ anni e $s = 3$ per cento il fattore vale $17{,}41$: venticinque euro incassati uno all'anno per venticinque anni valgono oggi diciassette euro e quaranta, non venticinque. La differenza di sette euro e sessanta è il prezzo dell'attesa, e cresce con il tasso di sconto: al sei per cento lo stesso flusso vale $12{,}78$.
 \end{proposizione}
 
 \begin{proof}
@@ -264,11 +264,11 @@ F(g,s,n) \;=\; \sum_{k=1}^{n} \frac{(1+g)^{k-1}}{(1+s)^k}
 \label{eq:crescente}
 \end{equation}
 
-\paragraph{In parole.} E' la formula precedente con una complicazione: i pagamenti non sono tutti uguali, ognuno e' piu' grande del precedente di una percentuale fissa $g$. E' il caso di un canone di affitto indicizzato: il primo anno incassi cento, il secondo cento piu' l'indicizzazione, e cosi' via.
+\paragraph{In parole.} È la formula precedente con una complicazione: i pagamenti non sono tutti uguali, ognuno è più grande del precedente di una percentuale fissa $g$. È il caso di un canone di affitto indicizzato: il primo anno incassi cento, il secondo cento più l'indicizzazione, e così via.
 
-La lettera $q$, definita a destra della formula, e' il rapporto fra quanto il pagamento cresce e quanto lo si sconta. Se $q$ e' minore di uno lo sconto vince sulla crescita e la somma converge a un numero finito anche su tanti anni; se $q$ e' maggiore di uno la crescita vince e la somma diventa grande. Il caso $q = 1$, cioe' crescita esattamente pari al tasso di sconto, e' scritto a parte perche' li' la formula generale dividerebbe per zero: quando le due cose si annullano, ogni pagamento vale oggi la stessa cifra e la somma e' semplicemente quella cifra moltiplicata per il numero di anni.
+La lettera $q$, definita a destra della formula, è il rapporto fra quanto il pagamento cresce e quanto lo si sconta. Se $q$ è minore di uno lo sconto vince sulla crescita e la somma converge a un numero finito anche su tanti anni; se $q$ è maggiore di uno la crescita vince e la somma diventa grande. Il caso $q = 1$, cioè crescita esattamente pari al tasso di sconto, è scritto a parte perché lì la formula generale dividerebbe per zero: quando le due cose si annullano, ogni pagamento vale oggi la stessa cifra e la somma è semplicemente quella cifra moltiplicata per il numero di anni.
 
-Sul caso del progetto, con inflazione al due per cento e sconto al tre, il fattore vale $21{,}64$: un canone indicizzato valeva $21{,}64$ euro per ogni euro di canone iniziale, contro i $17{,}41$ di un canone fermo. La differenza fra i due numeri e' il valore dell'indicizzazione, ed e' il calcolo del capitolo sull'inflazione.
+Sul caso del progetto, con inflazione al due per cento e sconto al tre, il fattore vale $21{,}64$: un canone indicizzato valeva $21{,}64$ euro per ogni euro di canone iniziale, contro i $17{,}41$ di un canone fermo. La differenza fra i due numeri è il valore dell'indicizzazione, ed è il calcolo del capitolo sull'inflazione.
 \end{proposizione}
 
 \begin{proof}
@@ -293,9 +293,9 @@ Quando i pagamenti non hanno una legge, il valore attuale è la somma diretta
 \label{eq:van}
 \end{equation}
 
-\paragraph{In parole.} Prendi ogni flusso di cassa, dividilo per uno piu' il tasso di sconto elevato al numero di anni che lo separa da oggi, e somma tutto. Il flusso del tempo zero non si divide per niente, perche' e' gia' oggi: nella formula questo si vede dal fatto che con $t=0$ il denominatore vale $(1+s)^0 = 1$.
+\paragraph{In parole.} Prendi ogni flusso di cassa, dividilo per uno più il tasso di sconto elevato al numero di anni che lo separa da oggi, e somma tutto. Il flusso del tempo zero non si divide per niente, perché è già oggi: nella formula questo si vede dal fatto che con $t=0$ il denominatore vale $(1+s)^0 = 1$.
 
-Il risultato risponde a una domanda sola: mettendo tutto in euro di oggi, questa operazione mi lascia piu' o meno di quanto ci ho messo. Se il numero e' positivo l'operazione batte il tasso di sconto scelto, se e' negativo non lo batte.
+Il risultato risponde a una domanda sola: mettendo tutto in euro di oggi, questa operazione mi lascia più o meno di quanto ci ho messo. Se il numero è positivo l'operazione batte il tasso di sconto scelto, se è negativo non lo batte.
 con $F_0$ tipicamente negativo, perché è l'esborso iniziale. Si noti che l'indice parte da zero e che $F_0$ non viene scontato: è già in euro di oggi. È una banalità che produce un errore ricorrente, cioè scontare anche il primo termine, con l'effetto di sottostimare l'esborso e sovrastimare il valore attuale netto.
 
 \section{Inflazione: dal nominale al reale}
@@ -311,9 +311,9 @@ r^* \;=\; \frac{1+r}{1+\pi} - 1 \;=\; \frac{r-\pi}{1+\pi}.
 \label{eq:fisher}
 \end{equation}
 
-\paragraph{In parole.} La prima uguaglianza e' la definizione e va letta cosi': un euro investito diventa $(1+r)$ euro nominali, ma nel frattempo i prezzi sono cresciuti di $(1+\pi)$, quindi quei $(1+r)$ euro comprano $(1+r)/(1+\pi)$ volte quello che comprava un euro all'inizio. Quel rapporto, meno uno, e' il rendimento in potere d'acquisto.
+\paragraph{In parole.} La prima uguaglianza è la definizione e va letta così: un euro investito diventa $(1+r)$ euro nominali, ma nel frattempo i prezzi sono cresciuti di $(1+\pi)$, quindi quei $(1+r)$ euro comprano $(1+r)/(1+\pi)$ volte quello che comprava un euro all'inizio. Quel rapporto, meno uno, è il rendimento in potere d'acquisto.
 
-Con un rendimento nominale del cinque per cento e un'inflazione del due: cento euro diventano centocinque, ma per comprare quello che prima costava cento adesso servono centodue, quindi in termini di cose comprabili si e' guadagnato $105/102 = 1{,}0294$, cioe' il $2{,}94$ per cento e non il tre.
+Con un rendimento nominale del cinque per cento e un'inflazione del due: cento euro diventano centocinque, ma per comprare quello che prima costava cento adesso servono centodue, quindi in termini di cose comprabili si è guadagnato $105/102 = 1{,}0294$, cioè il $2{,}94$ per cento e non il tre.
 \end{definizione}
 
 La forma che si incontra quasi sempre, $r^* \approx r - \pi$, è l'approssimazione al primo ordine della \eqref{eq:fisher}. L'errore che si commette usandola è esattamente
@@ -322,7 +322,7 @@ La forma che si incontra quasi sempre, $r^* \approx r - \pi$, è l'approssimazio
 \label{eq:errore-fisher}
 \end{equation}
 
-\paragraph{In parole.} La formula misura di quanto sbaglia chi usa la sottrazione. Si legge: l'errore e' lo scarto approssimato, moltiplicato per l'inflazione, diviso uno piu' l'inflazione. Il fatto che l'inflazione compaia come fattore dice la cosa utile: con inflazione nulla l'errore e' nullo e la sottrazione e' esatta, e piu' l'inflazione sale piu' la sottrazione inganna. Con inflazione al due per cento l'errore e' circa il due per cento dello scarto, con inflazione al dieci diventa circa il nove.
+\paragraph{In parole.} La formula misura di quanto sbaglia chi usa la sottrazione. Si legge: l'errore è lo scarto approssimato, moltiplicato per l'inflazione, diviso uno più l'inflazione. Il fatto che l'inflazione compaia come fattore dice la cosa utile: con inflazione nulla l'errore è nullo e la sottrazione è esatta, e più l'inflazione sale più la sottrazione inganna. Con inflazione al due per cento l'errore è circa il due per cento dello scarto, con inflazione al dieci diventa circa il nove.
 quindi è proporzionale al prodotto fra il rendimento reale approssimato e l'inflazione. È piccolo, non è nullo, ed è sempre dello stesso segno quando $r>\pi>0$: la sottrazione sovrastima il rendimento reale.
 
 \begin{osservazione}
@@ -359,9 +359,9 @@ P, & \text{altrimenti.}
 \label{eq:base}
 \end{equation}
 
-\paragraph{In parole.} La base su cui si calcola l'imposta di registro non e' sempre il prezzo. Se l'acquirente e' una persona fisica, l'immobile e' abitativo e si chiede espressamente in atto l'opzione prezzo-valore, allora la base diventa il valore catastale, che si ricava dalla rendita e che di norma e' molto piu' basso del prezzo. Altrimenti la base e' il prezzo.
+\paragraph{In parole.} La base su cui si calcola l'imposta di registro non è sempre il prezzo. Se l'acquirente è una persona fisica, l'immobile è abitativo e si chiede espressamente in atto l'opzione prezzo-valore, allora la base diventa il valore catastale, che si ricava dalla rendita e che di norma è molto più basso del prezzo. Altrimenti la base è il prezzo.
 
-Sul caso del progetto: prezzo centoventimila, valore catastale $51\,975$. L'imposta al due per cento sul secondo fa $1\,039$ euro, sul primo ne farebbe $2\,400$. La differenza e' il valore dell'opzione, e si esercita chiedendola al notaio: non e' automatica.
+Sul caso del progetto: prezzo centoventimila, valore catastale $51\,975$. L'imposta al due per cento sul secondo fa $1\,039$ euro, sul primo ne farebbe $2\,400$. La differenza è il valore dell'opzione, e si esercita chiedendola al notaio: non è automatica.
 
 Il punto cruciale, che ritorna nel capitolo sull'inversione, è che nel primo ramo $B$ \emph{non dipende da $P$}: l'imposta di registro diventa una costante rispetto al prezzo. È la leva fiscale più grossa dell'operazione, e la sua natura matematica è quella di rendere costante un termine che altrimenti sarebbe proporzionale.
 
@@ -377,13 +377,13 @@ P\,\upsilon(\alpha,\lambda) + 3\,\phi, & \text{venditore impresa con IVA,}
 \label{eq:imposte}
 \end{equation}
 
-\paragraph{In parole.} Le due righe sono i due mondi in cui puo' cadere un acquisto, e non sono varianti l'una dell'altra.
+\paragraph{In parole.} Le due righe sono i due mondi in cui può cadere un acquisto, e non sono varianti l'una dell'altra.
 
-Prima riga, venditore privato. Si applica l'aliquota di registro alla base, ma se il risultato e' inferiore al minimo di legge si paga il minimo: e' cio' che dice il $\max$. A questo si sommano due imposte in misura fissa, ipotecaria e catastale, che non dipendono dal prezzo.
+Prima riga, venditore privato. Si applica l'aliquota di registro alla base, ma se il risultato è inferiore al minimo di legge si paga il minimo: è ciò che dice il $\max$. A questo si sommano due imposte in misura fissa, ipotecaria e catastale, che non dipendono dal prezzo.
 
-Seconda riga, venditore impresa con IVA. Si applica l'aliquota IVA al prezzo intero, e si sommano tre imposte fisse invece di due. Nessun $\max$, perche' non c'e' un minimo di legge, e nessun ancoraggio al catastale, perche' il prezzo-valore non si applica al regime IVA.
+Seconda riga, venditore impresa con IVA. Si applica l'aliquota IVA al prezzo intero, e si sommano tre imposte fisse invece di due. Nessun $\max$, perché non c'è un minimo di legge, e nessun ancoraggio al catastale, perché il prezzo-valore non si applica al regime IVA.
 
-Il salto fra le due righe, su ottantamila euro con agevolazione, e' da circa millecinquecento a circa tremilacinquecento euro.
+Il salto fra le due righe, su ottantamila euro con agevolazione, è da circa millecinquecento a circa tremilacinquecento euro.
 dove $\tau$ è l'aliquota di registro, $T_{\min}$ il minimo di legge, $\iota$ e $\gamma$ le imposte ipotecaria e catastale in misura fissa, $\upsilon$ l'aliquota IVA che dipende dall'agevolazione e dalla qualifica di lusso $\lambda$, e $\phi$ l'imposta fissa che nel regime IVA si applica tre volte.
 
 Due non linearità vanno segnalate perché rompono la linearità che il capitolo sull'inversione sfrutta. La prima è il $\max$ con il minimo di legge, che rende $T_a$ costante per prezzi sufficientemente bassi. La seconda è la dipendenza di $\upsilon$ da $\lambda$, che è una variabile discreta e non un parametro continuo.
@@ -408,9 +408,9 @@ C(P) \;=\; P\,(1+k) + c,
 \label{eq:costo-affine}
 \end{equation}
 
-\paragraph{In parole.} Il costo totale dell'operazione si scrive come il prezzo moltiplicato per un fattore, piu' una cifra fissa. Il fattore $(1+k)$ dice quanti euro escono dal conto per ogni euro di prezzo: uno e' il prezzo stesso, $k$ sono i costi che crescono col prezzo. La cifra fissa $c$ e' tutto quello che si paga comunque, che il prezzo sia alto o basso.
+\paragraph{In parole.} Il costo totale dell'operazione si scrive come il prezzo moltiplicato per un fattore, più una cifra fissa. Il fattore $(1+k)$ dice quanti euro escono dal conto per ogni euro di prezzo: uno è il prezzo stesso, $k$ sono i costi che crescono col prezzo. La cifra fissa $c$ è tutto quello che si paga comunque, che il prezzo sia alto o basso.
 
-Sul caso del progetto $k$ vale il $3{,}7$ per cento e $c$ vale $7\,165$ euro. Quindi comprando a centoventimila si spende $120\,000 \times 1{,}037 + 7\,165 = 131\,600$ circa, e comprando a sessantamila si spende $62\,200 + 7\,165 = 69\,400$ circa. Si noti la conseguenza: dimezzando il prezzo il costo totale non si dimezza, perche' i $7\,165$ euro restano. E' l'origine dell'errore che il capitolo sull'inversione corregge.
+Sul caso del progetto $k$ vale il $3{,}7$ per cento e $c$ vale $7\,165$ euro. Quindi comprando a centoventimila si spende $120\,000 \times 1{,}037 + 7\,165 = 131\,600$ circa, e comprando a sessantamila si spende $62\,200 + 7\,165 = 69\,400$ circa. Si noti la conseguenza: dimezzando il prezzo il costo totale non si dimezza, perché i $7\,165$ euro restano. È l'origine dell'errore che il capitolo sull'inversione corregge.
 con i coefficienti
 \begin{align}
 k &= \underbrace{\begin{cases}
@@ -431,11 +431,11 @@ c &= \begin{cases}
 
 \paragraph{In parole.} Le due formule dicono da dove vengono i due numeri della formula precedente, caso per caso.
 
-Il primo, $k$, e' quanto di ogni euro di prezzo si trasforma in costo aggiuntivo: nel regime IVA e' l'aliquota IVA, con il prezzo-valore attivo e' zero perche' il registro non segue il prezzo, senza prezzo-valore e' l'aliquota di registro. A questo si somma sempre la provvigione con la sua IVA, che e' una percentuale del prezzo in ogni regime.
+Il primo, $k$, è quanto di ogni euro di prezzo si trasforma in costo aggiuntivo: nel regime IVA è l'aliquota IVA, con il prezzo-valore attivo è zero perché il registro non segue il prezzo, senza prezzo-valore è l'aliquota di registro. A questo si somma sempre la provvigione con la sua IVA, che è una percentuale del prezzo in ogni regime.
 
-Il secondo, $c$, e' tutto quello che non dipende dal prezzo: le imposte fisse, l'onorario del notaio, gli altri costi, gli oneri del mutuo, e con il prezzo-valore anche l'intera imposta di registro, che essendo ancorata alla rendita catastale e' una costante rispetto al prezzo.
+Il secondo, $c$, è tutto quello che non dipende dal prezzo: le imposte fisse, l'onorario del notaio, gli altri costi, gli oneri del mutuo, e con il prezzo-valore anche l'intera imposta di registro, che essendo ancorata alla rendita catastale è una costante rispetto al prezzo.
 
-La riga da guardare e' la seconda del caso $c$: e' controintuitivo che un'imposta proporzionale finisca fra i costi fissi, e succede solo perche' la proporzionalita' e' rispetto al catastale e non al prezzo.
+La riga da guardare è la seconda del caso $c$: è controintuitivo che un'imposta proporzionale finisca fra i costi fissi, e succede solo perché la proporzionalità è rispetto al catastale e non al prezzo.
 \end{proposizione}
 
 La proposizione è la sostanza del capitolo, e la sua conseguenza è controintuitiva: con il prezzo-valore attivo l'intera imposta di registro finisce in $c$, cioè nella parte \emph{fissa}, e non in $k$. L'incidenza percentuale dei costi accessori, $A(P)/P$, non è quindi una costante del modello ma una funzione decrescente del prezzo. Trattarla come costante è l'errore che il capitolo~\ref{sec:inversione} corregge.
@@ -457,9 +457,9 @@ Un capitale $M$ da restituire in $n$ rate posticipate costanti, al tasso di peri
 \label{eq:rata}
 \end{equation}
 
-\paragraph{In parole.} La rata si ottiene dividendo il capitale per il fattore di annualita' della formula \eqref{eq:annualita}. Il significato e' questo: il fattore dice quanto vale oggi un euro di rata ripetuto per tutta la durata, quindi per sapere quanta rata serve a coprire il capitale basta dividere il capitale per quel valore.
+\paragraph{In parole.} La rata si ottiene dividendo il capitale per il fattore di annualità della formula \eqref{eq:annualita}. Il significato è questo: il fattore dice quanto vale oggi un euro di rata ripetuto per tutta la durata, quindi per sapere quanta rata serve a coprire il capitale basta dividere il capitale per quel valore.
 
-Su novantamila euro al $3{,}2$ per cento per venticinque anni, cioe' trecento rate: il tasso mensile e' $0{,}032/12 = 0{,}00266\overline{6}$, il fattore di annualita' su trecento mesi vale $206{,}3$, e la rata e' $90\,000/206{,}3 = 436{,}21$ euro. Il totale delle rate e' $436{,}21 \times 300 = 130\,863$ euro, quindi gli interessi complessivi sono $40\,863$ euro: quasi la metà del capitale prestato.
+Su novantamila euro al $3{,}2$ per cento per venticinque anni, cioè trecento rate: il tasso mensile è $0{,}032/12 = 0{,}00266\overline{6}$, il fattore di annualità su trecento mesi vale $206{,}3$, e la rata è $90\,000/206{,}3 = 436{,}21$ euro. Il totale delle rate è $436{,}21 \times 300 = 130\,863$ euro, quindi gli interessi complessivi sono $40\,863$ euro: quasi la metà del capitale prestato.
 \end{proposizione}
 
 \begin{proof}
@@ -483,9 +483,9 @@ D_k \;=\; M\,\frac{(1+j)^n - (1+j)^k}{(1+j)^n - 1} .
 
 \paragraph{In parole.} La formula dice quanto si deve ancora alla banca dopo aver pagato $k$ rate, senza dover percorrere tutto il piano una rata per volta.
 
-Il modo di leggerla e' guardare i due estremi. Con $k=0$, cioe' prima di pagare qualsiasi cosa, il numeratore diventa $(1+j)^n - 1$, uguale al denominatore, quindi il debito residuo e' esattamente $M$, il capitale erogato. Con $k=n$, cioe' dopo l'ultima rata, il numeratore diventa zero e il debito residuo e' zero. In mezzo la formula interpola, e non lo fa in modo lineare: dopo aver pagato metà delle rate il debito residuo non e' metà del capitale ma di piu', perche' le prime rate sono composte in prevalenza di interessi.
+Il modo di leggerla è guardare i due estremi. Con $k=0$, cioè prima di pagare qualsiasi cosa, il numeratore diventa $(1+j)^n - 1$, uguale al denominatore, quindi il debito residuo è esattamente $M$, il capitale erogato. Con $k=n$, cioè dopo l'ultima rata, il numeratore diventa zero e il debito residuo è zero. In mezzo la formula interpola, e non lo fa in modo lineare: dopo aver pagato metà delle rate il debito residuo non è metà del capitale ma di più, perché le prime rate sono composte in prevalenza di interessi.
 
-Sul caso del progetto, a metà del piano, cioe' dopo centocinquanta rate su trecento, restano circa $52\,000$ euro su novantamila: si e' pagato oltre la metà delle rate e restituito meno del quaranta per cento del capitale.
+Sul caso del progetto, a metà del piano, cioè dopo centocinquanta rate su trecento, restano circa $52\,000$ euro su novantamila: si è pagato oltre la metà delle rate e restituito meno del quaranta per cento del capitale.
 \end{proposizione}
 
 \begin{proof}
@@ -509,9 +509,9 @@ I_k \;=\; j\,D_{k-1}, \qquad K_k \;=\; \Gamma - I_k,
 \label{eq:scomposizione}
 \end{equation}
 
-\paragraph{In parole.} Ogni rata si divide in due pezzi. Il primo, gli interessi, si calcola applicando il tasso del mese al debito che c'era all'inizio del mese: e' l'affitto del denaro per quel mese. Il secondo, la quota capitale, e' quello che resta della rata dopo aver pagato gli interessi, ed e' l'unica parte che riduce il debito.
+\paragraph{In parole.} Ogni rata si divide in due pezzi. Il primo, gli interessi, si calcola applicando il tasso del mese al debito che c'era all'inizio del mese: è l'affitto del denaro per quel mese. Il secondo, la quota capitale, è quello che resta della rata dopo aver pagato gli interessi, ed è l'unica parte che riduce il debito.
 
-Sulla prima rata del caso del progetto: il debito e' novantamila, il tasso mensile e' $0{,}0026\overline{6}$, quindi gli interessi sono $240$ euro e la quota capitale e' $436{,}21 - 240 = 196{,}21$. Sull'ultima rata gli interessi sono circa un euro e la quota capitale e' quasi tutta la rata. Poiche' il debito scende, gli interessi scendono, e poiche' la rata e' fissa la quota capitale sale: e' un'aritmetica automatica e non una scelta della banca.
+Sulla prima rata del caso del progetto: il debito è novantamila, il tasso mensile è $0{,}0026\overline{6}$, quindi gli interessi sono $240$ euro e la quota capitale è $436{,}21 - 240 = 196{,}21$. Sull'ultima rata gli interessi sono circa un euro e la quota capitale è quasi tutta la rata. Poiché il debito scende, gli interessi scendono, e poiché la rata è fissa la quota capitale sale: è un'aritmetica automatica e non una scelta della banca.
 cioè la quota interessi è il tasso applicato al debito \emph{di inizio periodo} e la quota capitale è il residuo. La forma chiusa \eqref{eq:residuo} è ciò che permette al modello di calcolare il debito residuo a un'epoca qualunque senza percorrere il piano, e il foglio degli scenari la usa per restare esatto quando si cambia il tasso di scenario.
 
 \begin{osservazione}[Perché all'inizio si pagano soprattutto interessi]
@@ -532,7 +532,7 @@ e la definizione di $\Gamma_k$ dipende dalla modalità dichiarata alla banca:
 \Gamma, & \text{riduzione della durata,}\\[0.4em]
 D_{k-1}\,\dfrac{j_k}{1-(1+j_k)^{-(n-k+1)}}, & \text{riduzione della rata.}
 \end{cases}
-\label{eq:modalita}
+\label{eq:modalità}
 \end{equation}
 
 Nel primo caso la rata resta quella originaria e il piano si accorcia, perché $D_k$ raggiunge zero prima di $n$; nel secondo la scadenza resta fissa e la rata si ricalcola sul residuo e sui periodi rimanenti. Le due producono risultati molto diversi: sul caso di riferimento, con cento euro al mese di versamento aggiuntivo, la riduzione della durata risparmia $11\,373$ euro di interessi contro $6\,543$ della riduzione della rata. La differenza non è un dettaglio contrattuale: è la scelta fra ridurre l'esposizione totale al tasso e ridurre l'impegno mensile, e va dichiarata perché non la sceglie il foglio.
@@ -547,9 +547,9 @@ h(k) = \max\{\,h : \hat{k}_h \le k\,\},
 \label{eq:gradini}
 \end{equation}
 
-\paragraph{In parole.} Il tasso del mese $k$ e' il tasso iniziale piu' la variazione del gradino piu' avanzato fra quelli il cui mese e' gia' arrivato. La scrittura con il $\max$ dell'insieme dice esattamente questo: fra tutti i gradini il cui mese di partenza e' minore o uguale al mese corrente, prendi quello con il numero piu' alto.
+\paragraph{In parole.} Il tasso del mese $k$ è il tasso iniziale più la variazione del gradino più avanzato fra quelli il cui mese è già arrivato. La scrittura con il $\max$ dell'insieme dice esattamente questo: fra tutti i gradini il cui mese di partenza è minore o uguale al mese corrente, prendi quello con il numero più alto.
 
-Con tre gradini a piu' $1{,}26$ dal mese tredici, piu' $2{,}52$ dal diciassette e piu' $3{,}78$ dal ventuno, e un tasso iniziale del $3{,}2$ per cento: nei primi dodici mesi si paga il $3{,}2$, dal tredicesimo il $4{,}46$, dal diciassettesimo il $5{,}72$, dal ventunesimo il $6{,}98$ e cosi' resta. Le variazioni sono cumulate e non si sommano fra loro: il terzo gradino dice piu' $3{,}78$ rispetto all'inizio, non piu' $3{,}78$ rispetto al secondo.
+Con tre gradini a più $1{,}26$ dal mese tredici, più $2{,}52$ dal diciassette e più $3{,}78$ dal ventuno, e un tasso iniziale del $3{,}2$ per cento: nei primi dodici mesi si paga il $3{,}2$, dal tredicesimo il $4{,}46$, dal diciassettesimo il $5{,}72$, dal ventunesimo il $6{,}98$ e così resta. Le variazioni sono cumulate e non si sommano fra loro: il terzo gradino dice più $3{,}78$ rispetto all'inizio, non più $3{,}78$ rispetto al secondo.
 con la convenzione $\delta_{h}=0$ se nessun gradino è stato raggiunto. La \eqref{eq:gradini} entra nella \eqref{eq:ricorsione} attraverso $j_k = i_k/12$, e la ricorsione va percorsa numericamente perché non esiste forma chiusa con tasso variabile.
 
 \begin{osservazione}[Il piano che non si chiude]
@@ -581,11 +581,11 @@ L_e \;=\; \Big(L - \frac{L}{12}\,\sigma\Big)\,(1-\beta)
 \label{eq:ricavo-effettivo}
 \end{equation}
 
-\paragraph{In parole.} Il canone che entra davvero e' meno di quello scritto sul contratto, per due ragioni che si applicano una dopo l'altra. Prima si toglie la parte dell'anno in cui l'immobile e' vuoto: se si attende un mese di sfitto, si incassano undici dodicesimi. Poi, su quello che resta, si mette da parte una quota per il rischio che l'inquilino non paghi.
+\paragraph{In parole.} Il canone che entra davvero è meno di quello scritto sul contratto, per due ragioni che si applicano una dopo l'altra. Prima si toglie la parte dell'anno in cui l'immobile è vuoto: se si attende un mese di sfitto, si incassano undici dodicesimi. Poi, su quello che resta, si mette da parte una quota per il rischio che l'inquilino non paghi.
 
-Su un canone di seicento euro al mese, cioe' $7\,200$ l'anno, con un mese di sfitto e il tre per cento di morosita': $7\,200 \times (11/12) = 6\,600$, e $6\,600 \times 0{,}97 = 6\,402$. Il canone dichiarato era $7\,200$, quello su cui contare e' $6\,402$, cioe' l'undici per cento in meno.
+Su un canone di seicento euro al mese, cioè $7\,200$ l'anno, con un mese di sfitto e il tre per cento di morosità: $7\,200 \times (11/12) = 6\,600$, e $6\,600 \times 0{,}97 = 6\,402$. Il canone dichiarato era $7\,200$, quello su cui contare è $6\,402$, cioè l'undici per cento in meno.
 
-L'ordine conta: applicare la morosita' dopo lo sfitto e' prudenziale, perche' si accantona sul minore dei due importi. Fare il contrario darebbe un numero leggermente piu' alto.
+L'ordine conta: applicare la morosità dopo lo sfitto è prudenziale, perché si accantona sul minore dei due importi. Fare il contrario darebbe un numero leggermente più alto.
 Le due correzioni sono moltiplicative e non additive, cioè la morosità si applica a ciò che resta dopo lo sfitto: è la scelta prudenziale, e la differenza rispetto alla forma additiva è di secondo ordine ma sempre dello stesso segno.
 
 \begin{osservazione}
@@ -602,7 +602,7 @@ I costi del proprietario, tutti annui, sono le spese condominiali a suo carico $
 
 \paragraph{In parole.} Dal canone effettivo si toglie tutto quello che l'immobile costa al proprietario in un anno, e resta il reddito operativo netto. Le voci in parentesi, nell'ordine: le spese condominiali che restano a carico suo, la manutenzione ordinaria calcolata come quota del valore, l'assicurazione del fabbricato, il valore del proprio tempo se lo si vuole contare, l'accantonamento annuo per il rifacimento di fine ciclo, e l'IMU.
 
-Le due voci che si dimenticano piu' spesso sono la quinta e la prima. La quinta, l'accantonamento, e' l'unica riga che rappresenta un costo che non si paga quest'anno: un immobile che si tiene quarant'anni va rifatto almeno una volta, e se il rifacimento costa un terzo del valore, allora ogni anno se ne consuma un quarantesimo. Ignorarla fa apparire un rendimento che non esiste. La prima, il condominio, si dimentica perche' non e' una voce dell'annuncio.
+Le due voci che si dimenticano più spesso sono la quinta e la prima. La quinta, l'accantonamento, è l'unica riga che rappresenta un costo che non si paga quest'anno: un immobile che si tiene quarant'anni va rifatto almeno una volta, e se il rifacimento costa un terzo del valore, allora ogni anno se ne consuma un quarantesimo. Ignorarla fa apparire un rendimento che non esiste. La prima, il condominio, si dimentica perché non è una voce dell'annuncio.
 
 Sul caso del progetto: canone effettivo $5\,335$, costi $3\,530$, reddito operativo netto $1\,805$ euro.
 dove $\mathrm{r}$ è il costo di un rifacimento completo come quota del valore e $N_r$ il numero di anni fra due rifacimenti, cosicché il terzo addendo è l'accantonamento annuo. L'utile netto sottrae l'imposta sul canone:
@@ -611,9 +611,9 @@ U \;=\; \mathrm{NOI} \;-\; \Theta(L_e),
 \label{eq:utile}
 \end{equation}
 
-\paragraph{In parole.} Dal reddito operativo netto si toglie l'imposta sul canone e resta l'utile netto, che e' il numero che finisce al numeratore del rendimento. La funzione $\Theta$ e' scritta con una lettera perche' cambia forma a seconda del regime fiscale scelto, e le sue quattro forme sono nella sezione seguente.
+\paragraph{In parole.} Dal reddito operativo netto si toglie l'imposta sul canone e resta l'utile netto, che è il numero che finisce al numeratore del rendimento. La funzione $\Theta$ è scritta con una lettera perché cambia forma a seconda del regime fiscale scelto, e le sue quattro forme sono nella sezione seguente.
 
-Sul caso del progetto, in cedolare secca al ventuno per cento: reddito operativo $1\,805$ euro, imposta $1\,120$, utile netto $684$ euro. Va notato che l'imposta e' calcolata sul canone e non sul reddito operativo: e' la ragione per cui su questo caso l'imposta si mangia quasi due terzi del reddito operativo, un rapporto che sorprende chi si aspetta di pagare il ventuno per cento su quello che gli resta.
+Sul caso del progetto, in cedolare secca al ventuno per cento: reddito operativo $1\,805$ euro, imposta $1\,120$, utile netto $684$ euro. Va notato che l'imposta è calcolata sul canone e non sul reddito operativo: è la ragione per cui su questo caso l'imposta si mangia quasi due terzi del reddito operativo, un rapporto che sorprende chi si aspetta di pagare il ventuno per cento su quello che gli resta.
 con $\Theta$ funzione d'imposta che dipende dal regime scelto.
 
 \begin{osservazione}[Un costo sta in un posto solo]
@@ -632,11 +632,11 @@ I quattro regimi si distinguono per la forma di $\Theta$, e le differenze non so
 
 \paragraph{In parole.} Le quattro righe sono i quattro modi di tassare lo stesso affitto, e le prime due sono semplici: si applica un'aliquota fissa al canone effettivo.
 
-La terza, il regime ordinario, e' composta di due pezzi. Il primo dice che il canone entra nel reddito complessivo dopo un abbattimento forfettario, e viene tassato con l'aliquota marginale del contribuente piu' le addizionali locali: qui il conto dipende da chi sei, non dall'immobile. Il secondo pezzo e' l'imposta di registro annuale sul contratto, dovuta nel solo regime ordinario e divisa a meta' fra proprietario e inquilino, con un minimo di legge da cui viene il $\max$.
+La terza, il regime ordinario, è composta di due pezzi. Il primo dice che il canone entra nel reddito complessivo dopo un abbattimento forfettario, e viene tassato con l'aliquota marginale del contribuente più le addizionali locali: qui il conto dipende da chi sei, non dall'immobile. Il secondo pezzo è l'imposta di registro annuale sul contratto, dovuta nel solo regime ordinario e divisa a metà fra proprietario e inquilino, con un minimo di legge da cui viene il $\max$.
 
-La quarta, la locazione breve, applica un'aliquota fissa come le prime due, ma il canone a cui si applica e' un ricavo di natura diversa, perche' viene da tariffe per notte e non da un contratto annuale.
+La quarta, la locazione breve, applica un'aliquota fissa come le prime due, ma il canone a cui si applica è un ricavo di natura diversa, perché viene da tariffe per notte e non da un contratto annuale.
 
-Il confronto fra le quattro non e' quindi un confronto fra aliquote: cambia anche la base, cambia il fatto che l'imposta di registro annuale sparisca in tre casi su quattro, e in un caso su quattro il risultato dipende dalla posizione fiscale personale di chi compra.
+Il confronto fra le quattro non è quindi un confronto fra aliquote: cambia anche la base, cambia il fatto che l'imposta di registro annuale sparisca in tre casi su quattro, e in un caso su quattro il risultato dipende dalla posizione fiscale personale di chi compra.
 
 Nella \eqref{eq:ord}, $\alpha_b$ è l'abbattimento forfettario, $\theta_m$ l'aliquota marginale IRPEF del contribuente, $\theta_a$ le addizionali locali, e l'ultimo addendo è l'imposta di registro annuale sul contratto, ripartita a metà fra locatore e conduttore. La cedolare secca la sostituisce, ed è una parte del suo vantaggio che l'aliquota nuda non mostra.
 
@@ -669,17 +669,17 @@ con $\xi$ costi di vendita in quota e $\Pi$ eventuale imposta sulla plusvalenza.
 \text{DSCR} \quad & \mathrm{DSCR} = \frac{\mathrm{NOI}}{\Gamma_{\text{annua}}}. \label{eq:dscr}
 \end{align}
 
-\paragraph{In parole.} Cinque rapporti, che vanno letti guardando cosa hanno al numeratore e cosa al denominatore, perche' e' li' che sta tutta la differenza.
+\paragraph{In parole.} Cinque rapporti, che vanno letti guardando cosa hanno al numeratore e cosa al denominatore, perché è lì che sta tutta la differenza.
 
-Il rendimento lordo mette il canone dichiarato sopra il prezzo. Non tiene conto di nessun costo e usa il prezzo invece del costo totale: e' il numero degli annunci, ed e' sistematicamente il piu' alto dei cinque.
+Il rendimento lordo mette il canone dichiarato sopra il prezzo. Non tiene conto di nessun costo e usa il prezzo invece del costo totale: è il numero degli annunci, ed è sistematicamente il più alto dei cinque.
 
-Il rendimento netto mette l'utile, cioe' il canone dopo tutti i costi e le imposte, sopra il costo totale, cioe' il prezzo piu' tutto quello che si e' pagato per comprare. E' il numero da usare per decidere.
+Il rendimento netto mette l'utile, cioè il canone dopo tutti i costi e le imposte, sopra il costo totale, cioè il prezzo più tutto quello che si è pagato per comprare. È il numero da usare per decidere.
 
 Il cap rate mette il reddito operativo, quindi prima delle imposte sul reddito e senza considerare il mutuo, sopra il costo totale. Serve a confrontare due immobili fra loro senza che il modo in cui li si finanzia sporchi il confronto.
 
-Il cash on cash mette la cassa che resta dopo aver pagato anche la rata, sopra il capitale proprio effettivamente immobilizzato. Misura l'operazione e non l'immobile, e con la leva puo' essere negativo mentre gli altri quattro sono positivi.
+Il cash on cash mette la cassa che resta dopo aver pagato anche la rata, sopra il capitale proprio effettivamente immobilizzato. Misura l'operazione e non l'immobile, e con la leva può essere negativo mentre gli altri quattro sono positivi.
 
-Il debt service coverage ratio non e' un rendimento ma un rapporto di copertura: quante volte il reddito operativo copre la rata. Sotto uno, la differenza esce dalla tasca del proprietario ogni mese.
+Il debt service coverage ratio non è un rendimento ma un rapporto di copertura: quante volte il reddito operativo copre la rata. Sotto uno, la differenza esce dalla tasca del proprietario ogni mese.
 
 Sul caso del progetto i cinque valgono, nell'ordine: cinque per cento, $0{,}52$ per cento, $1{,}37$ per cento, meno $10{,}95$ per cento, e $0{,}34$. Sono cinque numeri della stessa operazione, e chi ne cita uno solo sceglie quale storia raccontare.
 
@@ -698,11 +698,11 @@ r_E \;=\; r_c \;+\; \frac{D}{E}\,\big(r_c - c_d\big).
 \label{eq:leva}
 \end{equation}
 
-\paragraph{In parole.} La formula dice che il rendimento del proprio capitale e' il rendimento dell'immobile, piu' un premio che dipende da due cose: quanto debito si ha rispetto al capitale proprio, e quanto l'immobile rende in piu' rispetto a quanto costa il denaro.
+\paragraph{In parole.} La formula dice che il rendimento del proprio capitale è il rendimento dell'immobile, più un premio che dipende da due cose: quanto debito si ha rispetto al capitale proprio, e quanto l'immobile rende in più rispetto a quanto costa il denaro.
 
-Il pezzo fra parentesi e' la differenza fra i due tassi, e il fattore che lo moltiplica e' la leva. Se l'immobile rende piu' del debito, la parentesi e' positiva e la leva la amplifica: piu' debito, piu' rendimento sul proprio. Se l'immobile rende meno del debito, la parentesi e' negativa e la leva amplifica una perdita.
+Il pezzo fra parentesi è la differenza fra i due tassi, e il fattore che lo moltiplica è la leva. Se l'immobile rende più del debito, la parentesi è positiva e la leva la amplifica: più debito, più rendimento sul proprio. Se l'immobile rende meno del debito, la parentesi è negativa e la leva amplifica una perdita.
 
-Sul caso del progetto: cap rate $1{,}37$ per cento, costo del debito $3{,}2$ per cento, quindi la parentesi vale meno $1{,}83$ punti. Con un debito di novantamila su un capitale proprio di $41\,557$, il rapporto $D/E$ vale $2{,}17$, e il rendimento del capitale proprio scende di quasi quattro punti sotto il cap rate. Non e' un difetto del calcolo: e' la leva che lavora al contrario, ed e' la ragione per cui in questo caso il cash on cash e' negativo mentre il cap rate e' positivo.
+Sul caso del progetto: cap rate $1{,}37$ per cento, costo del debito $3{,}2$ per cento, quindi la parentesi vale meno $1{,}83$ punti. Con un debito di novantamila su un capitale proprio di $41\,557$, il rapporto $D/E$ vale $2{,}17$, e il rendimento del capitale proprio scende di quasi quattro punti sotto il cap rate. Non è un difetto del calcolo: è la leva che lavora al contrario, ed è la ragione per cui in questo caso il cash on cash è negativo mentre il cap rate è positivo.
 \end{proposizione}
 
 \begin{proof}
@@ -729,11 +729,11 @@ Il tasso interno di rendimento della successione $F_0,\dots,F_N$ è una radice d
 \label{eq:tir}
 \end{equation}
 
-\paragraph{In parole.} La formula non e' un calcolo ma una domanda: qual e' il tasso di sconto che rende nullo il valore attuale di questa operazione. Si legge cosi': trova il numero $y$ tale che, scontando tutti i flussi a quel tasso, la somma faccia esattamente zero.
+\paragraph{In parole.} La formula non è un calcolo ma una domanda: qual è il tasso di sconto che rende nullo il valore attuale di questa operazione. Si legge così: trova il numero $y$ tale che, scontando tutti i flussi a quel tasso, la somma faccia esattamente zero.
 
-Il significato e' che $y$ e' il rendimento che l'operazione produce, misurato in modo confrontabile con qualsiasi altro investimento. Se il tasso interno e' il quattro per cento, l'operazione rende come un titolo al quattro per cento che paghi gli stessi flussi negli stessi momenti.
+Il significato è che $y$ è il rendimento che l'operazione produce, misurato in modo confrontabile con qualsiasi altro investimento. Se il tasso interno è il quattro per cento, l'operazione rende come un titolo al quattro per cento che paghi gli stessi flussi negli stessi momenti.
 
-Non esiste una formula chiusa per ricavare $y$: si cerca per tentativi, e il modo con cui il modello lo fa e' descritto poco sotto.
+Non esiste una formula chiusa per ricavare $y$: si cerca per tentativi, e il modo con cui il modello lo fa è descritto poco sotto.
 \end{definizione}
 
 Tre questioni vanno affrontate, perché il TIR è l'indicatore su cui si sbaglia più spesso.
@@ -759,7 +759,7 @@ La domanda della trattativa non è quanto rende l'immobile a un prezzo dato, ma 
 \label{eq:problema-inversione}
 \end{equation}
 
-\paragraph{In parole.} La domanda scritta in simboli e': trova il prezzo $P^\star$ per cui il rendimento netto e' esattamente pari all'obiettivo che ti sei dato. E' la domanda della trattativa, e non e' la stessa cosa che chiedersi quanto rende l'immobile al prezzo richiesto: qui il prezzo e' l'incognita e il rendimento e' il dato.
+\paragraph{In parole.} La domanda scritta in simboli è: trova il prezzo $P^\star$ per cui il rendimento netto è esattamente pari all'obiettivo che ti sei dato. È la domanda della trattativa, e non è la stessa cosa che chiedersi quanto rende l'immobile al prezzo richiesto: qui il prezzo è l'incognita e il rendimento è il dato.
 
 Il simbolo con la stella indica un valore particolare della grandezza, quello che risolve il problema, e serve a distinguerlo dal prezzo generico $P$ che compare nelle due funzioni.
 
@@ -781,9 +781,9 @@ U(P) \;=\; U_0 \;-\; (P-P_0)\,\mathrm{m}^\dagger,
 \label{eq:utile-di-p}
 \end{equation}
 
-\paragraph{In parole.} L'utile netto non e' un numero fisso: cambia se cambia il prezzo. La formula dice di quanto: partendo dall'utile calcolato al prezzo attuale, per ogni euro di prezzo in piu' l'utile scende di $m^\dagger$ euro.
+\paragraph{In parole.} L'utile netto non è un numero fisso: cambia se cambia il prezzo. La formula dice di quanto: partendo dall'utile calcolato al prezzo attuale, per ogni euro di prezzo in più l'utile scende di $m^\dagger$ euro.
 
-La ragione e' che due voci di costo sono calcolate come quota del valore dell'immobile, la manutenzione ordinaria e l'accantonamento per la ristrutturazione. Se l'immobile costa piu' caro, manutenerlo e rifarlo costa piu' caro. Sul caso del progetto $m^\dagger$ vale $1{,}825$ per cento, cioe' un per cento di manutenzione piu' $0{,}825$ di accantonamento: comprando ventimila euro in meno, l'utile annuo sale di trecentosessantacinque euro.
+La ragione è che due voci di costo sono calcolate come quota del valore dell'immobile, la manutenzione ordinaria e l'accantonamento per la ristrutturazione. Se l'immobile costa più caro, manutenerlo e rifarlo costa più caro. Sul caso del progetto $m^\dagger$ vale $1{,}825$ per cento, cioè un per cento di manutenzione più $0{,}825$ di accantonamento: comprando ventimila euro in meno, l'utile annuo sale di trecentosessantacinque euro.
 dove $U_0$ è l'utile al prezzo base. Quindi abbassare il prezzo \emph{alza} l'utile, e la \eqref{eq:inversione-errata} lo tiene fermo.
 
 \subsection{La soluzione esatta}
@@ -796,13 +796,13 @@ P^\star \;=\; \frac{U_0 + P_0\,\mathrm{m}^\dagger - r^\dagger c}{r^\dagger (1+k)
 \label{eq:pmax}
 \end{equation}
 
-\paragraph{In parole.} La formula e' il risultato dell'inversione, e si legge per pezzi.
+\paragraph{In parole.} La formula è il risultato dell'inversione, e si legge per pezzi.
 
-Al numeratore ci sono tre termini. Il primo e' l'utile al prezzo attuale. Il secondo aggiunge il risparmio sui costi proporzionali che si otterrebbe comprando a un prezzo qualunque, calcolato sul prezzo attuale: e' un termine tecnico che nasce dallo spostare l'incognita a destra. Il terzo sottrae il rendimento obiettivo applicato ai costi fissi, cioe' la parte di rendimento che i costi fissi si mangiano comunque.
+Al numeratore ci sono tre termini. Il primo è l'utile al prezzo attuale. Il secondo aggiunge il risparmio sui costi proporzionali che si otterrebbe comprando a un prezzo qualunque, calcolato sul prezzo attuale: è un termine tecnico che nasce dallo spostare l'incognita a destra. Il terzo sottrae il rendimento obiettivo applicato ai costi fissi, cioè la parte di rendimento che i costi fissi si mangiano comunque.
 
-Al denominatore c'e' il rendimento obiettivo moltiplicato per il fattore di costo totale, piu' i costi annui che scalano col prezzo. E' quanto rendimento obiettivo costa ogni euro di prezzo.
+Al denominatore c'è il rendimento obiettivo moltiplicato per il fattore di costo totale, più i costi annui che scalano col prezzo. È quanto rendimento obiettivo costa ogni euro di prezzo.
 
-Sul caso del progetto: numeratore $684 + 2\,190 - 287 = 2\,587$, denominatore $0{,}0415 + 0{,}0183 = 0{,}0597$, risultato $43\,445$ euro. Cioe': un immobile che rende $684$ euro netti l'anno giustifica un prezzo di circa quarantatremila euro se si pretende un rendimento netto del quattro per cento. Al prezzo trattato di centoventimila il rendimento e' lo $0{,}52$ per cento, e la distanza fra i due prezzi e' lo sconto che servirebbe.
+Sul caso del progetto: numeratore $684 + 2\,190 - 287 = 2\,587$, denominatore $0{,}0415 + 0{,}0183 = 0{,}0597$, risultato $43\,445$ euro. Cioè: un immobile che rende $684$ euro netti l'anno giustifica un prezzo di circa quarantatremila euro se si pretende un rendimento netto del quattro per cento. Al prezzo trattato di centoventimila il rendimento è lo $0{,}52$ per cento, e la distanza fra i due prezzi è lo sconto che servirebbe.
 \end{proposizione}
 
 \begin{proof}
@@ -934,11 +934,11 @@ Il valore, in potere d'acquisto di oggi, dell'erosione operata dall'inflazione s
 \label{eq:regalo}
 \end{equation}
 
-\paragraph{In parole.} Il debito e' un impegno a consegnare un certo numero di euro, non un certo potere d'acquisto. Se fra dieci anni si devono ancora quarantamila euro, quei quarantamila euro compreranno meno cose di quante ne comprerebbero oggi, e la differenza e' un guadagno per chi deve pagarli.
+\paragraph{In parole.} Il debito è un impegno a consegnare un certo numero di euro, non un certo potere d'acquisto. Se fra dieci anni si devono ancora quarantamila euro, quei quarantamila euro compreranno meno cose di quante ne comprerebbero oggi, e la differenza è un guadagno per chi deve pagarli.
 
-La formula lo quantifica: prendi il debito residuo, e sottraine il suo valore in euro di oggi. Con quarantamila euro di residuo fra venticinque anni e un'inflazione del due per cento, il valore attuale e' $40\,000/1{,}02^{25} = 24\,380$ euro, quindi l'inflazione ha eroso circa $15\,600$ euro di debito reale.
+La formula lo quantifica: prendi il debito residuo, e sottraine il suo valore in euro di oggi. Con quarantamila euro di residuo fra venticinque anni e un'inflazione del due per cento, il valore attuale è $40\,000/1{,}02^{25} = 24\,380$ euro, quindi l'inflazione ha eroso circa $15\,600$ euro di debito reale.
 
-Vale solo a tasso fisso, e la ragione e' semplice: su un variabile l'inflazione fa salire il tasso di riferimento, quindi si paga di piu' in interessi e il guadagno sul capitale si compensa in tutto o in parte con la perdita sul servizio del debito.
+Vale solo a tasso fisso, e la ragione è semplice: su un variabile l'inflazione fa salire il tasso di riferimento, quindi si paga di più in interessi e il guadagno sul capitale si compensa in tutto o in parte con la perdita sul servizio del debito.
 \end{proposizione}
 
 \begin{proof}
@@ -985,9 +985,9 @@ Il valore attuale del canone a cui si rinuncia non indicizzando, su un orizzonte
 
 \paragraph{In parole.} La formula calcola quanto costa, in euro di oggi, rinunciare ad aggiornare il canone. Si legge: prendi il canone iniziale, moltiplicalo per la differenza fra il fattore di una rendita che cresce all'inflazione e il fattore di una rendita che cresce come la tua.
 
-Se non si indicizza affatto, cioe' $g = 0$, la seconda rendita e' un canone fermo e la differenza fra i due fattori e' tutto il valore dell'indicizzazione. Sul caso del progetto, con un canone di seimila euro l'anno, inflazione al due per cento e sconto al tre su venticinque anni: $6\,000 \times (21{,}64 - 17{,}41) = 25\,384$ euro. Al netto dell'imposta sul canone scendono a circa ventimila.
+Se non si indicizza affatto, cioè $g = 0$, la seconda rendita è un canone fermo e la differenza fra i due fattori è tutto il valore dell'indicizzazione. Sul caso del progetto, con un canone di seimila euro l'anno, inflazione al due per cento e sconto al tre su venticinque anni: $6\,000 \times (21{,}64 - 17{,}41) = 25\,384$ euro. Al netto dell'imposta sul canone scendono a circa ventimila.
 
-E' un costo che non si vede mai, perche' non e' una spesa: e' un canone che non e' stato chiesto.
+È un costo che non si vede mai, perché non è una spesa: è un canone che non è stato chiesto.
 con $F$ il fattore \eqref{eq:crescente}. Al netto dell'imposta sul canone la grandezza comparabile è $\Lambda(1-\theta)$.
 \end{proposizione}
 
@@ -1062,9 +1062,9 @@ Sia $[\underline{q},\overline{q}]$ l'intervallo di quotazione della zona omogene
 
 \paragraph{In parole.} Prendi il prezzo al metro quadro dell'immobile, dividilo per il punto medio dell'intervallo di quotazione della sua zona, e togli uno. Il risultato dice di quanto il prezzo sta sopra o sotto la media della zona, in percentuale.
 
-Con un prezzo al metro quadro di $2\,565$ euro e una zona quotata fra $1\,800$ e $3\,300$: il punto medio e' $2\,550$, il rapporto e' $1{,}006$, lo scarto e' piu' $0{,}6$ per cento. L'immobile e' praticamente in linea con la sua zona.
+Con un prezzo al metro quadro di $2\,565$ euro e una zona quotata fra $1\,800$ e $3\,300$: il punto medio è $2\,550$, il rapporto è $1{,}006$, lo scarto è più $0{,}6$ per cento. L'immobile è praticamente in linea con la sua zona.
 
-Tre avvertenze. Il punto medio e' una scelta e non un dato: la quotazione e' un intervallo proprio perche' nella zona ci sono immobili diversi, e schiacciarlo su un numero perde quell'informazione. Lo scarto non e' un giudizio, perche' la quotazione non vede stato, piano, affaccio ne' classe energetica. E se la zona non e' nota, il modello usa l'intervallo dell'intero Comune, che e' largo abbastanza da rendere lo scarto quasi privo di significato.
+Tre avvertenze. Il punto medio è una scelta e non un dato: la quotazione è un intervallo proprio perché nella zona ci sono immobili diversi, e schiacciarlo su un numero perde quell'informazione. Lo scarto non è un giudizio, perché la quotazione non vede stato, piano, affaccio né classe energetica. E se la zona non è nota, il modello usa l'intervallo dell'intero Comune, che è largo abbastanza da rendere lo scarto quasi privo di significato.
 \end{definizione}
 
 Tre proprietà vanno dichiarate. La \eqref{eq:scarto} usa la media dell'intervallo, che è una scelta e non un dato: la quotazione OMI è un intervallo perché la zona contiene immobili diversi, e collassarlo sulla media perde l'informazione sulla dispersione. Lo scarto è definito solo se la zona è nota: quando manca, il modello usa l'intervallo dell'intero Comune, che è largo e rende $\delta$ poco informativo, e lo segnala. E $\delta$ non è un giudizio: la quotazione è una media di zona per tipologia, quindi non vede stato di conservazione, piano, affaccio, classe energetica né lavori deliberati in condominio. Uno scarto molto negativo ha sempre una ragione, e la ragione va trovata prima di innamorarsene.

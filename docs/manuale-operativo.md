@@ -6,9 +6,9 @@
 
 Questo file risponde alle domande operative: quale comando eseguire, quale opzione passare, quale cella compilare, in che ordine, e cosa fare quando qualcosa non funziona. Non spiega la materia, perché la materia è già spiegata altrove e ripeterla qui produrrebbe due versioni destinate a divergere.
 
-Per spiegare lo strumento a chi compra insieme, e non ha il progetto sulla macchina, si manda `guida-per-il-socio.md`: è l'unico documento di questa cartella scritto per essere letto da fuori, e ripete quanto serve invece di rimandare altrove.
+Per spiegare lo strumento a chi compra insieme, e non ha il progetto sulla macchina, si manda `guida-al-workbook.md`: è l'unico documento di questa cartella scritto per essere letto da fuori, e ripete quanto serve invece di rimandare altrove.
 
-Per il perché di un numero si va nelle schede di dominio. Le imposte di trasferimento, il prezzo-valore, la prima casa, la detrazione degli interessi e l'IMU stanno in `fiscalita-acquisto.md`. I quattro regimi di tassazione del canone e le novità 2026 sulle locazioni brevi stanno in `fiscalita-locazione.md`. Le verifiche legali e urbanistiche stanno in `due-diligence.md`, i documenti da farsi consegnare in `perizia-pre-acquisto.md`, le vendite giudiziarie in `aste-immobiliari.md`, l'acquisto in più persone in `comprare-in-piu-persone.md`. Le scelte metodologiche, cioè quale denominatore usa un rendimento e perché, stanno in `metodo-e-metriche.md`. L'architettura del codice sta in `guida-tecnica(catena-calcolo-e-normativa).md`, la spiegazione senza gergo di ogni voce sta in `guida-non-tecnica.md`, il percorso rapido per la prima valutazione sta in `da-zero.md`, e la provenienza di ogni dato sta in `fonti.md`.
+Per il perché di un numero si va nelle schede di dominio. Le imposte di trasferimento, il prezzo-valore, la prima casa, la detrazione degli interessi e l'IMU stanno in `fiscalita-acquisto.md`. I quattro regimi di tassazione del canone e le novità 2026 sulle locazioni brevi stanno in `fiscalita-locazione.md`. Le verifiche legali e urbanistiche stanno in `due-diligence.md`, i documenti da farsi consegnare in `perizia-pre-acquisto.md`, le vendite giudiziarie in `aste-immobiliari.md`, l'acquisto in più persone in `comprare-in-piu-persone.md`. Le scelte metodologiche, cioè quale denominatore usa un rendimento e perché, stanno in `metodo-e-metriche.md`. L'architettura del codice sta in `guida-tecnica(catena-calcolo-e-normativa).md`, la spiegazione senza gergo di ogni voce sta in `guida-al-workbook.md`, il percorso rapido per la prima valutazione sta in `da-zero.md`, e la provenienza di ogni dato sta in `fonti.md`.
 
 ## Il percorso in un diagramma
 
@@ -109,13 +109,13 @@ _notes/              materiale personale, non versionato, con la mappa in INDICE
 .claude/             memoria di progetto, decisioni, schede di contesto, regole
 ```
 
-Sulla divisione fra `src/` e `tools/` vale una riga, perche' e' una domanda ricorrente. Sotto `src/immobiliare/` sta la libreria, cioe' moduli che si importano e non si eseguono: e' il layout `src`, adottato perche' impedisce di importare per sbaglio il pacchetto dalla cartella di lavoro invece che da quello installato, che e' la causa piu' comune di test che passano in locale e falliscono altrove. Sotto `tools/` stanno invece i due eseguibili, cioe' cio' che si lancia: `valuta.py`, che e' l'unica interfaccia del progetto, e `verifica-excel.ps1`, che non e' nemmeno Python. Mettere `tools/` dentro `src/` mescolerebbe le due nature, e renderebbe `verifica-excel.ps1` un file PowerShell dentro un pacchetto Python.
+Sulla divisione fra `src/` e `tools/` vale una riga, perché è una domanda ricorrente. Sotto `src/immobiliare/` sta la libreria, cioè moduli che si importano e non si eseguono: è il layout `src`, adottato perché impedisce di importare per sbaglio il pacchetto dalla cartella di lavoro invece che da quello installato, che è la causa più comune di test che passano in locale e falliscono altrove. Sotto `tools/` stanno invece i due eseguibili, cioè ciò che si lancia: `valuta.py`, che è l'unica interfaccia del progetto, e `verifica-excel.ps1`, che non è nemmeno Python. Mettere `tools/` dentro `src/` mescolerebbe le due nature, e renderebbe `verifica-excel.ps1` un file PowerShell dentro un pacchetto Python.
 
 Le cartelle `data/` e `output/` non stanno in git per ragioni diverse. `output/` perché si rigenera da un comando e peserebbe sulla storia. `data/annunci.csv` perché porta i link agli immobili in trattativa e la colonna del prezzo obiettivo, che è la propria strategia di acquisto e non ha ragione di stare in una repository pubblica; chi lavora in un repository privato può togliere la riga dal `.gitignore`.
 
 ## La trattazione matematica
 
-La matematica del modello e' formalizzata in `docs/matematica/matematica-finanziaria.tex`, che si compila in un PDF di trentadue pagine con gli script del progetto. Serve la prima volta un passaggio di preparazione dell'ambiente, che installa TinyTeX e i pacchetti del manifesto `tex-packages.txt`.
+La matematica del modello è formalizzata in `docs/matematica/matematica-finanziaria.tex`, che si compila in un PDF di trentadue pagine con gli script del progetto. Serve la prima volta un passaggio di preparazione dell'ambiente, che installa TinyTeX e i pacchetti del manifesto `tex-packages.txt`.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-tex.ps1
@@ -127,7 +127,7 @@ bash scripts/setup-tex.sh
 bash scripts/build.sh --main docs/matematica/matematica-finanziaria.tex
 ```
 
-Il PDF finisce accanto al sorgente e non e' versionato, perche' e' un artefatto derivato. L'ambiente LaTeX serve soltanto a questo documento: il resto del progetto non ne dipende, e chi non lo compila non perde nulla del funzionamento dello strumento. La procedura e' incapsulata nella skill `latex-build` sotto `.claude/skills/`.
+Il PDF finisce accanto al sorgente e non è versionato, perché è un artefatto derivato. L'ambiente LaTeX serve soltanto a questo documento: il resto del progetto non ne dipende, e chi non lo compila non perde nulla del funzionamento dello strumento. La procedura è incapsulata nella skill `latex-build` sotto `.claude/skills/`.
 
 ## Il ciclo di lavoro
 

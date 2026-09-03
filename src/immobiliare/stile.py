@@ -11,7 +11,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.worksheet.hyperlink import Hyperlink
 from openpyxl.utils import get_column_letter
 
-# Palette: blu profondo per le intestazioni, giallo tenue per cio' che si edita,
+# Palette: blu profondo per le intestazioni, giallo tenue per ciò che si edita,
 # verde tenue per i risultati, grigio per il calcolato non editabile.
 BLU = "1F3864"
 BLU_CHIARO = "2E5395"
@@ -57,15 +57,15 @@ CENTRO = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
 
 FOGLIO_INDICE = "Guida"
-"""Nome del foglio che fa da indice. Vive qui perche' `titolo` scrive il ritorno."""
+"""Nome del foglio che fa da indice. Vive qui perché `titolo` scrive il ritorno."""
 
 USI: dict = {}
 """Che cosa si fa in ciascun foglio, per nome del foglio.
 
 Lo riempie il costruttore prima di creare i fogli, dalla stessa tupla da cui
 nasce l'indice, e lo legge `titolo` per scrivere la fascia d'uso in testa a ogni
-foglio. La forma e' un dizionario di modulo e non un parametro di `titolo` per
-una ragione pratica: `titolo` e' chiamata da venti metodi diversi, e passare
+foglio. La forma è un dizionario di modulo e non un parametro di `titolo` per
+una ragione pratica: `titolo` è chiamata da venti metodi diversi, e passare
 l'informazione a ciascuno avrebbe richiesto venti modifiche con venti occasioni
 di dimenticarne una, mentre il registro fa comparire la fascia su ogni foglio che
 sia dichiarato nell'indice, e su nessun altro.
@@ -75,13 +75,13 @@ sia dichiarato nell'indice, e su nessun altro.
 def scelta(validazione, cella):
     """Aggancia una cella a un elenco di valori ammessi e la colora di conseguenza.
 
-    E' l'unico modo previsto di applicare una tendina, e la ragione e' una
+    È l'unico modo previsto di applicare una tendina, e la ragione è una
     segnalazione d'uso: prima le celle da scegliere erano gialle come quelle da
     digitare, quindi a video non c'era nulla che distinguesse una cella dove si
     scrive un numero da una dove si sceglie fra valori ammessi. Chi non conosce il
     file ci scriveva dentro, la validazione rifiutava il valore e il messaggio di
-    Excel non spiegava perche'. Passando sempre da qui, una cella con tendina non
-    puo' avere il colore sbagliato.
+    Excel non spiegava perché. Passando sempre da qui, una cella con tendina non
+    può avere il colore sbagliato.
     """
     validazione.add(cella)
     cella.fill = FILL_SCELTA
@@ -92,16 +92,16 @@ def collegamento(ws, riga: int, colonna: int, testo: str, foglio: str, cella: st
     """Scrive una cella che porta a un altro foglio dello stesso workbook.
 
     Il collegamento va costruito come `Hyperlink` con `location` e non assegnando
-    una stringa a `cell.hyperlink`, perche' quella scorciatoia lo registra come
+    una stringa a `cell.hyperlink`, perché quella scorciatoia lo registra come
     destinazione esterna: nel file finisce fra le relazioni verso l'esterno, e a
     seconda della versione Excel lo apre chiedendo conferma o lo segnala come
     riferimento non attendibile. Un collegamento interno non ha una destinazione
-    esterna, ha una posizione dentro il file, ed e' esattamente cio' che
+    esterna, ha una posizione dentro il file, ed è esattamente ciò che
     `location` esprime.
 
-    Il nome del foglio va fra apici singoli perche' diversi fogli di questo
+    Il nome del foglio va fra apici singoli perché diversi fogli di questo
     workbook hanno uno spazio nel nome, e senza apici la destinazione non si
-    risolve. E si punta a una cella e non al foglio nudo, perche' un collegamento
+    risolve. E si punta a una cella e non al foglio nudo, perché un collegamento
     senza cella lascia il foglio dove era stato lasciato scrollato, che su un
     piano di ammortamento di 480 righe significa arrivarci in fondo.
     """
@@ -120,7 +120,7 @@ def titolo(ws, riga: int, testo: str, sottotitolo: str = "", larghezza: int = 8)
     ogni foglio del workbook comincia chiamando questa funzione, quindi metterlo
     qui garantisce che nessun foglio nuovo nasca senza via di ritorno. Un
     workbook di venti fogli in cui la navigazione dipende dalla linguetta in
-    basso e' navigabile solo da chi lo ha costruito.
+    basso è navigabile solo da chi lo ha costruito.
     """
     c = ws.cell(row=riga, column=1, value=testo)
     c.font = TITOLO
@@ -136,7 +136,7 @@ def titolo(ws, riga: int, testo: str, sottotitolo: str = "", larghezza: int = 8)
         riga += 1
     # La riga che questa funzione lasciava vuota fra il titolo e il primo
     # contenuto porta due cose: il ritorno all'indice in colonna A, e da colonna B
-    # la fascia che dice se in questo foglio si scrive o si legge. La posizione e'
+    # la fascia che dice se in questo foglio si scrive o si legge. La posizione è
     # la stessa su tutti i fogli: metterle accanto al titolo le avrebbe spostate a
     # destra di tante colonne quante ne occupa il titolo, che varia da quattro a
     # ventisei, e su un foglio largo sarebbero finite fuori dalla vista.
@@ -146,7 +146,7 @@ def titolo(ws, riga: int, testo: str, sottotitolo: str = "", larghezza: int = 8)
         if uso:
             azione, quando, esito = uso
             if azione == "Si legge":
-                testo = ("QUI NON SI SCRIVE NULLA: tutto quello che vedi e' calcolato negli altri fogli. "
+                testo = ("QUI NON SI SCRIVE NULLA: tutto quello che vedi è calcolato negli altri fogli. "
                          f"Si apre {quando.lower()}. Ne esce: {esito.lower()}.")
                 riempimento = FILL_CALCOLO
             elif azione == "Si consulta":

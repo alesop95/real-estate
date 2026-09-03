@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Generatore del workbook di valutazione, con formule vive.
 
-Il workbook non e' un rapporto stampato: e' il modello stesso. Ogni numero
-derivato e' una formula Excel, non un valore calcolato in Python e incollato, cosi'
+Il workbook non è un rapporto stampato: è il modello stesso. Ogni numero
+derivato è una formula Excel, non un valore calcolato in Python e incollato, così
 che chi apre il file possa cambiare il prezzo o il tasso e vedere ricalcolare tutto
 senza rieseguire nulla. Le celle gialle sono gli input, quelle grigie il calcolato,
 quelle verdi i risultati di sintesi.
 
-I riferimenti fra fogli passano per nomi definiti, registrati in `_nome`, cosi' che
+I riferimenti fra fogli passano per nomi definiti, registrati in `_nome`, così che
 le formule si leggano come `prezzo * reg_prima` invece che come `Immobile!$B$12`.
 """
 
@@ -27,7 +27,7 @@ from . import stile as S
 
 MAX_RATE = 480          # 40 anni di rate mensili
 ESTRAZIONI = 1000       # scenari della simulazione probabilistica
-SEME_SIMULAZIONE = 20260831   # dichiarato, cosi' la simulazione e' riproducibile
+SEME_SIMULAZIONE = 20260831   # dichiarato, così la simulazione è riproducibile
 MAX_ANNI = 40
 ORIZZONTE_MAX = 40
 
@@ -60,10 +60,10 @@ class Costruttore:
     # -- fogli -------------------------------------------------------------
 
     def costruisci(self) -> None:
-        # Il registro degli usi va riempito prima di creare i fogli, perche' e'
+        # Il registro degli usi va riempito prima di creare i fogli, perché è
         # `stile.titolo` a leggerlo per scrivere la fascia in testa a ciascuno, ed
-        # e' la prima cosa che ogni foglio chiama. La sorgente e' la stessa tupla
-        # da cui nasce l'indice: cosi' la fascia di un foglio e la sua riga
+        # è la prima cosa che ogni foglio chiama. La sorgente è la stessa tupla
+        # da cui nasce l'indice: così la fascia di un foglio e la sua riga
         # nell'indice non possono dire cose diverse.
         S.USI = {
             nome: (azione, quando, esito)
@@ -95,29 +95,29 @@ class Costruttore:
         self.foglio_estrazioni()
 
     # ------------------------------------------------------------------ guida
-    # L'indice dei fogli. La tupla e' la sorgente unica: la usa il foglio Guida per
+    # L'indice dei fogli. La tupla è la sorgente unica: la usa il foglio Guida per
     # costruire la tabella navigabile, e il test la confronta con i fogli davvero
-    # presenti nel workbook. Il rischio che presidia non e' teorico: un foglio
+    # presenti nel workbook. Il rischio che presidia non è teorico: un foglio
     # rinominato lascerebbe un collegamento ipertestuale che Excel apre senza
-    # errore visibile, portando su una destinazione che non esiste piu'.
+    # errore visibile, portando su una destinazione che non esiste più.
     #
-    # L'ordine e' quello di lettura consigliata e non quello delle linguette, che
+    # L'ordine è quello di lettura consigliata e non quello delle linguette, che
     # coincide quasi sempre ma non del tutto: i due fogli di riferimento, Parametri
-    # e Fonti, stanno fra le prime linguette per comodita' di consultazione e in
-    # fondo al percorso, perche' si aprono quando serve e non all'inizio.
+    # e Fonti, stanno fra le prime linguette per comodità di consultazione e in
+    # fondo al percorso, perché si aprono quando serve e non all'inizio.
     PERCORSO = (
         ("Da dove si comincia", (
             ("Cruscotto", "Si legge", "Sempre, per primo e per ultimo",
              "I numeri che decidono, con accanto la soglia oltre la quale sono un problema, e il conto di cosa manca ancora"),
         )),
-        ("I dati dell'operazione, cioe' le celle gialle", (
-            ("Immobile", "Si compila", "Quando c'e' un immobile candidato",
+        ("I dati dell'operazione, cioè le celle gialle", (
+            ("Immobile", "Si compila", "Quando c'è un immobile candidato",
              "Imposte di trasferimento, costo totale dell'operazione, cassa necessaria al rogito"),
             ("Mutuo", "Si compila", "Subito dopo Immobile",
              "Rata, imposta sostitutiva, oneri accessori, detrazione degli interessi anno per anno"),
             ("Locazione", "Si compila", "Solo se l'immobile si mette a reddito",
              "I quattro regimi fiscali a confronto sullo stesso canone, e il regime scelto che alimenta la proiezione"),
-            ("Comproprieta", "Si compila", "Solo se si compra in piu' di uno",
+            ("Comproprieta", "Si compila", "Solo se si compra in più di uno",
              "Ripartizione per quote di esborso, rata e imposte, e l'avvertenza su cosa serve mettere per iscritto"),
         )),
         ("Come si comporta nel tempo", (
@@ -128,15 +128,15 @@ class Costruttore:
             ("Cash flow", "Si legge", "Dopo Locazione",
              "La proiezione annuale sull'orizzonte scelto, con l'uscita finale"),
         )),
-        ("L'esito, e quanto e' fragile", (
+        ("L'esito, e quanto è fragile", (
             ("Metriche", "Si legge", "Quando gli input sono completi",
              "Rendimento lordo e netto, cap rate, cash on cash, debt service coverage ratio, tasso interno di rendimento, valore attuale netto"),
             ("Confronto affitto", "Si legge", "Solo per l'abitazione propria",
-             "Comprare con mutuo oppure restare in affitto investendo la differenza, a parita' di esborso"),
+             "Comprare con mutuo oppure restare in affitto investendo la differenza, a parità di esborso"),
             ("Scenari", "Si compila e si legge", "Prima di decidere, mai dopo",
-             "Tre ipotesi impostabili a mano, le tabelle di sensibilita', e il prezzo massimo che l'immobile giustifica al rendimento obiettivo"),
+             "Tre ipotesi impostabili a mano, le tabelle di sensibilità, e il prezzo massimo che l'immobile giustifica al rendimento obiettivo"),
             ("Rischio", "Si legge", "Insieme a Scenari",
-             "Mille scenari con estrazioni fisse, le probabilita' di cash flow negativo e di perdita, e il tornado che dice quale variabile pesa"),
+             "Mille scenari con estrazioni fisse, le probabilità di cash flow negativo e di perdita, e il tornado che dice quale variabile pesa"),
         )),
         ("Prima di firmare", (
             ("Checklist", "Si compila", "Dal momento in cui si passa dalla valutazione alla proposta",
@@ -148,10 +148,10 @@ class Costruttore:
             ("Asta", "Si compila e si legge", "Solo se l'immobile viene da una vendita giudiziaria",
              "Costo reale dell'aggiudicazione, sconto effettivo sul mercato, prezzo massimo a cui fermarsi in gara"),
         )),
-        ("La ricerca, cioe' il passo che viene prima di tutti", (
+        ("La ricerca, cioè il passo che viene prima di tutti", (
             ("Annunci", "Si compila", "Da subito, appena si inizia a guardare",
              "Il registro degli immobili in valutazione, con prezzo al metro quadro, rendimento lordo e scarto sulla zona OMI calcolati"),
-            ("Confronto immobili", "Si legge", "Quando a registro c'e' piu' di un immobile",
+            ("Confronto immobili", "Si legge", "Quando a registro c'è più di un immobile",
              "Tutti gli annunci in fila con lo stesso modello, imposte comprese, per scegliere quale approfondire"),
         )),
         ("Riferimento, si apre quando serve", (
@@ -165,15 +165,15 @@ class Costruttore:
     def foglio_guida(self) -> None:
         """Indice navigabile del workbook.
 
-        Il foglio esisteva gia' come pagina di presentazione con un elenco
+        Il foglio esisteva già come pagina di presentazione con un elenco
         descrittivo di undici voci su venti fogli, il che lo rendeva una guida
-        parziale e non un indice. La differenza conta piu' di quanto sembri: in un
+        parziale e non un indice. La differenza conta più di quanto sembri: in un
         file di venti fogli la navigazione via linguette in basso funziona solo per
         chi conosce a memoria dove sta cosa, e chi lo apre la prima volta, o lo
-        riapre dopo un mese, non sa in che ordine leggere ne' quali fogli lo
+        riapre dopo un mese, non sa in che ordine leggere né quali fogli lo
         riguardano. La tabella qui sotto risponde a tre domande per ogni foglio,
-        cioe' se si compila o si legge, quando lo si apre nel percorso, e cosa ne
-        esce, e ogni nome e' un collegamento.
+        cioè se si compila o si legge, quando lo si apre nel percorso, e cosa ne
+        esce, e ogni nome è un collegamento.
         """
         ws = self.wb.create_sheet(S.FOGLIO_INDICE)
         ws.sheet_view.showGridLines = False
@@ -189,16 +189,16 @@ class Costruttore:
 
         r = S.sezione(ws, r, "Se apri questo file per la prima volta, leggi queste cinque righe", 5)
         for testo in [
-            "Uno. In questo file si scrive soltanto nelle celle colorate di giallo e di azzurro. Tutto il resto e' calcolato: se ci scrivi sopra, il calcolo si rompe e nessuno te lo dice, perche' il foglio continua a mostrare un numero.",
-            "Due. Ogni foglio, in alto, ti dice in una riga se lui e' un foglio dove si scrive oppure uno dove si legge, quando conviene aprirlo e che cosa ne esce. Se la riga in alto e' gialla si compila, se e' grigia si legge.",
-            "Tre. Non serve compilare tutto. Se non metti l'immobile a reddito, il foglio Locazione non ti riguarda; se non compri in piu' persone, Comproprieta' non ti riguarda; se non e' un'asta, Asta non ti riguarda. La tabella qui sotto lo dice foglio per foglio nella colonna Quando si apre.",
-            "Quattro. I numeri che decidono stanno tutti nel Cruscotto, che e' il secondo foglio. Se hai poco tempo, compila i tre fogli gialli del percorso minimo e poi leggi solo quello.",
-            "Cinque. Ogni nome di foglio in questa pagina e' un collegamento: clicci e ci vai. Da ogni foglio torni qui col collegamento in alto a sinistra, quello che dice Indice.",
+            "Uno. In questo file si scrive soltanto nelle celle colorate di giallo e di azzurro. Tutto il resto è calcolato: se ci scrivi sopra, il calcolo si rompe e nessuno te lo dice, perché il foglio continua a mostrare un numero.",
+            "Due. Ogni foglio, in alto, ti dice in una riga se lui è un foglio dove si scrive oppure uno dove si legge, quando conviene aprirlo e che cosa ne esce. Se la riga in alto è gialla si compila, se è grigia si legge.",
+            "Tre. Non serve compilare tutto. Se non metti l'immobile a reddito, il foglio Locazione non ti riguarda; se non compri in più persone, Comproprietà non ti riguarda; se non è un'asta, Asta non ti riguarda. La tabella qui sotto lo dice foglio per foglio nella colonna Quando si apre.",
+            "Quattro. I numeri che decidono stanno tutti nel Cruscotto, che è il secondo foglio. Se hai poco tempo, compila i tre fogli gialli del percorso minimo e poi leggi solo quello.",
+            "Cinque. Ogni nome di foglio in questa pagina è un collegamento: clicci e ci vai. Da ogni foglio torni qui col collegamento in alto a sinistra, quello che dice Indice.",
         ]:
             r = S.nota_riga(ws, r, testo, 5)
         r += 1
 
-        r = S.sezione(ws, r, "I colori delle celle, che sono la cosa piu' importante", 5)
+        r = S.sezione(ws, r, "I colori delle celle, che sono la cosa più importante", 5)
         # I colori si mostrano, non si descrivono: la cella della legenda porta il
         # riempimento che spiega. Descriverli a parole avrebbe richiesto a chi
         # legge di ricordare un'associazione fra un nome e un colore, e la
@@ -208,13 +208,13 @@ class Costruttore:
             ("Gialla", S.FILL_INPUT,
              "Ci scrivi tu, un numero o un testo. Sono le uniche celle da compilare, e sono poche per foglio."),
             ("Azzurra", S.FILL_SCELTA,
-             "Ci scegli da un elenco: clicca la cella e a destra compare una freccia. Un valore scritto a mano fuori dall'elenco viene rifiutato, ed e' voluto."),
+             "Ci scegli da un elenco: clicca la cella e a destra compare una freccia. Un valore scritto a mano fuori dall'elenco viene rifiutato, ed è voluto."),
             ("Grigia", S.FILL_CALCOLO,
-             "La calcola il foglio. Non ci si scrive: sovrascriverla rompe la catena di calcolo in silenzio, cioe' senza alcun messaggio di errore."),
+             "La calcola il foglio. Non ci si scrive: sovrascriverla rompe la catena di calcolo in silenzio, cioè senza alcun messaggio di errore."),
             ("Verde", S.FILL_RISULTATO,
-             "Risultato di sintesi. E' quello che sei venuto a leggere, e viene sempre da celle gialle e azzurre compilate altrove."),
+             "Risultato di sintesi. È quello che sei venuto a leggere, e viene sempre da celle gialle e azzurre compilate altrove."),
             ("Rossa", S.FILL_ATTENZIONE,
-             "Attenzione. Un valore ha superato una soglia oltre la quale e' un problema, oppure un controllo di plausibilita' non e' superato."),
+             "Attenzione. Un valore ha superato una soglia oltre la quale è un problema, oppure un controllo di plausibilità non è superato."),
         ]
         for nome, riempimento, spiegazione in legenda:
             c = ws.cell(row=r, column=2, value=nome)
@@ -259,8 +259,8 @@ class Costruttore:
         for testo in [
             "Primo, foglio Annunci: si mettono gli immobili che si stanno guardando, anche solo con link, Comune, metri quadri e prezzo. Il foglio Confronto immobili li mette in fila da solo e dice quale merita tempo.",
             "Secondo, foglio Immobile, sul candidato scelto: prezzo, rendita catastale, chi vende, prima casa. Ne escono imposte e costo reale. Poi foglio Mutuo, e foglio Locazione se l'immobile si affitta.",
-            "Terzo, si torna al Cruscotto e si leggono i cinque numeri. Se il cash flow e' negativo, si va nel foglio Scenari e si guarda quanto lo diventa nell'ipotesi pessimistica: e' quella la cifra che si deve poter sostenere ogni mese.",
-            "Quarto, prima di fare una proposta si aprono Checklist e Dossier tecnico. Una proposta accettata e' gia' un contratto, quindi le verifiche si chiudono prima, o diventano condizioni scritte nella proposta.",
+            "Terzo, si torna al Cruscotto e si leggono i cinque numeri. Se il cash flow è negativo, si va nel foglio Scenari e si guarda quanto lo diventa nell'ipotesi pessimistica: è quella la cifra che si deve poter sostenere ogni mese.",
+            "Quarto, prima di fare una proposta si aprono Checklist e Dossier tecnico. Una proposta accettata è già un contratto, quindi le verifiche si chiudono prima, o diventano condizioni scritte nella proposta.",
         ]:
             r = S.nota_riga(ws, r, testo, 5)
         r += 1
@@ -269,16 +269,16 @@ class Costruttore:
         for testo in [
             "Quanta cassa serve davvero per chiudere l'operazione, contando imposte, notaio, provvigione e oneri del mutuo, e non solo il prezzo.",
             "Quanto rende l'immobile al netto di tutto, e come si confronta con l'alternativa di non comprarlo.",
-            "Quali verifiche legali e tecniche vanno chiuse prima di firmare, perche' una proposta accettata e' gia' un contratto.",
+            "Quali verifiche legali e tecniche vanno chiuse prima di firmare, perché una proposta accettata è già un contratto.",
         ]:
             r = S.nota_riga(ws, r, testo, 5)
         r += 1
 
         r = S.sezione(ws, r, "Avvertenza", 5)
         for testo in [
-            "Questo file e' uno strumento di analisi personale, non una consulenza fiscale, legale o finanziaria. Le aliquote sono quelle vigenti alla data di revisione indicata sopra e cambiano con ogni legge di bilancio: prima di firmare qualunque cosa vanno riverificate sulle fonti elencate nel foglio Fonti, e le posizioni soggettive vanno confermate da un notaio e da un commercialista.",
-            "Il modello ignora deliberatamente la ristrutturazione come voce di progetto, secondo il perimetro con cui e' stato costruito. La ristrutturazione periodica di fine ciclo, invece, resta come costo ricorrente ammortizzato, perche' un immobile che si tiene quarant'anni va rifatto almeno una volta e ignorarlo falsa il rendimento.",
-            "L'aliquota IMU e le spese condominiali sono le due voci che cambiano di piu' da un immobile all'altro: l'aliquota va letta nella delibera del Comune dell'anno in corso, le spese nel consuntivo condominiale degli ultimi due esercizi.",
+            "Questo file è uno strumento di analisi personale, non una consulenza fiscale, legale o finanziaria. Le aliquote sono quelle vigenti alla data di revisione indicata sopra e cambiano con ogni legge di bilancio: prima di firmare qualunque cosa vanno riverificate sulle fonti elencate nel foglio Fonti, e le posizioni soggettive vanno confermate da un notaio e da un commercialista.",
+            "Il modello ignora deliberatamente la ristrutturazione come voce di progetto, secondo il perimetro con cui è stato costruito. La ristrutturazione periodica di fine ciclo, invece, resta come costo ricorrente ammortizzato, perché un immobile che si tiene quarant'anni va rifatto almeno una volta e ignorarlo falsa il rendimento.",
+            "L'aliquota IMU e le spese condominiali sono le due voci che cambiano di più da un immobile all'altro: l'aliquota va letta nella delibera del Comune dell'anno in corso, le spese nel consuntivo condominiale degli ultimi due esercizi.",
             "La guida operativa completa, con ogni comando e ogni voce spiegati uno per uno, sta nel file docs/manuale-operativo.md dentro il progetto che ha generato questo workbook.",
         ]:
             r = S.nota_riga(ws, r, testo, 5)
@@ -287,15 +287,15 @@ class Costruttore:
     def foglio_cruscotto(self) -> None:
         """Pagina di sintesi: gli otto numeri che decidono, e cosa manca.
 
-        Un workbook di diciotto fogli e' potente e insieme scoraggiante: chi lo apre
+        Un workbook di diciotto fogli è potente e insieme scoraggiante: chi lo apre
         la prima volta non sa dove guardare, e chi lo riapre dopo un mese non ricorda
         dove aveva lasciato. Il cruscotto risolve entrambe le cose senza aggiungere
-        modello: non calcola nulla di nuovo, raccoglie con nomi definiti cio' che gli
-        altri fogli hanno gia' calcolato e lo mette in una schermata sola.
+        modello: non calcola nulla di nuovo, raccoglie con nomi definiti ciò che gli
+        altri fogli hanno già calcolato e lo mette in una schermata sola.
 
-        La disciplina che lo rende utile e' la rinuncia: qui non entra tutto, entra
-        solo cio' che cambia una decisione. Ogni riga porta accanto la soglia oltre la
-        quale il numero e' un problema, perche' un indicatore senza soglia si guarda
+        La disciplina che lo rende utile è la rinuncia: qui non entra tutto, entra
+        solo ciò che cambia una decisione. Ogni riga porta accanto la soglia oltre la
+        quale il numero è un problema, perché un indicatore senza soglia si guarda
         e non si usa.
         """
         ws = self.wb.create_sheet("Cruscotto")
@@ -305,7 +305,7 @@ class Costruttore:
             ws,
             1,
             "Cruscotto",
-            "Tutto quello che sta qui e' calcolato altrove: questa pagina non aggiunge ipotesi, le riassume. Si legge in un minuto e dice se vale la pena aprire il resto.",
+            "Tutto quello che sta qui è calcolato altrove: questa pagina non aggiunge ipotesi, le riassume. Si legge in un minuto e dice se vale la pena aprire il resto.",
             4,
         )
 
@@ -338,80 +338,80 @@ class Costruttore:
                  "", "Riferimento interno e Comune, dal foglio Immobile.")
         riga_kpi("Prezzo trattato", "=prezzo", S.EURO, "", "")
         riga_kpi("Costo totale dell'operazione", "=costo_totale", S.EURO,
-                 "prezzo piu' imposte e costi", "E' il numero da avere in testa quando si fa la proposta, non il prezzo.")
+                 "prezzo più imposte e costi", "È il numero da avere in testa quando si fa la proposta, non il prezzo.")
         riga_cassa = riga_kpi("Cassa necessaria al rogito", "=esborso", S.EURO,
                               "", "Costo totale meno la parte finanziata dalla banca.")
         riga_inc = riga_kpi("Incidenza dei costi sul prezzo", "=incidenza_costi", S.PERC,
-                            "attenzione sopra il 10%", "Sopra la soglia conviene capire quale voce pesa: di solito e' la provvigione o l'imposta sostitutiva.")
+                            "attenzione sopra il 10%", "Sopra la soglia conviene capire quale voce pesa: di solito è la provvigione o l'imposta sostitutiva.")
         r += 1
 
         r = S.sezione(ws, r, "I numeri che decidono", 4, secondaria=True)
         riga_rn = riga_kpi("Rendimento netto", "=utile_locazione/costo_totale", S.PERC,
                            "confronta con l'obiettivo", "Utile dopo tutti i costi e le imposte, sul costo totale. Fra lordo e netto si perdono di norma due punti e mezzo.")
         riga_cfm = riga_kpi("Cash flow mensile", "=cash_flow_primo_anno/12", S.EURO_DEC,
-                            "negativo significa che ci metti", "Se negativo, e' quanto esce dalla tua tasca ogni mese. La domanda non e' se e' bello, ma se e' sostenibile per anni.")
+                            "negativo significa che ci metti", "Se negativo, è quanto esce dalla tua tasca ogni mese. La domanda non è se è bello, ma se è sostenibile per anni.")
         riga_dscr = riga_kpi("Debt service coverage ratio", '=IF(rata_annua>0,noi_annuo/rata_annua,"nessun mutuo")', S.NUMERO_DEC,
-                             "sotto 1 il reddito non copre la rata", "E' l'indicatore che smaschera prima le operazioni troppo tirate.")
+                             "sotto 1 il reddito non copre la rata", "È l'indicatore che smaschera prima le operazioni troppo tirate.")
         riga_tir = riga_kpi("Tasso interno di rendimento", '=IFERROR(IRR(flussi_tir),"non calcolabile")', S.PERC,
-                            "confronta con il portafoglio", "Include l'uscita. E' l'unico numero commensurabile con un investimento finanziario.")
+                            "confronta con il portafoglio", "Include l'uscita. È l'unico numero commensurabile con un investimento finanziario.")
         riga_rr = riga_kpi("Rapporto rata reddito", "=IF(reddito_mensile>0,rata_mensile/reddito_mensile,0)", S.PERC,
                            "le banche si fermano a un terzo", "Sopra il trentacinque per cento la pratica difficilmente passa.")
         r += 1
 
         r = S.sezione(ws, r, "Il rischio, non solo il caso centrale", 4, secondaria=True)
-        riga_kpi("Probabilita' di cash flow negativo", "=prob_cash_negativo", S.PERC_1,
-                 "", "Su mille scenari simulati. Con la leva e' quasi sempre alta.")
-        riga_kpi("Probabilita' di battere il portafoglio alternativo", "=prob_batte_alternativa", S.PERC_1,
+        riga_kpi("Probabilità di cash flow negativo", "=prob_cash_negativo", S.PERC_1,
+                 "", "Su mille scenari simulati. Con la leva è quasi sempre alta.")
+        riga_kpi("Probabilità di battere il portafoglio alternativo", "=prob_batte_alternativa", S.PERC_1,
                  "", "Confronto con l'esborso investito al rendimento atteso per lo stesso orizzonte.")
-        riga_kpi("Probabilita' di perdere capitale proprio", "=prob_perdita_capitale", S.PERC_1,
+        riga_kpi("Probabilità di perdere capitale proprio", "=prob_perdita_capitale", S.PERC_1,
                  "", "Patrimonio finale sotto quanto messo all'inizio.")
         riga_kpi("Cash flow annuo nello scenario peggiore su venti", "=PERCENTILE(sim_cash_flow,0.05)", S.EURO,
                  "", "Il numero da poter sostenere, diviso dodici, prima di firmare.")
         r += 1
 
         r = S.sezione(ws, r, "Il verdetto e cosa manca", 4, secondaria=True)
-        riga_ver = riga_kpi("Sintesi automatica", "=verdetto", None, "", "Confronta il tasso interno con il costo opportunita' e con il portafoglio alternativo.")
+        riga_ver = riga_kpi("Sintesi automatica", "=verdetto", None, "", "Confronta il tasso interno con il costo opportunità e con il portafoglio alternativo.")
         ws.cell(row=riga_ver, column=2).alignment = S.SINISTRA
         ws.cell(row=riga_ver, column=2).font = S.ETICHETTA_BOLD
         # Nomi definiti, non coordinate: la versione precedente citava Immobile!$B$21
         # e 'Confronto affitto'!$B$52, e una riga inserita in uno dei due fogli
         # avrebbe cambiato il verdetto del Cruscotto senza sollevare nulla.
-        riga_conf = riga_kpi("Comprare oppure restare in affitto", "=IF(abitazione_principale=\"SI\",IF(conf_differenza>0,\"conviene comprare\",\"conviene restare in affitto e investire\"),\"non pertinente: non e' abitazione principale\")", None,
-                             "", "Il confronto ha senso solo se l'immobile e' destinato ad abitazione propria. Legge il foglio Confronto affitto per nome definito, non per coordinata.")
+        riga_conf = riga_kpi("Comprare oppure restare in affitto", "=IF(abitazione_principale=\"SI\",IF(conf_differenza>0,\"conviene comprare\",\"conviene restare in affitto e investire\"),\"non pertinente: non è abitazione principale\")", None,
+                             "", "Il confronto ha senso solo se l'immobile è destinato ad abitazione propria. Legge il foglio Confronto affitto per nome definito, non per coordinata.")
         ws.cell(row=riga_conf, column=2).alignment = S.SINISTRA
         ws.cell(row=riga_conf, column=2).font = S.ETICHETTA_BOLD
         riga_ap = riga_kpi("Verifiche ancora aperte", "=verifiche_aperte", S.NUMERO,
-                           "vanno a zero prima di firmare", "Nel foglio Checklist. Una proposta accettata e' gia' un contratto: le verifiche si chiudono prima, o diventano condizioni scritte.")
+                           "vanno a zero prima di firmare", "Nel foglio Checklist. Una proposta accettata è già un contratto: le verifiche si chiudono prima, o diventano condizioni scritte.")
         riga_doc = riga_kpi("Documenti bloccanti ancora da avere", "=documenti_bloccanti_aperti", S.NUMERO,
                             "senza questi non si verifica nulla", "Nel foglio Dossier tecnico. Sono le carte la cui assenza rende nullo l'atto, blocca il mutuo o lascia ignoto il costo di regolarizzazione.")
         riga_kpi("Completamento del fascicolo tecnico", "=documenti_completamento", S.PERC_1,
                  "", "Documenti ricevuti sul totale di quelli applicabili a questo immobile.")
-        riga_kpi("Controlli di plausibilita' non superati", "=controlli_falliti", S.NUMERO,
-                 "il dettaglio e' qui sotto", "Input che il modello considera non ancora attendibili: il dettaglio, con la ragione di ciascuno, sta nella sezione in fondo a questa pagina.")
+        riga_kpi("Controlli di plausibilità non superati", "=controlli_falliti", S.NUMERO,
+                 "il dettaglio è qui sotto", "Input che il modello considera non ancora attendibili: il dettaglio, con la ragione di ciascuno, sta nella sezione in fondo a questa pagina.")
         r += 1
 
-        r = S.sezione(ws, r, "Controlli di plausibilita' sugli input", 4, secondaria=True)
-        r = S.nota_riga(ws, r, "Il modello non puo' sapere se un input e' giusto, ma puo' sapere se e' ancora quello di esempio, se e' a zero dove uno zero non e' plausibile, o se e' incoerente con un'altra scelta. I controlli qui sotto sono di questo tipo, e ciascuno dice che cosa comporta il valore trovato. Nessuno di essi blocca il calcolo: il foglio continua a produrre numeri, e il punto e' proprio che li produrrebbe anche sbagliati senza dirlo.", 4)
+        r = S.sezione(ws, r, "Controlli di plausibilità sugli input", 4, secondaria=True)
+        r = S.nota_riga(ws, r, "Il modello non può sapere se un input è giusto, ma può sapere se è ancora quello di esempio, se è a zero dove uno zero non è plausibile, o se è incoerente con un'altra scelta. I controlli qui sotto sono di questo tipo, e ciascuno dice che cosa comporta il valore trovato. Nessuno di essi blocca il calcolo: il foglio continua a produrre numeri, e il punto è proprio che li produrrebbe anche sbagliati senza dirlo.", 4)
         intest_ctrl = ["Controllo", "Esito", "Che cosa comporta", "Come si chiude"]
         r = S.intestazioni(ws, r, intest_ctrl, [42, 30, 60, 56])
         prima_ctrl = r
 
-        # Ogni controllo e' una formula che restituisce la stringa vuota quando
-        # e' superato e un messaggio quando non lo e'. La stringa vuota, e non
-        # la parola ok, perche' una colonna di ok e' rumore che si impara a
-        # ignorare, mentre una colonna quasi vuota rende visibile cio' che resta.
+        # Ogni controllo è una formula che restituisce la stringa vuota quando
+        # è superato e un messaggio quando non lo è. La stringa vuota, e non
+        # la parola ok, perché una colonna di ok è rumore che si impara a
+        # ignorare, mentre una colonna quasi vuota rende visibile ciò che resta.
         controlli = [
             ("Rendita catastale contro prezzo-valore",
              '=IF(AND(usa_prezzo_valore="SI",rendita<=0),"rendita a zero con prezzo-valore attivo","")',
-             "L'opzione prezzo-valore non si applica senza rendita, quindi le imposte si calcolano sul prezzo intero: e' la leva fiscale piu' grossa dell'operazione e si sta perdendo in silenzio.",
+             "L'opzione prezzo-valore non si applica senza rendita, quindi le imposte si calcolano sul prezzo intero: è la leva fiscale più grossa dell'operazione e si sta perdendo in silenzio.",
              "Si chiede la visura catastale all'agenzia, o la si estrae da una visura propria."),
             ("Aliquota IMU deliberata dal Comune",
              '=IF(imu_aliquota=imu_base,"ancora al valore base di legge","")',
-             "I Comuni possono azzerarla o portarla all'1,06 per cento: sul valore base l'IMU stimata puo' sbagliare di un quarto, ogni anno per tutta la durata del possesso.",
+             "I Comuni possono azzerarla o portarla all'1,06 per cento: sul valore base l'IMU stimata può sbagliare di un quarto, ogni anno per tutta la durata del possesso.",
              "Si legge nella delibera comunale dell'anno in corso e si scrive nel foglio Locazione."),
             ("Spese condominiali",
              '=IF(condominio<=0,"a zero","")',
-             "Un immobile in condominio ha spese, e a zero il reddito operativo netto e' sovrastimato di tutto il loro importo.",
+             "Un immobile in condominio ha spese, e a zero il reddito operativo netto è sovrastimato di tutto il loro importo.",
              "Dal consuntivo condominiale degli ultimi due esercizi, non dalla stima dell'agenzia; insieme si leggono i verbali per i lavori deliberati."),
             ("Canone atteso",
              '=IF(AND(abitazione_principale<>"SI",canone_mese<=0),"a zero su un immobile da mettere a reddito","")',
@@ -419,20 +419,20 @@ class Costruttore:
              "Dagli annunci di affitto comparabili nella stessa zona, o dalle quotazioni OMI di locazione."),
             ("Superficie",
              '=IF(mq<=0,"a zero","")',
-             "Senza superficie non esiste il prezzo al metro quadro, quindi non e' possibile alcun confronto con le quotazioni di zona.",
-             "Dall'annuncio, verificando se la superficie dichiarata e' commerciale o calpestabile."),
+             "Senza superficie non esiste il prezzo al metro quadro, quindi non è possibile alcun confronto con le quotazioni di zona.",
+             "Dall'annuncio, verificando se la superficie dichiarata è commerciale o calpestabile."),
             ("Comune",
              '=IF(comune="","non compilato","")',
              "Serve a ritrovare la delibera IMU e la zona OMI: senza, entrambe le verifiche restano aperte.",
              "Dall'annuncio."),
             ("Assicurazione del fabbricato",
              '=IF(assicurazione<=0,"a zero","")',
-             "La polizza incendio e' obbligatoria con un mutuo e il suo costo esiste comunque: a zero il conto economico e' ottimistico.",
-             "Dal preventivo della polizza, o da quello che la banca propone; si puo' portarne una propria equivalente."),
+             "La polizza incendio è obbligatoria con un mutuo e il suo costo esiste comunque: a zero il conto economico è ottimistico.",
+             "Dal preventivo della polizza, o da quello che la banca propone; si può portarne una propria equivalente."),
             ("Patrimonio complessivo",
              '=IF(patrimonio_totale<=0,"non compilato, controllo di concentrazione spento","")',
-             "Il rischio di concentrazione e' quello che nessun rendimento vede: chi ha due terzi del patrimonio in mattone non ha un portafoglio ma una scommessa su una zona.",
-             "Si somma immobili gia' posseduti, liquidita' e investimenti, incluso questo acquisto, nel foglio Metriche."),
+             "Il rischio di concentrazione è quello che nessun rendimento vede: chi ha due terzi del patrimonio in mattone non ha un portafoglio ma una scommessa su una zona.",
+             "Si somma immobili già posseduti, liquidità e investimenti, incluso questo acquisto, nel foglio Metriche."),
         ]
 
         for etichetta, formula, comporta, chiude in controlli:
@@ -453,11 +453,11 @@ class Costruttore:
         ultima_ctrl = r - 1
 
         # Il contatore che il Cruscotto mostra in testa. Conta le celle non vuote
-        # della colonna dell'esito, cioe' i controlli non superati.
+        # della colonna dell'esito, cioè i controlli non superati.
         self.nome_intervallo("controlli_esiti", ws, f"$B${prima_ctrl}:$B${ultima_ctrl}")
         riga_cont = r
         r = S.campo(ws, r, "Controlli non superati", '=COUNTIF(controlli_esiti,"?*")', S.NUMERO, risultato=True,
-                    nota="Conta le celle dell'esito che portano un messaggio. Il criterio conta le stringhe non vuote e non le celle non vuote, perche' una formula che restituisce la stringa vuota produce una cella tecnicamente non vuota.")
+                    nota="Conta le celle dell'esito che portano un messaggio. Il criterio conta le stringhe non vuote e non le celle non vuote, perché una formula che restituisce la stringa vuota produce una cella tecnicamente non vuota.")
         self.nome("controlli_falliti", ws, f"B{riga_cont}")
         ws.conditional_formatting.add(
             f"B{riga_cont}:B{riga_cont}",
@@ -467,7 +467,7 @@ class Costruttore:
             f"B{prima_ctrl}:B{ultima_ctrl}",
             CellIsRule(operator="notEqual", formula=['""'], fill=S.FILL_ATTENZIONE),
         )
-        r = S.nota_riga(ws, r, "Un controllo non superato non e' un errore del modello: e' un input che non e' ancora un dato. La distinzione conta perche' il foglio calcola comunque, e un numero calcolato su un input di esempio ha la stessa faccia di un numero calcolato su un dato vero.", 4)
+        r = S.nota_riga(ws, r, "Un controllo non superato non è un errore del modello: è un input che non è ancora un dato. La distinzione conta perché il foglio calcola comunque, e un numero calcolato su un input di esempio ha la stessa faccia di un numero calcolato su un dato vero.", 4)
         r += 1
 
         for cella, regola in (
@@ -489,7 +489,7 @@ class Costruttore:
             ("Mutuo e Simulatore mutuo", "Importo, tasso, durata. Il simulatore prova rimborsi volontari e rialzi di tasso."),
             ("Locazione", "Canone, spese condominiali dal consuntivo, aliquota IMU dalla delibera. Quattro regimi a confronto."),
             ("Metriche, Scenari, Rischio", "Si leggono. Scenari da' tre ipotesi impostabili, Rischio la distribuzione su mille."),
-            ("Comproprieta'", "Solo se comprate in piu' di uno: ripartisce per quote e calcola l'imposta di ciascuno."),
+            ("Comproprietà", "Solo se comprate in più di uno: ripartisce per quote e calcola l'imposta di ciascuno."),
             ("Checklist", "Quando si passa dalla valutazione alla proposta. Filtra per fase e non firmare con righe rosse."),
             ("Asta", "Solo se l'immobile viene da una vendita giudiziaria: le regole sono altre e il foglio le mette in conto."),
             ("Dossier tecnico", "Le carte da farsi dare in trattativa, con la norma che le rende dovute. Si chiedono prima della proposta, non dopo."),
@@ -516,7 +516,7 @@ class Costruttore:
             ws,
             1,
             "Parametri fiscali e di mercato",
-            "Ogni valore e' modificabile: se cambia la legge si aggiorna qui e tutto il modello segue. "
+            "Ogni valore è modificabile: se cambia la legge si aggiorna qui e tutto il modello segue. "
             "La colonna delle note dice da dove viene il numero.",
             4,
         )
@@ -544,7 +544,7 @@ class Costruttore:
 
         t = P.IMPOSTE_TRASFERIMENTO
         r = S.sezione(ws, r, "Imposte sul trasferimento, acquisto da privato o esente IVA", 4)
-        riga("reg_prima", "Imposta di registro, prima casa", t.registro_prima_casa, S.PERC, "Sulla base imponibile, che con il prezzo-valore e' il valore catastale.", P.FONTI["imposte_acquisto"])
+        riga("reg_prima", "Imposta di registro, prima casa", t.registro_prima_casa, S.PERC, "Sulla base imponibile, che con il prezzo-valore è il valore catastale.", P.FONTI["imposte_acquisto"])
         riga("reg_ord", "Imposta di registro, aliquota ordinaria", t.registro_ordinario, S.PERC, "Seconda casa o mancanza dei requisiti prima casa.")
         riga("reg_min", "Imposta di registro, minimo di legge", t.registro_minimo, S.EURO, "Si paga comunque, anche se la percentuale darebbe meno.")
         riga("ipo_priv", "Imposta ipotecaria, da privato", t.ipotecaria_da_privato, S.EURO, "Misura fissa.")
@@ -562,7 +562,7 @@ class Costruttore:
         riga("riv_rendita", "Rivalutazione della rendita catastale", t.rivalutazione_rendita, S.NUMERO_DEC, "Coefficiente fisso del cinque per cento.")
         riga("molt_prima", "Moltiplicatore, prima casa", t.moltiplicatore_prima_casa, S.NUMERO, "Valore catastale uguale a rendita per 1,05 per 110.")
         riga("molt_ord", "Moltiplicatore, altri fabbricati abitativi", t.moltiplicatore_ordinario, S.NUMERO, "Valore catastale uguale a rendita per 1,05 per 120.")
-        r = S.nota_riga(ws, r, "Il prezzo-valore vale solo fuori campo IVA, per persone fisiche, su immobili abitativi e pertinenze, e va chiesto espressamente al notaio in atto. Porta con se' anche la riduzione del trenta per cento dell'onorario notarile e il blocco dell'accertamento di valore.", 4)
+        r = S.nota_riga(ws, r, "Il prezzo-valore vale solo fuori campo IVA, per persone fisiche, su immobili abitativi e pertinenze, e va chiesto espressamente al notaio in atto. Porta con sé anche la riduzione del trenta per cento dell'onorario notarile e il blocco dell'accertamento di valore.", 4)
         r += 1
 
         m = P.MUTUO
@@ -576,20 +576,20 @@ class Costruttore:
 
         l = P.LOCAZIONE
         r = S.sezione(ws, r, "Tassazione dei canoni", 4)
-        riga("ced_libero", "Cedolare secca, canone libero", l.cedolare_libero, S.PERC, "Contratti 4 piu' 4 e transitori a canone libero.", P.FONTI["locazioni_brevi"])
-        riga("ced_conc", "Cedolare secca, canone concordato", l.cedolare_concordato, S.PERC, "Contratti 3 piu' 2 e studenti, nei Comuni ad alta tensione abitativa.")
-        riga("ced_breve1", "Cedolare secca, locazione breve prima unita'", l.cedolare_breve_prima_unita, S.PERC, "Una sola unita' per periodo d'imposta, a scelta in dichiarazione.")
-        riga("ced_breve2", "Cedolare secca, locazione breve dalla seconda", l.cedolare_breve_altre_unita, S.PERC, "Dal 2026 il regime copre al massimo due unita': dalla terza scatta la presunzione di impresa.")
+        riga("ced_libero", "Cedolare secca, canone libero", l.cedolare_libero, S.PERC, "Contratti 4 più 4 e transitori a canone libero.", P.FONTI["locazioni_brevi"])
+        riga("ced_conc", "Cedolare secca, canone concordato", l.cedolare_concordato, S.PERC, "Contratti 3 più 2 e studenti, nei Comuni ad alta tensione abitativa.")
+        riga("ced_breve1", "Cedolare secca, locazione breve prima unità", l.cedolare_breve_prima_unita, S.PERC, "Una sola unità per periodo d'imposta, a scelta in dichiarazione.")
+        riga("ced_breve2", "Cedolare secca, locazione breve dalla seconda", l.cedolare_breve_altre_unita, S.PERC, "Dal 2026 il regime copre al massimo due unità: dalla terza scatta la presunzione di impresa.")
         riga("abbatt_ord", "Abbattimento forfettario, IRPEF ordinaria", l.abbattimento_forfettario_ordinario, S.PERC, "Imponibile pari al novantacinque per cento del canone.")
         riga("abbatt_conc", "Abbattimento forfettario, canone concordato", l.abbattimento_forfettario_concordato, S.PERC, "Imponibile pari al settantacinque per cento del canone.")
-        riga("reg_loc", "Imposta di registro annuale sul canone", l.registro_annuo, S.PERC, "Solo in regime ordinario: la cedolare secca la sostituisce. Meta' per parte.")
-        riga("reg_loc_min", "Imposta di registro, minimo", l.registro_minimo, S.EURO, "Per la prima annualita'.")
+        riga("reg_loc", "Imposta di registro annuale sul canone", l.registro_annuo, S.PERC, "Solo in regime ordinario: la cedolare secca la sostituisce. Metà per parte.")
+        riga("reg_loc_min", "Imposta di registro, minimo", l.registro_minimo, S.EURO, "Per la prima annualità.")
         r += 1
 
         r = S.sezione(ws, r, "IRPEF e addizionali", 4)
-        riga("irpef_s1", "Primo scaglione, soglia", 28000, S.EURO, "Aliquota del ventitre' per cento fino a questa soglia.", P.FONTI["irpef_2026"])
+        riga("irpef_s1", "Primo scaglione, soglia", 28000, S.EURO, "Aliquota del ventitrè per cento fino a questa soglia.", P.FONTI["irpef_2026"])
         riga("irpef_a1", "Primo scaglione, aliquota", 0.23, S.PERC, "")
-        riga("irpef_s2", "Secondo scaglione, soglia", 50000, S.EURO, "Ridotta dal trentacinque al trentatre' per cento dalla legge di bilancio 2026.")
+        riga("irpef_s2", "Secondo scaglione, soglia", 50000, S.EURO, "Ridotta dal trentacinque al trentatrè per cento dalla legge di bilancio 2026.")
         riga("irpef_a2", "Secondo scaglione, aliquota", 0.33, S.PERC, "")
         riga("irpef_a3", "Terzo scaglione, aliquota", 0.43, S.PERC, "Oltre i cinquantamila euro.")
         riga("addizionali", "Addizionali regionale e comunale, stima", P.IRPEF.addizionale_regionale_tipica + P.IRPEF.addizionale_comunale_tipica, S.PERC, "Variano per Regione e Comune: qui una stima prudenziale complessiva.")
@@ -604,7 +604,7 @@ class Costruttore:
 
         c = P.COSTI
         r = S.sezione(ws, r, "Costi accessori e di gestione", 4)
-        riga("iva_provv", "IVA sulla provvigione di agenzia", c.iva_su_provvigione, S.PERC, "La provvigione e' dovuta alla conclusione dell'affare, cioe' all'accettazione della proposta.")
+        riga("iva_provv", "IVA sulla provvigione di agenzia", c.iva_su_provvigione, S.PERC, "La provvigione è dovuta alla conclusione dell'affare, cioè all'accettazione della proposta.")
         riga("ristrutt_pct", "Ristrutturazione di fine ciclo, quota del valore", c.ristrutturazione_su_valore, S.PERC, "Un rifacimento completo costa circa un terzo del valore dell'immobile.")
         riga("ristrutt_anni", "Anni fra due ristrutturazioni complete", c.anni_fra_ristrutturazioni, S.NUMERO, "Impostazione ripresa dal foglio rendita immobiliare di Paolo Coletti.", P.FONTI["coletti_rendita"])
         r += 1
@@ -614,12 +614,12 @@ class Costruttore:
         riga("infl", "Inflazione attesa", f.inflazione_attesa, S.PERC, "Usata per indicizzare canone e valore nominale dell'immobile.")
         riga("rend_port", "Rendimento lordo atteso del portafoglio alternativo", f.rendimento_portafoglio_lordo, S.PERC, "Assunzione, non previsione. Serve solo al confronto con il non comprare.")
         riga("tax_port", "Tassazione delle rendite finanziarie", f.tassazione_rendite_finanziarie, S.PERC, "Dodici e mezzo per cento sui titoli di Stato, ventisei sul resto.")
-        riga("tasso_sconto", "Tasso di sconto reale per il valore attuale netto", f.tasso_sconto_reale, S.PERC, "Il costo opportunita' del capitale immobilizzato.")
+        riga("tasso_sconto", "Tasso di sconto reale per il valore attuale netto", f.tasso_sconto_reale, S.PERC, "Il costo opportunità del capitale immobilizzato.")
         r += 1
 
         p = P.PLUSVALENZA
         r = S.sezione(ws, r, "Rivendita", 4)
-        riga("plus_anni", "Anni entro cui la plusvalenza e' imponibile", p.anni_imponibilita_ordinaria, S.NUMERO, "Dieci anni se l'immobile ha avuto interventi con superbonus.")
+        riga("plus_anni", "Anni entro cui la plusvalenza è imponibile", p.anni_imponibilita_ordinaria, S.NUMERO, "Dieci anni se l'immobile ha avuto interventi con superbonus.")
         riga("plus_aliq", "Imposta sostitutiva sulla plusvalenza", p.imposta_sostitutiva, S.PERC, "Alternativa alla tassazione IRPEF, si chiede al notaio in atto.", P.FONTI["plusvalenza"])
         riga("costi_vendita", "Costi di vendita, quota del prezzo", 0.03, S.PERC, "Provvigione di agenzia in uscita, APE, pratiche.")
 
@@ -632,7 +632,7 @@ class Costruttore:
             ws,
             1,
             "Immobile e costo dell'operazione",
-            "Il costo totale, non il prezzo, e' il denominatore corretto di ogni rendimento: comprende imposte, notaio, provvigione e oneri del mutuo.",
+            "Il costo totale, non il prezzo, è il denominatore corretto di ogni rendimento: comprende imposte, notaio, provvigione e oneri del mutuo.",
         )
 
         si_no = DataValidation(type="list", formula1='"SI,NO"', allow_blank=False)
@@ -647,7 +647,7 @@ class Costruttore:
         riga_com = r
         riga_comune = r
         r = S.campo(ws, r, "Comune", "", input_utente=True, nota="Serve a ritrovare la delibera IMU e la zona OMI di riferimento.")
-        # Il nome esiste perche' la precompilazione da registro scrive per nome
+        # Il nome esiste perché la precompilazione da registro scrive per nome
         # definito e non per coordinata: senza, questa cella non sarebbe
         # raggiungibile e il Comune resterebbe l'unico campo da ridigitare.
         self.nome("comune", ws, f"B{riga_comune}")
@@ -655,7 +655,7 @@ class Costruttore:
         r = S.campo(ws, r, "Indirizzo", "", input_utente=True)
         r = S.campo(ws, r, "Link annuncio", "", input_utente=True)
         riga_mq = r
-        r = S.campo(ws, r, "Superficie commerciale", 55, S.NUMERO, input_utente=True, nota="Metri quadri commerciali, non calpestabili: e' la base del prezzo al metro quadro di mercato.")
+        r = S.campo(ws, r, "Superficie commerciale", 55, S.NUMERO, input_utente=True, nota="Metri quadri commerciali, non calpestabili: è la base del prezzo al metro quadro di mercato.")
         self.nome("mq", ws, f"B{riga_mq}")
         riga_cat = r
         r = S.campo(ws, r, "Categoria catastale", "A/3", input_utente=True, nota="A/1, A/8 e A/9 sono escluse dall'agevolazione prima casa e scontano IVA al ventidue per cento.")
@@ -671,7 +671,7 @@ class Costruttore:
         r = S.campo(ws, r, "Prezzo richiesto", 130000, S.EURO, input_utente=True)
         self.nome("prezzo_richiesto", ws, f"B{riga_richiesto}")
         riga_prezzo = r
-        r = S.campo(ws, r, "Prezzo trattato, da mettere in proposta", 120000, S.EURO, input_utente=True, nota="E' il prezzo su cui si costruisce tutta l'analisi.")
+        r = S.campo(ws, r, "Prezzo trattato, da mettere in proposta", 120000, S.EURO, input_utente=True, nota="È il prezzo su cui si costruisce tutta l'analisi.")
         self.nome("prezzo", ws, f"B{riga_prezzo}")
         riga_impresa = r
         r = S.campo(ws, r, "Venditore impresa con IVA", "NO", input_utente=True, nota="SI se si compra da impresa costruttrice entro cinque anni dall'ultimazione, o con opzione per l'imponibilita'.")
@@ -703,7 +703,7 @@ class Costruttore:
         # effettivamente applicabile, non da quella richiesta, quindi le due celle di
         # controllo vanno calcolate prima del valore catastale. Usare la prima casa
         # richiesta darebbe il moltiplicatore 110 anche su una categoria di lusso, che
-        # dall'agevolazione e' esclusa, e sottostimerebbe l'imposta.
+        # dall'agevolazione è esclusa, e sottostimerebbe l'imposta.
         riga_lusso = r
         r = S.campo(ws, r, "Categoria di lusso", '=IF(OR(categoria="A/1",categoria="A/8",categoria="A/9"),"SI","NO")', nota="Esclude in ogni caso l'agevolazione prima casa.")
         self.nome("di_lusso", ws, f"B{riga_lusso}")
@@ -717,7 +717,7 @@ class Costruttore:
         r = S.campo(
             ws, r, "Base imponibile del registro",
             '=IF(da_impresa="SI",prezzo,IF(AND(usa_prezzo_valore="SI",rendita>0),valore_catastale,prezzo))',
-            S.EURO, nota="Con il prezzo-valore si tassa il valore catastale, che di norma e' molto piu' basso del prezzo.",
+            S.EURO, nota="Con il prezzo-valore si tassa il valore catastale, che di norma è molto più basso del prezzo.",
         )
         self.nome("base_registro", ws, f"B{riga_base}")
         r += 1
@@ -737,7 +737,7 @@ class Costruttore:
         riga_imposte = r
         r = S.campo(ws, r, "Totale imposte di trasferimento", "=imp_iva+imp_registro+imp_ipo+imp_cat", S.EURO, risultato=True)
         self.nome("imposte_totali", ws, f"B{riga_imposte}")
-        r = S.nota_riga(ws, r, "Confronto utile: se si comprasse senza agevolazione prima casa, le imposte sarebbero quelle indicate qui sotto. La differenza e' il valore economico del bonus, da pesare contro il fatto che il bonus si consuma e non si puo' riusare su un acquisto futuro finche' non si rivende.")
+        r = S.nota_riga(ws, r, "Confronto utile: se si comprasse senza agevolazione prima casa, le imposte sarebbero quelle indicate qui sotto. La differenza è il valore economico del bonus, da pesare contro il fatto che il bonus si consuma e non si può riusare su un acquisto futuro finché non si rivende.")
         riga_senza = r
         r = S.campo(
             ws, r, "Imposte senza agevolazione prima casa",
@@ -755,7 +755,7 @@ class Costruttore:
         r = S.campo(ws, r, "Provvigione di agenzia", 0.03, S.PERC, input_utente=True, nota="Percentuale sul prezzo, al netto di IVA. Mettere zero se si tratta direttamente col privato.")
         self.nome("provv_pct", ws, f"B{riga_provv_pct}")
         riga_provv = r
-        r = S.campo(ws, r, "Provvigione, IVA inclusa", "=prezzo*provv_pct*(1+iva_provv)", S.EURO, nota="Dovuta alla conclusione dell'affare: pattuire in proposta che nulla e' dovuto se la condizione sospensiva del mutuo non si avvera.")
+        r = S.campo(ws, r, "Provvigione, IVA inclusa", "=prezzo*provv_pct*(1+iva_provv)", S.EURO, nota="Dovuta alla conclusione dell'affare: pattuire in proposta che nulla è dovuto se la condizione sospensiva del mutuo non si avvera.")
         self.nome("provvigione", ws, f"B{riga_provv}")
         riga_notaio = r
         r = S.campo(ws, r, "Notaio, atto di compravendita", 2000, S.EURO, input_utente=True, nota="Con il prezzo-valore l'onorario scende del trenta per cento. Chiedere sempre due o tre preventivi scritti.")
@@ -773,10 +773,10 @@ class Costruttore:
         r = S.campo(ws, r, "Costo totale dell'operazione", "=prezzo+costi_accessori", S.EURO, risultato=True)
         self.nome("costo_totale", ws, f"B{riga_tot}")
         riga_inc = r
-        r = S.campo(ws, r, "Incidenza dei costi sul prezzo", "=costi_accessori/prezzo", S.PERC, nota="Sotto il sei per cento e' un'operazione leggera, sopra il dieci va capito quale voce pesa.")
+        r = S.campo(ws, r, "Incidenza dei costi sul prezzo", "=costi_accessori/prezzo", S.PERC, nota="Sotto il sei per cento è un'operazione leggera, sopra il dieci va capito quale voce pesa.")
         self.nome("incidenza_costi", ws, f"B{riga_inc}")
         riga_esb = r
-        r = S.campo(ws, r, "Esborso iniziale, cassa necessaria", "=costo_totale-mutuo_importo", S.EURO, risultato=True, nota="E' il capitale proprio davvero immobilizzato: il denominatore del cash on cash.")
+        r = S.campo(ws, r, "Esborso iniziale, cassa necessaria", "=costo_totale-mutuo_importo", S.EURO, risultato=True, nota="È il capitale proprio davvero immobilizzato: il denominatore del cash on cash.")
         self.nome("esborso", ws, f"B{riga_esb}")
         riga_mq_prezzo = r
         r = S.campo(ws, r, "Prezzo al metro quadro", "=IF(mq>0,prezzo/mq,0)", S.EURO, nota="Da confrontare con le quotazioni OMI della zona, foglio Fonti.")
@@ -798,7 +798,7 @@ class Costruttore:
             ws,
             1,
             "Mutuo ipotecario",
-            "Ammortamento alla francese a rata costante. La detrazione degli interessi spetta solo se l'immobile e' abitazione principale con residenza trasferita entro dodici mesi.",
+            "Ammortamento alla francese a rata costante. La detrazione degli interessi spetta solo se l'immobile è abitazione principale con residenza trasferita entro dodici mesi.",
         )
 
         r = S.sezione(ws, r, "Condizioni del finanziamento")
@@ -811,7 +811,7 @@ class Costruttore:
         riga_alert = r
         r = S.campo(ws, r, "Serve garanzia esterna", '=IF(ltv>ltv_max,"SI, oltre la soglia","no")', nota="Il fondo di garanzia prima casa Consap copre fino all'ottanta per cento per under 36 con ISEE entro quarantamila euro, misura prorogata al 31 dicembre 2027.")
         riga_tasso = r
-        r = S.campo(ws, r, "Tasso annuo nominale", 0.032, S.PERC, input_utente=True, nota="TAN del preventivo. Per il variabile mettere Euribor piu' spread e usare il foglio Scenari. Per sapere se il preventivo e' in linea col mercato: python tools/valuta.py tassi --tasso 0,032")
+        r = S.campo(ws, r, "Tasso annuo nominale", 0.032, S.PERC, input_utente=True, nota="TAN del preventivo. Per il variabile mettere Euribor più spread e usare il foglio Scenari. Per sapere se il preventivo è in linea col mercato: python tools/valuta.py tassi --tasso 0,032")
         self.nome("tasso", ws, f"B{riga_tasso}")
         riga_durata = r
         r = S.campo(ws, r, "Durata in anni", 25, S.NUMERO, input_utente=True)
@@ -838,17 +838,17 @@ class Costruttore:
         S.scelta(modo_pol, ws.cell(row=riga_pol_modo, column=2))
         self.nome("polizza_forma", ws, f"B{riga_pol_modo}")
         riga_pol_imp = r
-        r = S.campo(ws, r, "Polizza incendio e scoppio, importo", 180, S.EURO, input_utente=True, nota="Se la forma e' annua e' il premio di ogni anno; se e' unica e' il totale per l'intera durata, che sul mercato si osserva attorno a cinque euro ogni mille di capitale.")
+        r = S.campo(ws, r, "Polizza incendio e scoppio, importo", 180, S.EURO, input_utente=True, nota="Se la forma è annua è il premio di ogni anno; se è unica è il totale per l'intera durata, che sul mercato si osserva attorno a cinque euro ogni mille di capitale.")
         self.nome("polizza_importo", ws, f"B{riga_pol_imp}")
         riga_pol = r
         r = S.campo(ws, r, "Polizza, costo annuo equivalente", '=IF(polizza_forma="unico",IF(durata>0,polizza_importo/durata,0),polizza_importo)', S.EURO_DEC, nota="Il premio unico si ripartisce sulla durata per poterlo confrontare con quello annuo.")
         self.nome("polizza", ws, f"B{riga_pol}")
-        r = S.nota_riga(ws, r, "La polizza incendio e scoppio e' obbligatoria per legge ma non e' obbligatorio comprarla dalla banca: il cliente puo' presentarne una reperita altrove, purche' di protezione equivalente, e la banca deve accettarla. Se invece si accetta quella proposta, il cliente ha diritto di sapere quanta provvigione la compagnia paga alla banca. Le polizze vita o sulla perdita dell'impiego non sono mai obbligatorie e la concessione del credito non puo' esservi subordinata.")
+        r = S.nota_riga(ws, r, "La polizza incendio e scoppio è obbligatoria per legge ma non è obbligatorio comprarla dalla banca: il cliente può presentarne una reperita altrove, purchè di protezione equivalente, e la banca deve accettarla. Se invece si accetta quella proposta, il cliente ha diritto di sapere quanta provvigione la compagnia paga alla banca. Le polizze vita o sulla perdita dell'impiego non sono mai obbligatorie e la concessione del credito non può esservi subordinata.")
         riga_pol_vita = r
-        r = S.campo(ws, r, "Polizza vita o impiego, premio annuo", 0, S.EURO, input_utente=True, nota="Facoltativa per legge: la banca non puo' subordinare la concessione del credito alla sua sottoscrizione.")
+        r = S.campo(ws, r, "Polizza vita o impiego, premio annuo", 0, S.EURO, input_utente=True, nota="Facoltativa per legge: la banca non può subordinare la concessione del credito alla sua sottoscrizione.")
         self.nome("polizza_facoltativa", ws, f"B{riga_pol_vita}")
         riga_oneri = r
-        r = S.campo(ws, r, "Oneri iniziali del mutuo", '=IF(mutuo_importo>0,sostitutiva+istruttoria+perizia+notaio_mutuo+IF(polizza_forma="unico",polizza_importo,0),0)', S.EURO, risultato=True, nota="Comprende il premio unico della polizza, se scelto: e' cassa che esce al rogito e va nel costo dell'operazione.")
+        r = S.campo(ws, r, "Oneri iniziali del mutuo", '=IF(mutuo_importo>0,sostitutiva+istruttoria+perizia+notaio_mutuo+IF(polizza_forma="unico",polizza_importo,0),0)', S.EURO, risultato=True, nota="Comprende il premio unico della polizza, se scelto: è cassa che esce al rogito e va nel costo dell'operazione.")
         self.nome("oneri_mutuo", ws, f"B{riga_oneri}")
         r += 1
 
@@ -860,7 +860,7 @@ class Costruttore:
         r = S.campo(ws, r, "Rata annua", "=rata_mensile*12", S.EURO)
         self.nome("rata_annua", ws, f"B{riga_rata_a}")
         riga_tot_int = r
-        r = S.campo(ws, r, "Interessi totali sull'intera durata", "=rata_mensile*durata*12-mutuo_importo", S.EURO, risultato=True, nota="E' il vero prezzo del debito: confrontarlo con il valore del bonus prima casa mette le cose in prospettiva.")
+        r = S.campo(ws, r, "Interessi totali sull'intera durata", "=rata_mensile*durata*12-mutuo_importo", S.EURO, risultato=True, nota="È il vero prezzo del debito: confrontarlo con il valore del bonus prima casa mette le cose in prospettiva.")
         self.nome("interessi_totali", ws, f"B{riga_tot_int}")
         riga_costo_deb = r
         r = S.campo(ws, r, "Costo totale del debito", "=interessi_totali+oneri_mutuo+polizza*durata+polizza_facoltativa*durata", S.EURO)
@@ -881,7 +881,7 @@ class Costruttore:
         r += 1
 
         r = S.sezione(ws, r, "Interessi e detrazione, anno per anno", secondaria=True)
-        r = S.nota_riga(ws, r, "La detrazione vale il diciannove per cento degli interessi entro un massimale di quattromila euro riferito all'immobile, quindi da dividere per la quota se il mutuo e' cointestato. Spetta solo sull'abitazione principale: sull'immobile comprato per affittare non spetta, e la colonna resta a zero.")
+        r = S.nota_riga(ws, r, "La detrazione vale il diciannove per cento degli interessi entro un massimale di quattromila euro riferito all'immobile, quindi da dividere per la quota se il mutuo è cointestato. Spetta solo sull'abitazione principale: sull'immobile comprato per affittare non spetta, e la colonna resta a zero.")
         intestazione = r
         r = S.intestazioni(ws, r, ["Anno", "Interessi", "Capitale rimborsato", "Debito residuo", "Detrazione IRPEF", "Rata annua", "Beneficio netto"], [10, 16, 18, 16, 18, 16, 16])
         prima_riga_tab = r
@@ -944,22 +944,22 @@ class Costruttore:
     def foglio_simulatore(self) -> None:
         """Simulatore del mutuo con rimborsi volontari e percorso del tasso.
 
-        Il foglio Ammortamento risponde alla domanda semplice, cioe' come si spegne
+        Il foglio Ammortamento risponde alla domanda semplice, cioè come si spegne
         il debito se non succede nulla. Questo risponde alle due domande che si
         fanno davvero durante la vita di un mutuo: che cosa succede se verso denaro
         in anticipo, e che cosa succede se il tasso si muove.
 
         L'impianto riprende il foglio "calcolatore mutuo" di Paolo Coletti, che
-        ricalcola la rata mese per mese sul debito residuo effettivo: e' l'unico
-        modo di rappresentare correttamente un rimborso volontario, perche' dopo un
-        versamento straordinario o la rata scende, a parita' di durata, o la durata
-        si accorcia, a parita' di rata, e sono due scelte diverse che si dichiarano
+        ricalcola la rata mese per mese sul debito residuo effettivo: è l'unico
+        modo di rappresentare correttamente un rimborso volontario, perché dopo un
+        versamento straordinario o la rata scende, a parità di durata, o la durata
+        si accorcia, a parità di rata, e sono due scelte diverse che si dichiarano
         alla banca.
 
         Sulla conversione del tasso annuo in mensile convivono due convenzioni. Le
-        banche italiane dividono per dodici, ed e' quella usata dal resto del
-        workbook; la conversione finanziariamente esatta e' il tasso equivalente
-        composto. La differenza e' piccola ma non nulla, e qui si sceglie con una
+        banche italiane dividono per dodici, ed è quella usata dal resto del
+        workbook; la conversione finanziariamente esatta è il tasso equivalente
+        composto. La differenza è piccola ma non nulla, e qui si sceglie con una
         cella invece di nasconderla.
         """
         ws = self.wb.create_sheet("Simulatore mutuo")
@@ -969,12 +969,12 @@ class Costruttore:
             ws,
             1,
             "Simulatore: rimborsi volontari e percorso del tasso",
-            "Indipendente dal foglio Mutuo, cosi' si puo' provare uno scenario senza toccare l'analisi principale. I valori di partenza sono ripresi da li'.",
+            "Indipendente dal foglio Mutuo, così si può provare uno scenario senza toccare l'analisi principale. I valori di partenza sono ripresi da lì.",
         )
 
         r = S.sezione(ws, r, "Condizioni di partenza")
         riga = r
-        r = S.campo(ws, r, "Capitale erogato", "=mutuo_importo", S.EURO, input_utente=True, nota="Ripreso dal foglio Mutuo: si puo' sovrascrivere con un altro importo.")
+        r = S.campo(ws, r, "Capitale erogato", "=mutuo_importo", S.EURO, input_utente=True, nota="Ripreso dal foglio Mutuo: si può sovrascrivere con un altro importo.")
         self.nome("sim_capitale", ws, f"B{riga}")
         riga = r
         r = S.campo(ws, r, "Durata in mesi", "=durata*12", S.NUMERO, input_utente=True)
@@ -983,7 +983,7 @@ class Costruttore:
         r = S.campo(ws, r, "Tasso annuo di partenza", "=tasso", S.PERC, input_utente=True)
         self.nome("sim_tasso", ws, f"B{riga}")
         riga = r
-        r = S.campo(ws, r, "Conversione del tasso mensile", "banca", input_utente=True, nota="banca per la divisione per dodici, che e' la convenzione dei contratti italiani; composta per il tasso equivalente finanziariamente esatto.")
+        r = S.campo(ws, r, "Conversione del tasso mensile", "banca", input_utente=True, nota="banca per la divisione per dodici, che è la convenzione dei contratti italiani; composta per il tasso equivalente finanziariamente esatto.")
         conv = DataValidation(type="list", formula1='"banca,composta"', allow_blank=False)
         ws.add_data_validation(conv)
         S.scelta(conv, ws.cell(row=riga, column=2))
@@ -991,13 +991,13 @@ class Costruttore:
         r += 1
 
         r = S.sezione(ws, r, "Percorso del tasso, per il variabile", secondaria=True)
-        r = S.nota_riga(ws, r, "Il percorso si descrive a gradini: ogni riga dice da quale mese vale quale variazione rispetto al tasso di partenza, e la variazione e' cumulata, non incrementale. Vale l'ultimo gradino il cui mese e' stato raggiunto, quindi le righe vanno riempite dall'alto verso il basso in ordine di mese crescente e le righe lasciate vuote non hanno alcun effetto. Con il solo primo gradino compilato il comportamento e' quello di un gradino singolo, cioe' quello che il foglio faceva prima.")
+        r = S.nota_riga(ws, r, "Il percorso si descrive a gradini: ogni riga dice da quale mese vale quale variazione rispetto al tasso di partenza, e la variazione è cumulata, non incrementale. Vale l'ultimo gradino il cui mese è stato raggiunto, quindi le righe vanno riempite dall'alto verso il basso in ordine di mese crescente e le righe lasciate vuote non hanno alcun effetto. Con il solo primo gradino compilato il comportamento è quello di un gradino singolo, cioè quello che il foglio faceva prima.")
         intest_perc = ["Gradino", "Dal mese", "Variazione cumulata"]
         r = S.intestazioni(ws, r, intest_perc, [12, 14, 20])
         prima_perc = r
-        # Il primo gradino conserva i due nomi definiti che c'erano prima, cosi' che
-        # nulla di quanto li citava debba cambiare: il gradino singolo non e' stato
-        # sostituito, e' diventato la prima riga di un percorso.
+        # Il primo gradino conserva i due nomi definiti che c'erano prima, così che
+        # nulla di quanto li citava debba cambiare: il gradino singolo non è stato
+        # sostituito, è diventato la prima riga di un percorso.
         valori_iniziali = [(25, 0.0), (None, None), (None, None), (None, None), (None, None), (None, None)]
         for indice, (mese, delta) in enumerate(valori_iniziali, start=1):
             ws.cell(row=r, column=1, value=indice).number_format = S.NUMERO
@@ -1014,14 +1014,14 @@ class Costruttore:
                 self.nome("sim_shock", ws, f"C{r}")
             r += 1
         ultima_perc = r - 1
-        ws.cell(row=prima_perc, column=5, value="Il primo gradino porta i valori di partenza: mese 25 e variazione zero, cioe' nessun effetto.").font = S.NOTA
+        ws.cell(row=prima_perc, column=5, value="Il primo gradino porta i valori di partenza: mese 25 e variazione zero, cioè nessun effetto.").font = S.NOTA
         ws.cell(row=prima_perc, column=5).alignment = S.SINISTRA
         r += 1
         r = S.nota_riga(ws, r, f"Quanto puo' salire un tasso variabile non e' una domanda di opinione: la serie mensile dell'{P.RISALITE_EURIBOR.indice} pubblicata dalla Banca centrale europea copre {P.RISALITE_EURIBOR.copertura}, e la peggiore finestra di dodici mesi che contiene e' un rialzo di {P.RISALITE_EURIBOR.risalita_12_mesi:.2f} punti, avvenuto fra {P.RISALITE_EURIBOR.finestra_12_mesi.split(',')[0]}. Su ventiquattro mesi la peggiore vale {P.RISALITE_EURIBOR.risalita_24_mesi:.2f} punti, su trentasei {P.RISALITE_EURIBOR.risalita_36_mesi:.2f}. Chi simula un punto percentuale sta simulando un quinto di cio' che e' appena successo. I valori si rileggono con: python tools/valuta.py tassi --risalita")
-        r = S.nota_riga(ws, r, f"Come si riempie il percorso per riprodurre quel rialzo, che e' l'esercizio utile prima di firmare un variabile. Primo gradino a un terzo della risalita dal mese in cui si vuole far partire lo scenario, secondo a due terzi quattro mesi dopo, terzo alla risalita intera altri quattro mesi dopo: sui {P.RISALITE_EURIBOR.risalita_12_mesi:.2f} punti della finestra 2022-2023 significa piu' 1,26, piu' 2,52 e piu' 3,78 per cento. Poi si legge la rata massima raggiunta e si decide se quella cifra si puo' sostenere, che e' la sola domanda che conta.")
+        r = S.nota_riga(ws, r, f"Come si riempie il percorso per riprodurre quel rialzo, che è l'esercizio utile prima di firmare un variabile. Primo gradino a un terzo della risalita dal mese in cui si vuole far partire lo scenario, secondo a due terzi quattro mesi dopo, terzo alla risalita intera altri quattro mesi dopo: sui {P.RISALITE_EURIBOR.risalita_12_mesi:.2f} punti della finestra 2022-2023 significa piu' 1,26, piu' 2,52 e piu' 3,78 per cento. Poi si legge la rata massima raggiunta e si decide se quella cifra si puo' sostenere, che e' la sola domanda che conta.")
         r = S.nota_riga(ws, r, f"Una verifica di plausibilita' che il solo scarto non da'. La stessa risalita produce tassi molto diversi a seconda del livello di partenza: quella del 2022-2023 partiva da un Euribor negativo e arrivava al {P.RISALITE_EURIBOR.finestra_12_mesi.split('a ')[-1]} per cento, mentre applicata al livello di oggi, {P.RISALITE_EURIBOR.livello_corrente:.2f} per cento, porterebbe a un tasso che nella serie storica dal 1994 compare soltanto negli anni Novanta, con il massimo al {P.RISALITE_EURIBOR.massimo_storico:.2f} per cento del {P.RISALITE_EURIBOR.periodo_massimo}. Non e' una ragione per escluderlo: e' una ragione per sapere che si sta guardando la coda della distribuzione e non il centro.")
-        r = S.nota_riga(ws, r, "Per un tasso fisso si lascia il percorso com'e', con la variazione a zero. Per un variabile si compilano i gradini, e la riga della rata massima dice se lo scenario resta sostenibile: e' la sola domanda che conta davvero prima di firmare un variabile.")
-        r = S.nota_riga(ws, r, "Una precisazione che cambia il risultato. Il mutuo a tasso variabile italiano tiene ferma la scadenza e sposta l'aumento sulla rata, quindi per simulare un rialzo dei tassi va scelto sotto l'effetto \"riduci rata\". Con \"riduci durata\" la rata resta quella di partenza e a crescere e' il numero di mesi: e' il funzionamento del mutuo a rata costante e durata variabile, che esiste ma e' meno diffuso, e in caso di forte rialzo puo' allungare il piano oltre la scadenza contrattuale.")
+        r = S.nota_riga(ws, r, "Per un tasso fisso si lascia il percorso com'è, con la variazione a zero. Per un variabile si compilano i gradini, e la riga della rata massima dice se lo scenario resta sostenibile: è la sola domanda che conta davvero prima di firmare un variabile.")
+        r = S.nota_riga(ws, r, "Una precisazione che cambia il risultato. Il mutuo a tasso variabile italiano tiene ferma la scadenza e sposta l'aumento sulla rata, quindi per simulare un rialzo dei tassi va scelto sotto l'effetto \"riduci rata\". Con \"riduci durata\" la rata resta quella di partenza e a crescere è il numero di mesi: è il funzionamento del mutuo a rata costante e durata variabile, che esiste ma è meno diffuso, e in caso di forte rialzo può allungare il piano oltre la scadenza contrattuale.")
         r += 1
 
         r = S.sezione(ws, r, "Rimborsi volontari", secondaria=True)
@@ -1040,7 +1040,7 @@ class Costruttore:
         ws.add_data_validation(eff)
         S.scelta(eff, ws.cell(row=riga, column=2))
         self.nome("sim_effetto", ws, f"B{riga}")
-        r = S.nota_riga(ws, r, "Sul se convenga rimborsare in anticipo la regola e' una sola, e non e' quella che si sente ripetere. Non conta che all'inizio si paghino soprattutto interessi: il denaro e' fungibile e ogni mese la scelta e' la stessa, cioe' estinguere adesso oppure pagare gli interessi per rimandare la decisione. Conviene rimborsare se non si trova un impiego che renda, al netto delle imposte, almeno quanto il tasso del mutuo. Restano due argomenti non finanziari: non avere debiti fa dormire meglio, e un mutuo estinto oggi non si riottiene domani.")
+        r = S.nota_riga(ws, r, "Sul se convenga rimborsare in anticipo la regola è una sola, e non è quella che si sente ripetere. Non conta che all'inizio si paghino soprattutto interessi: il denaro è fungibile e ogni mese la scelta è la stessa, cioè estinguere adesso oppure pagare gli interessi per rimandare la decisione. Conviene rimborsare se non si trova un impiego che renda, al netto delle imposte, almeno quanto il tasso del mutuo. Restano due argomenti non finanziari: non avere debiti fa dormire meglio, e un mutuo estinto oggi non si riottiene domani.")
         r += 1
 
         r = S.sezione(ws, r, "Esito della simulazione", secondaria=True)
@@ -1057,21 +1057,21 @@ class Costruttore:
         riga_risp = r
         r = S.campo(ws, r, "Interessi risparmiati", f"=B{riga_base}-B{riga_int}", S.EURO, risultato=True, nota="Positivo se i rimborsi volontari, o un tasso in discesa, hanno ridotto il costo del debito.")
         riga_dur = r
-        r = S.campo(ws, r, "Durata effettiva in mesi", "=COUNTIF(sim_pagato,\">0\")", S.NUMERO, risultato=True, nota="Piu' bassa della durata contrattuale se i rimborsi hanno accorciato il piano.")
+        r = S.campo(ws, r, "Durata effettiva in mesi", "=COUNTIF(sim_pagato,\">0\")", S.NUMERO, risultato=True, nota="Più bassa della durata contrattuale se i rimborsi hanno accorciato il piano.")
         r = S.campo(ws, r, "Anni risparmiati", f"=(sim_mesi-B{riga_dur})/12", S.NUMERO_DEC)
-        r = S.campo(ws, r, "Rata massima raggiunta", "=MAX(sim_rate)", S.EURO_DEC, risultato=True, nota="Solo la rata dovuta, senza i versamenti volontari. Su un tasso variabile e' il numero che dice se lo scenario e' sostenibile, e va confrontato con il reddito.")
+        r = S.campo(ws, r, "Rata massima raggiunta", "=MAX(sim_rate)", S.EURO_DEC, risultato=True, nota="Solo la rata dovuta, senza i versamenti volontari. Su un tasso variabile è il numero che dice se lo scenario è sostenibile, e va confrontato con il reddito.")
         r = S.campo(ws, r, "Massimo esborso in un mese", "=MAX(sim_pagato)", S.EURO_DEC, nota="Comprende anche l'eventuale versamento una tantum.")
         r = S.campo(ws, r, "Totale versato", "=SUM(sim_pagato)", S.EURO)
-        r = S.campo(ws, r, "Costo effettivo annuo", "=IFERROR(IRR(sim_flussi)*12,\"non calcolabile\")", S.PERC, nota="Tasso interno dei flussi del solo mutuo: coincide col nominale se non ci sono rimborsi ne' variazioni di tasso.")
+        r = S.campo(ws, r, "Costo effettivo annuo", "=IFERROR(IRR(sim_flussi)*12,\"non calcolabile\")", S.PERC, nota="Tasso interno dei flussi del solo mutuo: coincide col nominale se non ci sono rimborsi né variazioni di tasso.")
 
         # Il piano modellato si ferma a quarant'anni di rate. Sotto l'effetto che
         # riduce la durata, un rialzo forte del tasso allunga il piano invece di
         # alzare la rata, e con una risalita delle dimensioni di quella del
-        # 2022-2023 il piano puo' arrivare al fondo della tabella con il debito non
+        # 2022-2023 il piano può arrivare al fondo della tabella con il debito non
         # ancora estinto. In quel caso la durata effettiva mostra 480 mesi e gli
-        # interessi totali mostrano la somma di cio' che sta in tabella: due numeri
+        # interessi totali mostrano la somma di ciò che sta in tabella: due numeri
         # veri e due numeri che rispondono a una domanda diversa da quella posta,
-        # perche' il piano non si e' chiuso e il costo totale del debito e'
+        # perché il piano non si è chiuso e il costo totale del debito è
         # maggiore di quanto scritto. Le due righe seguenti esistono per dirlo,
         # invece di lasciarlo dedurre da una durata sospettosamente rotonda.
         riga_res = r
@@ -1081,7 +1081,7 @@ class Costruttore:
             ws, r, "Il piano si chiude",
             f'=IF(B{riga_res}>0.005,"NO: il debito non si estingue entro i {MAX_RATE} mesi modellati, quindi durata effettiva e interessi totali sono troncati e non risolti","SI")',
             risultato=True,
-            nota="Con l'effetto che riduce la durata un rialzo forte allunga il piano invece di alzare la rata: se il piano non si chiude, lo scenario va riletto sotto l'effetto che riduce la rata, che e' anche il funzionamento del variabile italiano.",
+            nota="Con l'effetto che riduce la durata un rialzo forte allunga il piano invece di alzare la rata: se il piano non si chiude, lo scenario va riletto sotto l'effetto che riduce la rata, che è anche il funzionamento del variabile italiano.",
         )
         ws.cell(row=r - 1, column=2).alignment = S.SINISTRA
         ws.conditional_formatting.add(
@@ -1111,16 +1111,16 @@ class Costruttore:
 
         for mese in range(1, MAX_RATE + 1):
             p = r - 1                       # riga precedente
-            attivo = f"$L{p}>0.005"         # finche' resta debito, oltre l'arrotondamento
+            attivo = f"$L{p}>0.005"         # finché resta debito, oltre l'arrotondamento
             ws.cell(row=r, column=1, value=mese).number_format = S.NUMERO
             ws.cell(row=r, column=2, value=f"=EDATE(data_erogazione,$A{r})").number_format = S.DATA
-            # Il tasso del mese: tasso di partenza piu' l'ultimo gradino raggiunto.
-            # La catena di IF viene generata dal basso verso l'alto, cosi' che il
-            # primo confronto vero sia quello del gradino piu' avanzato: e' il modo
+            # Il tasso del mese: tasso di partenza più l'ultimo gradino raggiunto.
+            # La catena di IF viene generata dal basso verso l'alto, così che il
+            # primo confronto vero sia quello del gradino più avanzato: è il modo
             # di ottenere "vale l'ultimo gradino raggiunto" senza CERCA, che
             # pretenderebbe una colonna ordinata e si comporterebbe in modo opaco
             # sulle righe lasciate vuote. Il test di ogni gradino include la
-            # presenza del mese, percio' una riga vuota non partecipa.
+            # presenza del mese, perciò una riga vuota non partecipa.
             gradino = "0"
             for riga_g in range(prima_perc, ultima_perc + 1):
                 gradino = (
@@ -1130,9 +1130,9 @@ class Costruttore:
             ws.cell(row=r, column=4, value=f'=IF(sim_convenzione="composta",(1+$C{r})^(1/12)-1,$C{r}/12)').number_format = "0.0000%"
             ws.cell(row=r, column=5, value=f"=IF({attivo},$L{p},0)").number_format = S.EURO_DEC
             ws.cell(row=r, column=6, value=f"=$E{r}*$D{r}").number_format = S.EURO_DEC
-            # La rata dovuta: costante nella modalita' che accorcia il piano, ricalcolata
+            # La rata dovuta: costante nella modalità che accorcia il piano, ricalcolata
             # sui mesi che restano in quella che abbassa la rata. In entrambi i casi non
-            # puo' superare quanto serve a chiudere il debito.
+            # può superare quanto serve a chiudere il debito.
             ws.cell(
                 row=r, column=7,
                 value=(
@@ -1164,7 +1164,7 @@ class Costruttore:
         self.nome_intervallo("sim_rate", ws, f"$G${prima+1}:$G${ultima}")
         self.nome_intervallo("sim_flussi", ws, f"$M${prima}:$M${ultima}")
         # Serve al controllo di chiusura del piano, che sta nella sezione dell'esito
-        # e quindi viene scritto prima di questa tabella: il nome definito e' cio'
+        # e quindi viene scritto prima di questa tabella: il nome definito è ciò
         # che permette di citarla in avanti senza conoscerne le coordinate.
         self.nome_intervallo("sim_debito", ws, f"$L${prima+1}:$L${ultima}")
         ws.freeze_panes = ws.cell(row=prima, column=3)
@@ -1178,7 +1178,7 @@ class Costruttore:
             ws,
             1,
             "Messa a reddito",
-            "Quattro regimi a confronto sullo stesso immobile. Il canone effettivo non e' quello di contratto: sfitto e morosita' vanno tolti prima, non dopo.",
+            "Quattro regimi a confronto sullo stesso immobile. Il canone effettivo non è quello di contratto: sfitto e morosità vanno tolti prima, non dopo.",
         )
 
         r = S.sezione(ws, r, "Ipotesi di ricavo")
@@ -1192,10 +1192,10 @@ class Costruttore:
         r = S.campo(ws, r, "Ricavi lordi annui da locazione breve", 9000, S.EURO, input_utente=True, nota="Tariffa media per notte moltiplicata per le notti occupate attese. Va stimata sui dati reali della zona, non sul picco di agosto.")
         self.nome("ricavi_brevi", ws, f"B{riga_brevi}")
         riga_sfitto = r
-        r = S.campo(ws, r, "Mesi di sfitto attesi all'anno", 1, S.NUMERO_DEC, input_utente=True, nota="Un mese l'anno e' l'assunzione prudenziale standard. Fra un contratto e l'altro il vuoto e' di norma piu' lungo.")
+        r = S.campo(ws, r, "Mesi di sfitto attesi all'anno", 1, S.NUMERO_DEC, input_utente=True, nota="Un mese l'anno è l'assunzione prudenziale standard. Fra un contratto e l'altro il vuoto è di norma più lungo.")
         self.nome("mesi_sfitto", ws, f"B{riga_sfitto}")
         riga_moros = r
-        r = S.campo(ws, r, "Accantonamento per morosita'", 0.03, S.PERC, input_utente=True, nota="Uno sfratto per morosita' richiede un anno e mezzo e nel frattempo il canone non entra ma le imposte si pagano lo stesso.")
+        r = S.campo(ws, r, "Accantonamento per morosità", 0.03, S.PERC, input_utente=True, nota="Uno sfratto per morosità richiede un anno e mezzo e nel frattempo il canone non entra ma le imposte si pagano lo stesso.")
         self.nome("morosita_pct", ws, f"B{riga_moros}")
         r += 1
 
@@ -1207,7 +1207,7 @@ class Costruttore:
         r = S.campo(ws, r, "Quota a carico del proprietario", 0.4, S.PERC, input_utente=True, nota="La ripartizione fra proprietario e inquilino segue la tabella degli oneri accessori: straordinaria al proprietario, ordinaria all'inquilino.")
         self.nome("quota_condominio", ws, f"B{riga_quota_cond}")
         riga_manut = r
-        r = S.campo(ws, r, "Manutenzione ordinaria, quota del valore", 0.01, S.PERC, input_utente=True, nota="Un per cento del valore l'anno e' la regola empirica: caldaia, infissi, elettrodomestici, tinteggiature fra un inquilino e l'altro.")
+        r = S.campo(ws, r, "Manutenzione ordinaria, quota del valore", 0.01, S.PERC, input_utente=True, nota="Un per cento del valore l'anno è la regola empirica: caldaia, infissi, elettrodomestici, tinteggiature fra un inquilino e l'altro.")
         self.nome("manut_pct", ws, f"B{riga_manut}")
         riga_ass = r
         r = S.campo(ws, r, "Assicurazione fabbricato", 200, S.EURO, input_utente=True)
@@ -1227,18 +1227,18 @@ class Costruttore:
         r += 1
 
         r = S.sezione(ws, r, "Costo figurativo del proprio tempo", secondaria=True)
-        r = S.nota_riga(ws, r, "Gestire un immobile locato costa tempo: registrare e rinnovare i contratti, seguire le assemblee, cercare l'artigiano il 23 dicembre, selezionare gli inquilini, rincorrere un pagamento in ritardo. E' un costo reale che quasi nessuna analisi mette a bilancio, e non metterlo significa confrontare il rendimento di un immobile con quello di un investimento finanziario che di tempo non ne chiede. Va dato un valore alle proprie ore e va calcolato.")
+        r = S.nota_riga(ws, r, "Gestire un immobile locato costa tempo: registrare e rinnovare i contratti, seguire le assemblee, cercare l'artigiano il 23 dicembre, selezionare gli inquilini, rincorrere un pagamento in ritardo. È un costo reale che quasi nessuna analisi mette a bilancio, e non metterlo significa confrontare il rendimento di un immobile con quello di un investimento finanziario che di tempo non ne chiede. Va dato un valore alle proprie ore e va calcolato.")
         riga_ore = r
-        r = S.campo(ws, r, "Ore all'anno dedicate alla gestione", 30, S.NUMERO, input_utente=True, nota="Trenta ore l'anno e' l'ordine di grandezza di una locazione lunga che va liscia. Una locazione breve gestita in proprio sta su un altro ordine di grandezza, dalle duecento ore in su.")
+        r = S.campo(ws, r, "Ore all'anno dedicate alla gestione", 30, S.NUMERO, input_utente=True, nota="Trenta ore l'anno è l'ordine di grandezza di una locazione lunga che va liscia. Una locazione breve gestita in proprio sta su un altro ordine di grandezza, dalle duecento ore in su.")
         self.nome("ore_gestione", ws, f"B{riga_ore}")
         riga_valore_ora = r
-        r = S.campo(ws, r, "Valore di un'ora del proprio tempo", 0, S.EURO, input_utente=True, nota="Zero per escludere questa voce dal conto. Un riferimento onesto e' il proprio costo orario netto, oppure quanto si pagherebbe qualcuno per farlo al posto proprio.")
+        r = S.campo(ws, r, "Valore di un'ora del proprio tempo", 0, S.EURO, input_utente=True, nota="Zero per escludere questa voce dal conto. Un riferimento onesto è il proprio costo orario netto, oppure quanto si pagherebbe qualcuno per farlo al posto proprio.")
         self.nome("valore_ora", ws, f"B{riga_valore_ora}")
         riga_costo_tempo = r
         r = S.campo(ws, r, "Costo figurativo annuo", "=ore_gestione*valore_ora", S.EURO, nota="Entra nel conto economico come una qualsiasi altra voce di costo. Se resta a zero il modello si comporta come prima.")
         self.nome("costo_tempo", ws, f"B{riga_costo_tempo}")
         riga_coef = r
-        r = S.campo(ws, r, "Moltiplicatore del tempo per la locazione breve", 6, S.NUMERO_DEC, input_utente=True, nota="Quante volte il tempo della locazione lunga. La locazione breve non e' un investimento passivo: e' piu' vicina a un mestiere, e va confrontata con gli altri regimi tenendone conto.")
+        r = S.campo(ws, r, "Moltiplicatore del tempo per la locazione breve", 6, S.NUMERO_DEC, input_utente=True, nota="Quante volte il tempo della locazione lunga. La locazione breve non è un investimento passivo: è più vicina a un mestiere, e va confrontata con gli altri regimi tenendone conto.")
         self.nome("coefficiente_tempo_breve", ws, f"B{riga_coef}")
         r += 1
 
@@ -1252,14 +1252,14 @@ class Costruttore:
         def riga_conf(etichetta, f_lib, f_conc, f_irp, f_brev, formato=S.EURO, risultato=False):
             """Scrive una voce del conto economico e restituisce la riga occupata.
 
-            Il valore di ritorno e' il presidio contro il difetto piu' insidioso di
+            Il valore di ritorno è il presidio contro il difetto più insidioso di
             questo generatore. La versione precedente calcolava gli indici delle
-            righe come base piu' una costante scritta a mano accanto a ogni
+            righe come base più una costante scritta a mano accanto a ogni
             chiamata: inserire una voce in mezzo al conto economico spostava di uno
             tutte le righe successive e lasciava le costanti dov'erano, quindi il
             reddito operativo netto sommava un intervallo traslato e l'utile netto
             leggeva la riga sbagliata. Il file si apriva, nessuna cella andava in
-            errore e i valori di sintesi restavano plausibili, che e' esattamente il
+            errore e i valori di sintesi restavano plausibili, che è esattamente il
             difetto che una revisione a video non vede. Chiedendo la riga a chi la
             scrive, l'allineamento smette di essere una cosa da ricordare.
             """
@@ -1281,7 +1281,7 @@ class Costruttore:
         riga_pot = riga_conf("Canone o ricavo lordo annuo", "=canone_mese*12", "=canone_conc_mese*12", "=canone_mese*12", "=ricavi_brevi")
         riga_sf = riga_conf("Perdita per sfitto", "=-canone_mese*mesi_sfitto", "=-canone_conc_mese*mesi_sfitto", "=-canone_mese*mesi_sfitto", "=0",)
         riga_mo = riga_conf(
-            "Accantonamento morosita'",
+            "Accantonamento morosità",
             f"=-(B{riga_pot}+B{riga_sf})*morosita_pct",
             f"=-(C{riga_pot}+C{riga_sf})*morosita_pct",
             f"=-(D{riga_pot}+D{riga_sf})*morosita_pct",
@@ -1296,7 +1296,7 @@ class Costruttore:
         )
         # Il blocco dei costi. Si catturano la prima e l'ultima riga, e il reddito
         # operativo netto somma fra le due invece che fra due costanti: una voce di
-        # costo aggiunta qui in mezzo entra da sola nella somma, che e' il solo modo
+        # costo aggiunta qui in mezzo entra da sola nella somma, che è il solo modo
         # di rendere sicura un'operazione che prima richiedeva di ricordarsi di
         # aggiornare quattro numeri sparsi.
         riga_primo_costo = riga_conf("Spese condominiali a carico", "=-condominio*quota_condominio", "=-condominio*quota_condominio", "=-condominio*quota_condominio", "=-condominio")
@@ -1404,10 +1404,10 @@ class Costruttore:
 
         r = S.sezione(ws, r, "Vincoli e adempimenti del regime scelto", secondaria=True)
         for testo in [
-            "Cedolare secca: si opta in sede di registrazione o per le annualita' successive, sostituisce IRPEF, addizionali, registro e bollo, ma comporta la rinuncia all'aggiornamento ISTAT del canone per tutta la durata dell'opzione.",
-            "Canone concordato: il canone e' vincolato dall'accordo territoriale del Comune e serve l'attestazione di conformita' rilasciata da un'associazione firmataria. In cambio si ha la cedolare al dieci per cento e, nella maggior parte dei Comuni, lo sconto del venticinque per cento sull'IMU.",
-            "IRPEF ordinaria: conviene solo con redditi bassi o con molti oneri da far valere. Il canone concorre al reddito complessivo e puo' spostare l'intero reddito in uno scaglione superiore.",
-            "Locazione breve: dal 2026 il regime copre al massimo due unita' per periodo d'imposta, dalla terza scatta la presunzione di impresa con obbligo di partita IVA. Servono il codice identificativo nazionale in ogni annuncio, la comunicazione alla questura degli alloggiati, i dispositivi di sicurezza obbligatori dal 2025 e il rispetto dei regolamenti comunali e condominiali.",
+            "Cedolare secca: si opta in sede di registrazione o per le annualità successive, sostituisce IRPEF, addizionali, registro e bollo, ma comporta la rinuncia all'aggiornamento ISTAT del canone per tutta la durata dell'opzione.",
+            "Canone concordato: il canone è vincolato dall'accordo territoriale del Comune e serve l'attestazione di conformità rilasciata da un'associazione firmataria. In cambio si ha la cedolare al dieci per cento e, nella maggior parte dei Comuni, lo sconto del venticinque per cento sull'IMU.",
+            "IRPEF ordinaria: conviene solo con redditi bassi o con molti oneri da far valere. Il canone concorre al reddito complessivo e può spostare l'intero reddito in uno scaglione superiore.",
+            "Locazione breve: dal 2026 il regime copre al massimo due unità per periodo d'imposta, dalla terza scatta la presunzione di impresa con obbligo di partita IVA. Servono il codice identificativo nazionale in ogni annuncio, la comunicazione alla questura degli alloggiati, i dispositivi di sicurezza obbligatori dal 2025 e il rispetto dei regolamenti comunali e condominiali.",
         ]:
             r = S.nota_riga(ws, r, testo)
 
@@ -1428,21 +1428,21 @@ class Costruttore:
         r = S.campo(ws, r, "Orizzonte di analisi in anni", 25, S.NUMERO, input_utente=True, nota="Quanti anni si pensa di tenere l'immobile. Oltre i costi di ingresso pesano meno.")
         self.nome("orizzonte", ws, f"B{riga_or}")
         riga_riv = r
-        r = S.campo(ws, r, "Rivalutazione nominale annua dell'immobile", 0.02, S.PERC, input_utente=True, nota="In termini reali il mattone italiano e' rimasto sostanzialmente fermo per vent'anni: mettere qui l'inflazione e' gia' un'ipotesi ottimistica.")
+        r = S.campo(ws, r, "Rivalutazione nominale annua dell'immobile", 0.02, S.PERC, input_utente=True, nota="In termini reali il mattone italiano è rimasto sostanzialmente fermo per vent'anni: mettere qui l'inflazione è già un'ipotesi ottimistica.")
         self.nome("riv_immobile", ws, f"B{riga_riv}")
         riga_ind = r
-        r = S.campo(ws, r, "Indicizzazione annua del canone", 0.0, S.PERC, input_utente=True, nota="Con la cedolare secca l'aggiornamento ISTAT non si puo' applicare: lasciare zero.")
+        r = S.campo(ws, r, "Indicizzazione annua del canone", 0.0, S.PERC, input_utente=True, nota="Con la cedolare secca l'aggiornamento ISTAT non si può applicare: lasciare zero.")
         self.nome("indicizzazione", ws, f"B{riga_ind}")
         riga_data = r
         r = S.campo(ws, r, "Data di erogazione del mutuo", date(2026, 9, 1), S.DATA, input_utente=True)
         self.nome("data_erogazione", ws, f"B{riga_data}")
         riga_ristr = r
-        r = S.campo(ws, r, "Accantonamento annuo per ristrutturazione di fine ciclo", "=prezzo*ristrutt_pct/ristrutt_anni", S.EURO, nota="Un rifacimento completo ogni quarant'anni, spalmato. Ignorarlo e' l'errore piu' comune nelle valutazioni ottimistiche.")
+        r = S.campo(ws, r, "Accantonamento annuo per ristrutturazione di fine ciclo", "=prezzo*ristrutt_pct/ristrutt_anni", S.EURO, nota="Un rifacimento completo ogni quarant'anni, spalmato. Ignorarlo è l'errore più comune nelle valutazioni ottimistiche.")
         self.nome("accantonamento_ristrutturazione", ws, f"B{riga_ristr}")
         r += 2
 
-        # I costi operativi della colonna D comprendono gia' l'accantonamento per la
-        # ristrutturazione, perche' quest'ultimo e' una riga del conto economico nel
+        # I costi operativi della colonna D comprendono già l'accantonamento per la
+        # ristrutturazione, perché quest'ultimo è una riga del conto economico nel
         # foglio Locazione ed entra quindi nel reddito operativo netto. Una colonna
         # separata qui lo conterebbe due volte.
         intest = [
@@ -1525,20 +1525,20 @@ class Costruttore:
         r = S.campo(ws, r, "Leva finanziaria", "=IF(esborso>0,costo_totale/esborso,0)", S.NUMERO_DEC, nota="Quante volte il capitale proprio: la leva amplifica sia il rendimento sia la perdita.")
         r += 1
 
-        r = S.sezione(ws, r, "Redditivita' corrente", secondaria=True)
-        r = S.campo(ws, r, "Rendimento lordo", "=ricavo_lordo/prezzo", S.PERC, nota="Canone annuo diviso prezzo. E' il numero che si legge negli annunci, ed e' il meno informativo.")
+        r = S.sezione(ws, r, "Redditività corrente", secondaria=True)
+        r = S.campo(ws, r, "Rendimento lordo", "=ricavo_lordo/prezzo", S.PERC, nota="Canone annuo diviso prezzo. È il numero che si legge negli annunci, ed è il meno informativo.")
         r = S.campo(ws, r, "Rendimento netto", "=utile_locazione/costo_totale", S.PERC, risultato=True, nota="Utile dopo costi e imposte, sul costo totale. Fra il lordo e il netto si perdono di norma due punti e mezzo.")
         r = S.campo(ws, r, "Cap rate", "=noi_annuo/costo_totale", S.PERC, nota="Reddito operativo netto sul costo totale, prima delle imposte sul reddito e del mutuo. Serve a confrontare immobili fra loro, a prescindere da come sono finanziati.")
         riga_coc = r
-        r = S.campo(ws, r, "Cash on cash", "=IF(esborso>0,cash_flow_primo_anno/esborso,0)", S.PERC, risultato=True, nota="Cassa netta del primo anno sul capitale proprio. Con la leva puo' essere negativo anche se l'operazione e' sana.")
+        r = S.campo(ws, r, "Cash on cash", "=IF(esborso>0,cash_flow_primo_anno/esborso,0)", S.PERC, risultato=True, nota="Cassa netta del primo anno sul capitale proprio. Con la leva può essere negativo anche se l'operazione è sana.")
         riga_dscr = r
         r = S.campo(ws, r, "Debt service coverage ratio", "=IF(rata_annua>0,noi_annuo/rata_annua,\"n.d.\")", S.NUMERO_DEC, nota="Sotto 1 il reddito non copre la rata e la differenza esce dalla tasca del proprietario ogni mese.")
         r = S.campo(ws, r, "Cash flow del primo anno", "=cash_flow_primo_anno", S.EURO, risultato=True)
         r = S.campo(ws, r, "Cash flow mensile", "=cash_flow_primo_anno/12", S.EURO_DEC)
         r += 1
 
-        r = S.sezione(ws, r, "Redditivita' sull'intero orizzonte", secondaria=True)
-        r = S.campo(ws, r, "Tasso interno di rendimento", "=IFERROR(IRR(flussi_tir),\"non calcolabile\")", S.PERC, risultato=True, nota="Include l'uscita finale. E' il numero da confrontare con il rendimento atteso di un portafoglio alternativo.")
+        r = S.sezione(ws, r, "Redditività sull'intero orizzonte", secondaria=True)
+        r = S.campo(ws, r, "Tasso interno di rendimento", "=IFERROR(IRR(flussi_tir),\"non calcolabile\")", S.PERC, risultato=True, nota="Include l'uscita finale. È il numero da confrontare con il rendimento atteso di un portafoglio alternativo.")
         r = S.campo(ws, r, "Valore attuale netto", "=IFERROR(NPV(tasso_sconto,flussi_tir_dal_primo)-esborso,\"non calcolabile\")", S.EURO, nota="Positivo se l'operazione batte il tasso di sconto scelto nei parametri.")
         r = S.campo(ws, r, "Cassa cumulata a fine orizzonte", "=SUM(cash_flow_annuo_serie)", S.EURO)
         r = S.campo(ws, r, "Multiplo sul capitale proprio", "=IF(esborso>0,SUM(flussi_tir)/esborso+1,0)", S.NUMERO_DEC)
@@ -1546,40 +1546,40 @@ class Costruttore:
         r += 1
 
         r = S.sezione(ws, r, "Effetto dell'inflazione: dal nominale al reale", secondaria=True)
-        r = S.nota_riga(ws, r, "Tutti i rendimenti sopra sono nominali, cioe' espressi in euro del futuro. Il rendimento che conta e' quello reale, perche' un investimento non serve a possedere piu' euro ma a comprare piu' cose. La conversione non e' una sottrazione: e' il rapporto fra il potere d'acquisto finale e quello iniziale, e le due forme divergono in modo misurabile.", 3)
+        r = S.nota_riga(ws, r, "Tutti i rendimenti sopra sono nominali, cioè espressi in euro del futuro. Il rendimento che conta è quello reale, perché un investimento non serve a possedere più euro ma a comprare più cose. La conversione non è una sottrazione: è il rapporto fra il potere d'acquisto finale e quello iniziale, e le due forme divergono in modo misurabile.", 3)
         riga_infl_r = r
         r = S.campo(ws, r, "Inflazione attesa", "=infl", S.PERC, nota="Dal foglio Parametri. Si tara sui dati correnti con: python tools/valuta.py indicatori")
         riga_rn = r
         r = S.campo(ws, r, "Rendimento netto nominale", "=utile_locazione/costo_totale", S.PERC)
         riga_rr = r
         r = S.campo(ws, r, "Rendimento netto reale", f"=(1+B{riga_rn})/(1+infl)-1", S.PERC, risultato=True,
-                    nota="Equazione di Fisher in forma esatta: (1+r)/(1+i)-1. E' il rendimento in potere d'acquisto, cioe' quello che dice se l'operazione arricchisce o impoverisce.")
+                    nota="Equazione di Fisher in forma esatta: (1+r)/(1+i)-1. È il rendimento in potere d'acquisto, cioè quello che dice se l'operazione arricchisce o impoverisce.")
         riga_err = r
         r = S.campo(ws, r, "Errore della sottrazione r meno i", f"=(B{riga_rn}-infl)-B{riga_rr}", "0.0000%",
                     nota="Quanto si sbaglia usando la forma approssimata invece di quella esatta. Piccolo su un anno, si compone sull'orizzonte.")
         riga_tir_n = r
         r = S.campo(ws, r, "Tasso interno di rendimento nominale", "=IFERROR(IRR(flussi_tir),\"non calcolabile\")", S.PERC)
         r = S.campo(ws, r, "Tasso interno di rendimento reale", f"=IFERROR((1+B{riga_tir_n})/(1+infl)-1,\"non calcolabile\")", S.PERC, risultato=True,
-                    nota="E' il numero da confrontare con il rendimento reale di un portafoglio alternativo, non con quello nominale.")
+                    nota="È il numero da confrontare con il rendimento reale di un portafoglio alternativo, non con quello nominale.")
         r += 1
 
         r = S.nota_riga(ws, r, "L'inflazione non agisce nello stesso verso su tutte le componenti dell'operazione, e in un acquisto a leva i versi si compensano solo in parte. Le quattro righe seguenti la scompongono voce per voce.", 3)
         riga_can_r = r
         r = S.campo(ws, r, "Variazione reale annua del canone", "=(1+indicizzazione)/(1+infl)-1", S.PERC,
-                    nota="Negativa quando l'indicizzazione non copre l'inflazione. Con la cedolare secca l'aggiornamento ISTAT non si puo' applicare, quindi l'indicizzazione e' zero e il canone perde in termini reali quanto l'inflazione intera.")
+                    nota="Negativa quando l'indicizzazione non copre l'inflazione. Con la cedolare secca l'aggiornamento ISTAT non si può applicare, quindi l'indicizzazione è zero e il canone perde in termini reali quanto l'inflazione intera.")
         riga_riv_r = r
         r = S.campo(ws, r, "Rivalutazione reale annua dell'immobile", "=(1+riv_immobile)/(1+infl)-1", S.PERC,
-                    nota="Zero se la rivalutazione nominale assunta e' pari all'inflazione, che e' esattamente cio' che il mercato residenziale italiano ha fatto negli ultimi vent'anni: rivalutazione nominale, nessuna reale.")
+                    nota="Zero se la rivalutazione nominale assunta è pari all'inflazione, che è esattamente ciò che il mercato residenziale italiano ha fatto negli ultimi vent'anni: rivalutazione nominale, nessuna reale.")
         riga_deb_n = r
         r = S.campo(ws, r, "Debito residuo a fine orizzonte, nominale", f"=IF(mutuo_importo>0,INDEX(debito_residuo_anno,MIN(orizzonte,{MAX_ANNI})),0)", S.EURO)
         riga_deb_r = r
         r = S.campo(ws, r, "Lo stesso debito in euro di oggi", f"=B{riga_deb_n}/(1+infl)^orizzonte", S.EURO)
         riga_regalo = r
         r = S.campo(ws, r, "Sconto che l'inflazione fa sul debito", f"=B{riga_deb_n}-B{riga_deb_r}", S.EURO, risultato=True,
-                    nota="Il debito e' un importo nominale: l'inflazione lo eroda a favore di chi lo ha contratto. E' un trasferimento reale di ricchezza dalla banca al mutuatario, e vale solo a tasso fisso.")
+                    nota="Il debito è un importo nominale: l'inflazione lo eroda a favore di chi lo ha contratto. È un trasferimento reale di ricchezza dalla banca al mutuatario, e vale solo a tasso fisso.")
         riga_rata_r = r
         r = S.campo(ws, r, "Rata annua dell'ultimo anno, in euro di oggi", "=IF(mutuo_importo>0,rata_annua/(1+infl)^MIN(orizzonte,durata),0)", S.EURO,
-                    nota="La rata di un fisso e' un numero nominale fermo, quindi si alleggerisce ogni anno in termini reali. Confrontarla con la rata annua di oggi rende visibile l'effetto.")
+                    nota="La rata di un fisso è un numero nominale fermo, quindi si alleggerisce ogni anno in termini reali. Confrontarla con la rata annua di oggi rende visibile l'effetto.")
         r += 1
 
         r = S.sezione(ws, r, "Potere d'acquisto a fine orizzonte", secondaria=True)
@@ -1589,19 +1589,19 @@ class Costruttore:
                     nota="Se coincide col prezzo pagato, la rivalutazione nominale ha solo tenuto il passo dell'inflazione e in termini reali l'immobile non ha guadagnato nulla.")
         r = S.campo(ws, r, "Cassa cumulata a fine orizzonte, nominale", "=SUM(cash_flow_annuo_serie)", S.EURO)
         r = S.campo(ws, r, "Patrimonio netto reale a fine orizzonte", f"=B{riga_val_n}/(1+infl)^orizzonte-B{riga_deb_r}", S.EURO, risultato=True,
-                    nota="Valore dell'immobile meno debito residuo, entrambi in potere d'acquisto di oggi. E' la grandezza da confrontare con il capitale proprio immobilizzato all'inizio.")
+                    nota="Valore dell'immobile meno debito residuo, entrambi in potere d'acquisto di oggi. È la grandezza da confrontare con il capitale proprio immobilizzato all'inizio.")
         riga_conf_reale = r
         r = S.campo(ws, r, "Confronto col capitale proprio immobilizzato", f"=B{riga_conf_reale-1}-esborso", S.EURO,
-                    nota="Positivo se, in potere d'acquisto, a fine orizzonte si ha piu' di quanto si e' messo. Non tiene conto della cassa versata o incassata nel frattempo, che sta nella riga sopra.")
+                    nota="Positivo se, in potere d'acquisto, a fine orizzonte si ha più di quanto si è messo. Non tiene conto della cassa versata o incassata nel frattempo, che sta nella riga sopra.")
         r += 1
 
         r = S.sezione(ws, r, "Il costo dell'indicizzazione rinunciata", secondaria=True)
-        r = S.nota_riga(ws, r, "La cedolare secca sostituisce l'IRPEF sul canone con un'aliquota fissa, ed e' quasi sempre conveniente guardando la sola aliquota. In cambio, per l'articolo 3 comma 11 del d.lgs. 23 del 2011, chi la opta rinuncia all'aggiornamento ISTAT del canone per la durata dell'opzione. Le righe seguenti quantificano i due lati, perche' la scelta si fa di solito guardando solo il primo.", 3)
+        r = S.nota_riga(ws, r, "La cedolare secca sostituisce l'IRPEF sul canone con un'aliquota fissa, ed è quasi sempre conveniente guardando la sola aliquota. In cambio, per l'articolo 3 comma 11 del d.lgs. 23 del 2011, chi la opta rinuncia all'aggiornamento ISTAT del canone per la durata dell'opzione. Le righe seguenti quantificano i due lati, perché la scelta si fa di solito guardando solo il primo.", 3)
         # I due fattori di attualizzazione di una rendita crescente. Stanno in celle
-        # visibili e non dentro la formula finale, perche' un risultato di cui non si
-        # possono riconoscere i pezzi non si puo' contestare. La forma chiusa e'
-        # q(1-q^n)/((1+x)(1-q)) con q=(1+x)/(1+s), e il caso q=1, cioe' crescita pari
-        # al tasso di sconto, va trattato a parte perche' annullerebbe il denominatore.
+        # visibili e non dentro la formula finale, perché un risultato di cui non si
+        # possono riconoscere i pezzi non si può contestare. La forma chiusa è
+        # q(1-q^n)/((1+x)(1-q)) con q=(1+x)/(1+s), e il caso q=1, cioè crescita pari
+        # al tasso di sconto, va trattato a parte perché annullerebbe il denominatore.
         riga_f_infl = r
         r = S.campo(
             ws, r, "Fattore di un canone indicizzato all'inflazione piena",
@@ -1621,7 +1621,7 @@ class Costruttore:
         r = S.campo(ws, r, "Canone rinunciato, valore attuale lordo", f"=ricavo_lordo*(B{riga_f_infl}-B{riga_f_ind})", S.EURO)
         riga_perso_netto = r
         r = S.campo(ws, r, "Lo stesso al netto dell'imposta sul canone", f"=B{riga_perso}*(1-ced_libero)", S.EURO, risultato=True,
-                    nota="Il canone in piu' sarebbe stato tassato, quindi il confronto va fatto al netto: e' questa la cifra comparabile col risparmio d'imposta.")
+                    nota="Il canone in più sarebbe stato tassato, quindi il confronto va fatto al netto: è questa la cifra comparabile col risparmio d'imposta.")
         riga_risp = r
         r = S.campo(
             ws, r, "Risparmio d'imposta della cedolare, valore attuale",
@@ -1632,15 +1632,15 @@ class Costruttore:
         )
         riga_saldo = r
         r = S.campo(ws, r, "Saldo della scelta cedolare", f"=B{riga_risp}-B{riga_perso_netto}", S.EURO, risultato=True,
-                    nota="Positivo se il risparmio d'imposta supera l'indicizzazione rinunciata, negativo se e' il contrario.")
+                    nota="Positivo se il risparmio d'imposta supera l'indicizzazione rinunciata, negativo se è il contrario.")
         ws.conditional_formatting.add(
             f"B{riga_saldo}:B{riga_saldo}",
             CellIsRule(operator="lessThan", formula=["0"], fill=S.FILL_ATTENZIONE),
         )
         for testo in [
-            "Tre avvertenze sul saldo, perche' e' un confronto fra due grandezze che non sono simmetriche e leggerlo come un verdetto sarebbe sbagliato. L'orizzonte usato e' quello del modello, tipicamente decenni, mentre l'opzione per la cedolare si esercita per contratto e si puo' riconsiderare a ogni rinnovo: la cifra e' quindi il caso peggiore, cioe' quello di chi la rinnova sempre senza ripensarci. Il risparmio d'imposta dipende dall'aliquota marginale personale, che qui e' un input e non un dato. E il canone concordato ha regole di aggiornamento proprie, fissate dall'accordo territoriale, che questa riga non modella.",
-            "Cio' che il saldo dice con certezza e' che la scelta ha due lati e che il secondo non e' trascurabile. Su un orizzonte lungo l'indicizzazione rinunciata puo' valere piu' del risparmio d'imposta che l'ha motivata, ed e' un confronto che quasi nessuno fa perche' il risparmio si vede subito nella dichiarazione e la mancata indicizzazione non si vede mai, essendo un canone che non e' stato chiesto.",
-            "Sul rendimento reale in generale: se e' negativo, l'operazione perde potere d'acquisto pur mostrando un utile in euro. Non e' di per se' una ragione per non comprare, perche' l'alternativa va confrontata anch'essa in termini reali e perche' l'abitazione propria produce un servizio abitativo che nessun rendimento cattura; e' una ragione per non chiamare investimento quello che e' consumo o copertura.",
+            "Tre avvertenze sul saldo, perché è un confronto fra due grandezze che non sono simmetriche e leggerlo come un verdetto sarebbe sbagliato. L'orizzonte usato è quello del modello, tipicamente decenni, mentre l'opzione per la cedolare si esercita per contratto e si può riconsiderare a ogni rinnovo: la cifra è quindi il caso peggiore, cioè quello di chi la rinnova sempre senza ripensarci. Il risparmio d'imposta dipende dall'aliquota marginale personale, che qui è un input e non un dato. E il canone concordato ha regole di aggiornamento proprie, fissate dall'accordo territoriale, che questa riga non modella.",
+            "Ciò che il saldo dice con certezza è che la scelta ha due lati e che il secondo non è trascurabile. Su un orizzonte lungo l'indicizzazione rinunciata può valere più del risparmio d'imposta che l'ha motivata, ed è un confronto che quasi nessuno fa perché il risparmio si vede subito nella dichiarazione e la mancata indicizzazione non si vede mai, essendo un canone che non è stato chiesto.",
+            "Sul rendimento reale in generale: se è negativo, l'operazione perde potere d'acquisto pur mostrando un utile in euro. Non è di per sé una ragione per non comprare, perché l'alternativa va confrontata anch'essa in termini reali e perché l'abitazione propria produce un servizio abitativo che nessun rendimento cattura; è una ragione per non chiamare investimento quello che è consumo o copertura.",
             "L'effetto dell'inflazione sul debito, quello favorevole, esiste solo a tasso fisso. Su un variabile l'inflazione fa salire il tasso di riferimento, la rata cresce, e lo sconto sul debito si paga in interessi: il foglio Simulatore mutuo mostra di quanto, e il percorso del tasso a gradini serve esattamente a questo.",
         ]:
             r = S.nota_riga(ws, r, testo, 3)
@@ -1648,7 +1648,7 @@ class Costruttore:
 
         r = S.sezione(ws, r, "Concentrazione del patrimonio", secondaria=True)
         riga_patr = r
-        r = S.campo(ws, r, "Patrimonio complessivo, immobili inclusi", 0, S.EURO, input_utente=True, nota="Somma di immobili gia' posseduti, liquidita' e investimenti finanziari, incluso questo acquisto. Zero per saltare il controllo.")
+        r = S.campo(ws, r, "Patrimonio complessivo, immobili inclusi", 0, S.EURO, input_utente=True, nota="Somma di immobili già posseduti, liquidità e investimenti finanziari, incluso questo acquisto. Zero per saltare il controllo.")
         self.nome("patrimonio_totale", ws, f"B{riga_patr}")
         riga_imm = r
         r = S.campo(ws, r, "Valore immobiliare complessivo dopo questo acquisto", 0, S.EURO, input_utente=True, nota="Prima casa, seconde case, quote ereditate e questo immobile.")
@@ -1662,9 +1662,9 @@ class Costruttore:
             risultato=True,
         )
         for testo in [
-            "Il controllo esiste perche' e' il rischio che il rendimento non vede. Un immobile e' un singolo bene, in una singola via, di un singolo Comune, comprato in un singolo momento del ciclo: porta insieme rischio di timing, di ciclo economico, di tasso e di localizzazione, e non si vende in tre giorni. Chi ha due terzi del patrimonio in mattone non ha un portafoglio diversificato, ha una scommessa sul mercato immobiliare della sua zona.",
-            "Va poi sfatata un'aspettativa ricorrente: l'immobiliare non decorrela dall'azionario quando servirebbe. Nelle recessioni i due si muovono insieme, perche' e' la stessa contrazione del credito e della domanda a colpirli. Cio' che ha decorrelato nei momenti di crisi, in modo diverso a seconda dello scenario, e' stato semmai il reddito fisso o il bene rifugio.",
-            "L'abitazione principale merita un discorso a parte. Il suo trattamento fiscale, dall'esenzione IMU alla detrazione degli interessi, e' un vantaggio che nessun altro investimento replica, ma resta un capitale che non si puo' diversificare, ne' rendere liquido, ne' bilanciare con il resto. E' la ragione per cui va contata nella concentrazione anche se non e' un investimento.",
+            "Il controllo esiste perché è il rischio che il rendimento non vede. Un immobile è un singolo bene, in una singola via, di un singolo Comune, comprato in un singolo momento del ciclo: porta insieme rischio di timing, di ciclo economico, di tasso e di localizzazione, e non si vende in tre giorni. Chi ha due terzi del patrimonio in mattone non ha un portafoglio diversificato, ha una scommessa sul mercato immobiliare della sua zona.",
+            "Va poi sfatata un'aspettativa ricorrente: l'immobiliare non decorrela dall'azionario quando servirebbe. Nelle recessioni i due si muovono insieme, perché è la stessa contrazione del credito e della domanda a colpirli. Ciò che ha decorrelato nei momenti di crisi, in modo diverso a seconda dello scenario, è stato semmai il reddito fisso o il bene rifugio.",
+            "L'abitazione principale merita un discorso a parte. Il suo trattamento fiscale, dall'esenzione IMU alla detrazione degli interessi, è un vantaggio che nessun altro investimento replica, ma resta un capitale che non si può diversificare, né rendere liquido, né bilanciare con il resto. È la ragione per cui va contata nella concentrazione anche se non è un investimento.",
         ]:
             r = S.nota_riga(ws, r, testo, 3)
         r += 1
@@ -1682,8 +1682,8 @@ class Costruttore:
         )
         ws.cell(row=riga_verdetto, column=2).alignment = S.SINISTRA
         for testo in [
-            "Il verdetto automatico confronta il tasso interno di rendimento con il tasso di sconto e con il rendimento atteso del portafoglio alternativo. Sono tutte assunzioni impostate nel foglio Parametri: cambiandole cambia il verdetto, ed e' esattamente il punto.",
-            "Il tasso interno di rendimento non pesa il rischio. Un immobile ha rischio di sfitto, di morosita', di deterioramento, di illiquidita' e di concentrazione su un singolo bene in una singola via di un singolo Comune. Un portafoglio diversificato con lo stesso rendimento atteso non e' la stessa cosa, e la differenza va messa a mano nel giudizio.",
+            "Il verdetto automatico confronta il tasso interno di rendimento con il tasso di sconto e con il rendimento atteso del portafoglio alternativo. Sono tutte assunzioni impostate nel foglio Parametri: cambiandole cambia il verdetto, ed è esattamente il punto.",
+            "Il tasso interno di rendimento non pesa il rischio. Un immobile ha rischio di sfitto, di morosità, di deterioramento, di illiquidità e di concentrazione su un singolo bene in una singola via di un singolo Comune. Un portafoglio diversificato con lo stesso rendimento atteso non è la stessa cosa, e la differenza va messa a mano nel giudizio.",
             "Il modello non prezza il lavoro. Gestire un immobile in affitto significa registrare i contratti, seguire le assemblee, rincorrere le manutenzioni, gestire l'inquilino che non paga. Quel tempo ha un costo che nessuna cella cattura.",
         ]:
             r = S.nota_riga(ws, r, testo, 3)
@@ -1697,7 +1697,7 @@ class Costruttore:
             ws,
             1,
             "Comprare oppure restare in affitto investendo la differenza",
-            "Confronto a parita' di esborso, nell'impostazione dei fogli di Paolo Coletti: chi non compra investe l'anticipo e ogni anno la differenza fra la rata piu' i costi da proprietario e il canone che paga.",
+            "Confronto a parità di esborso, nell'impostazione dei fogli di Paolo Coletti: chi non compra investe l'anticipo e ogni anno la differenza fra la rata più i costi da proprietario e il canone che paga.",
         )
 
         r = S.sezione(ws, r, "Assunzioni del confronto")
@@ -1705,7 +1705,7 @@ class Costruttore:
         r = S.campo(ws, r, "Canone mensile che si pagherebbe restando in affitto", 550, S.EURO, input_utente=True, nota="Per un immobile equivalente a quello che si comprerebbe, non per quello in cui si vive oggi.")
         self.nome("canone_alternativo", ws, f"B{riga_can_alt}")
         riga_costi_prop = r
-        r = S.campo(ws, r, "Costi annui del proprietario", "=condominio*quota_condominio+prezzo*manut_pct+assicurazione+accantonamento_ristrutturazione+IF(abitazione_principale=\"SI\",0,rendita*riv_rendita*imu_molt*imu_aliquota)", S.EURO, nota="Condominio a carico, manutenzione, assicurazione, accantonamento per la ristrutturazione, IMU se non e' abitazione principale.")
+        r = S.campo(ws, r, "Costi annui del proprietario", "=condominio*quota_condominio+prezzo*manut_pct+assicurazione+accantonamento_ristrutturazione+IF(abitazione_principale=\"SI\",0,rendita*riv_rendita*imu_molt*imu_aliquota)", S.EURO, nota="Condominio a carico, manutenzione, assicurazione, accantonamento per la ristrutturazione, IMU se non è abitazione principale.")
         self.nome("costi_proprietario", ws, f"B{riga_costi_prop}")
         r += 1
 
@@ -1756,9 +1756,9 @@ class Costruttore:
         r = S.campo(ws, r, "Differenza a favore dell'acquisto", f"=B{riga_pc}-B{riga_pa}", S.EURO, risultato=True)
         # Il nome definito esiste per il Cruscotto, che leggeva questa cella per
         # coordinata. Una coordinata fissa dentro una formula che punta a un altro
-        # foglio e' il difetto piu' insidioso del generatore: inserire una riga qui
+        # foglio è il difetto più insidioso del generatore: inserire una riga qui
         # sopra non produce alcun errore, produce un verdetto sbagliato sul primo
-        # foglio del workbook, cioe' quello che si legge per decidere.
+        # foglio del workbook, cioè quello che si legge per decidere.
         self.nome("conf_differenza", ws, f"B{riga_diff}")
         riga_verd = r
         r = S.campo(ws, r, "Esito", f'=IF(B{riga_diff}>0,"Conviene comprare","Conviene restare in affitto e investire la differenza")', risultato=True)
@@ -1768,15 +1768,15 @@ class Costruttore:
             ws, r, "Avvertenza",
             '=IF(mutuo_importo>0,"","Acquisto senza mutuo: il confronto sopra non e\' significativo, vedi la nota in fondo")',
             risultato=True,
-            nota="Compare da sola quando l'importo del mutuo e' zero, e resta bianca altrimenti.",
+            nota="Compare da sola quando l'importo del mutuo è zero, e resta bianca altrimenti.",
         )
         ws.cell(row=riga_avv, column=2).alignment = S.SINISTRA
         r += 1
         for testo in [
-            "Il confronto e' sensibile a tre soli numeri: il rendimento atteso del portafoglio, la rivalutazione dell'immobile e il canone alternativo. Cambiando il primo di un punto l'esito spesso si ribalta, il che dice quanto poco vada preso come verdetto e quanto vada preso come mappa di sensibilita'.",
-            "Il modello assume disciplina perfetta di chi affitta: investe davvero ogni euro di differenza, ogni anno, senza toccarlo. Nella realta' quasi nessuno lo fa, e il mutuo funziona come piano di accumulo forzato. E' un vantaggio comportamentale reale che il foglio non sa misurare.",
-            "Restano fuori dal conto la sicurezza abitativa, la liberta' di ristrutturare, il rischio di sfratto e il vincolo di mobilita' lavorativa. Sono decisivi nella scelta di dove vivere e irrilevanti nella scelta di dove investire: e' la ragione per cui le due domande vanno tenute separate.",
-            "Se l'importo del mutuo e' zero il foglio continua a calcolare ma il confronto perde significato, e conviene sapere perche'. Il confronto e' costruito a parita' di esborso: chi non compra investe l'anticipo e poi, ogni anno, la differenza fra quanto esce a chi ha comprato e il canone che paga. Senza mutuo l'anticipo diventa il prezzo intero, quindi il portafoglio alternativo parte con tutto il capitale investito, mentre le uscite di chi ha comprato si riducono ai soli costi da proprietario. Il conto che ne esce non e' sbagliato, e' un'altra domanda: non piu' comprare a debito contro affittare e investire, ma immobilizzare il capitale in un immobile contro investirlo sui mercati. Per quella domanda il foglio da leggere e' Metriche, con il tasso interno di rendimento contro il rendimento del portafoglio, e non questo.",
+            "Il confronto è sensibile a tre soli numeri: il rendimento atteso del portafoglio, la rivalutazione dell'immobile e il canone alternativo. Cambiando il primo di un punto l'esito spesso si ribalta, il che dice quanto poco vada preso come verdetto e quanto vada preso come mappa di sensibilità.",
+            "Il modello assume disciplina perfetta di chi affitta: investe davvero ogni euro di differenza, ogni anno, senza toccarlo. Nella realtà quasi nessuno lo fa, e il mutuo funziona come piano di accumulo forzato. È un vantaggio comportamentale reale che il foglio non sa misurare.",
+            "Restano fuori dal conto la sicurezza abitativa, la libertà di ristrutturare, il rischio di sfratto e il vincolo di mobilità lavorativa. Sono decisivi nella scelta di dove vivere e irrilevanti nella scelta di dove investire: è la ragione per cui le due domande vanno tenute separate.",
+            "Se l'importo del mutuo è zero il foglio continua a calcolare ma il confronto perde significato, e conviene sapere perché. Il confronto è costruito a parità di esborso: chi non compra investe l'anticipo e poi, ogni anno, la differenza fra quanto esce a chi ha comprato e il canone che paga. Senza mutuo l'anticipo diventa il prezzo intero, quindi il portafoglio alternativo parte con tutto il capitale investito, mentre le uscite di chi ha comprato si riducono ai soli costi da proprietario. Il conto che ne esce non è sbagliato, è un'altra domanda: non più comprare a debito contro affittare e investire, ma immobilizzare il capitale in un immobile contro investirlo sui mercati. Per quella domanda il foglio da leggere è Metriche, con il tasso interno di rendimento contro il rendimento del portafoglio, e non questo.",
         ]:
             r = S.nota_riga(ws, r, testo, 3)
 
@@ -1788,12 +1788,12 @@ class Costruttore:
         r = S.titolo(
             ws,
             1,
-            "Sensibilita'",
-            "Il valore centrale di ogni tabella e' lo scenario base. Le variazioni sono quelle che si osservano davvero: mezzo punto di tasso, un decimo di canone, un decimo di prezzo.",
+            "Sensibilità",
+            "Il valore centrale di ogni tabella è lo scenario base. Le variazioni sono quelle che si osservano davvero: mezzo punto di tasso, un decimo di canone, un decimo di prezzo.",
         )
 
         r = S.sezione(ws, r, "Cash flow annuo al variare di tasso e canone")
-        r = S.nota_riga(ws, r, "Righe: tasso del mutuo. Colonne: canone mensile. Il cash flow e' il reddito operativo netto meno l'imposta e meno la rata, ricalcolati per ciascuna combinazione. Le celle rosse sono quelle in cui l'immobile costa piu' di quanto rende.")
+        r = S.nota_riga(ws, r, "Righe: tasso del mutuo. Colonne: canone mensile. Il cash flow è il reddito operativo netto meno l'imposta e meno la rata, ricalcolati per ciascuna combinazione. Le celle rosse sono quelle in cui l'immobile costa più di quanto rende.")
         variazioni_tasso = [-0.010, -0.005, 0.0, 0.005, 0.010, 0.015]
         variazioni_canone = [-0.20, -0.10, 0.0, 0.10, 0.20]
 
@@ -1827,7 +1827,7 @@ class Costruttore:
         r += 2
 
         r = S.sezione(ws, r, "Rendimento netto al variare del prezzo", secondaria=True)
-        r = S.nota_riga(ws, r, "Il prezzo entra due volte: al numeratore attraverso la manutenzione, al denominatore attraverso il costo totale e attraverso le imposte, che con il prezzo-valore restano pero' ancorate alla rendita catastale e non scendono con il prezzo.")
+        r = S.nota_riga(ws, r, "Il prezzo entra due volte: al numeratore attraverso la manutenzione, al denominatore attraverso il costo totale e attraverso le imposte, che con il prezzo-valore restano però ancorate alla rendita catastale e non scendono con il prezzo.")
         variazioni_prezzo = [-0.20, -0.15, -0.10, -0.05, 0.0, 0.05, 0.10]
         r = S.intestazioni(ws, r, ["Variazione prezzo", "Prezzo", "Imposte", "Costo totale", "Utile netto", "Rendimento netto", "Cash flow"], [20, 16, 16, 18, 16, 18, 16])
         prima2 = r
@@ -1858,7 +1858,7 @@ class Costruttore:
         r += 2
 
         r = S.sezione(ws, r, "Tre scenari a confronto", secondaria=True)
-        r = S.nota_riga(ws, r, "Le celle gialle di questa sezione sono indipendenti dal resto del workbook: si impostano qui le tre ipotesi e si legge come cambia l'esito. Serve a rispondere alla domanda che conta davvero prima di comprare, cioe' non quanto rende se tutto va bene, ma quanto si perde se va male.")
+        r = S.nota_riga(ws, r, "Le celle gialle di questa sezione sono indipendenti dal resto del workbook: si impostano qui le tre ipotesi e si legge come cambia l'esito. Serve a rispondere alla domanda che conta davvero prima di comprare, cioè non quanto rende se tutto va bene, ma quanto si perde se va male.")
         intest_sc = ["Voce", "Pessimistico", "Base", "Ottimistico"]
         r = S.intestazioni(ws, r, intest_sc, [46, 18, 18, 18])
 
@@ -1889,21 +1889,21 @@ class Costruttore:
 
         # Ogni riga si registra in `posizioni` sotto una chiave breve, e le formule
         # citano le altre righe solo attraverso quelle chiavi. La differenza con gli
-        # offset numerici usati prima non e' di stile: una chiave assente solleva un
+        # offset numerici usati prima non è di stile: una chiave assente solleva un
         # KeyError alla generazione, mentre un offset sbagliato produce un
-        # riferimento valido a una riga diversa, cioe' un numero plausibile e falso.
-        # Il vincolo che ne discende e' esplicito: una formula puo' citare solo righe
-        # gia' scritte, e il tentativo di citarne una successiva fallisce subito.
+        # riferimento valido a una riga diversa, cioè un numero plausibile e falso.
+        # Il vincolo che ne discende è esplicito: una formula può citare solo righe
+        # già scritte, e il tentativo di citarne una successiva fallisce subito.
         posizioni = {}
         posizioni["ca"] = riga_scenario("Canone mensile", ["=canone_mese*0.85", "=canone_mese", "=canone_mese*1.1"], S.EURO, input_utente=True,
                                         nota="Il pessimistico sconta un mercato in cui si affitta solo abbassando.")
         posizioni["sf"] = riga_scenario("Mesi di sfitto all'anno", [3, "=mesi_sfitto", 0.5], S.NUMERO_DEC, input_utente=True,
-                                        nota="Tre mesi e' un anno con un cambio di inquilino andato male.")
-        posizioni["mo"] = riga_scenario("Morosita'", [0.08, "=morosita_pct", 0], S.PERC, input_utente=True)
+                                        nota="Tre mesi è un anno con un cambio di inquilino andato male.")
+        posizioni["mo"] = riga_scenario("Morosità", [0.08, "=morosita_pct", 0], S.PERC, input_utente=True)
         posizioni["ta"] = riga_scenario("Tasso del mutuo", ["=tasso+0.015", "=tasso", "=tasso-0.005"], S.PERC, input_utente=True,
-                                        nota="Sul fisso i tre valori coincidono; sul variabile il pessimistico e' lo scenario da sostenere.")
+                                        nota="Sul fisso i tre valori coincidono; sul variabile il pessimistico è lo scenario da sostenere.")
         posizioni["riv"] = riga_scenario("Rivalutazione annua dell'immobile", [-0.01, "=riv_immobile", 0.03], S.PERC, input_utente=True,
-                                         nota="In termini reali il mattone italiano e' rimasto fermo per vent'anni: il pessimistico non e' catastrofismo.")
+                                         nota="In termini reali il mattone italiano è rimasto fermo per vent'anni: il pessimistico non è catastrofismo.")
 
         colonne = ("B", "C", "D")
         for etichetta, chiave, formula, formato, risultato in [
@@ -1928,35 +1928,35 @@ class Costruttore:
             CellIsRule(operator="lessThan", formula=["0"], fill=S.FILL_ATTENZIONE),
         )
         r += 1
-        r = S.nota_riga(ws, r, "Il patrimonio netto a fine orizzonte usa la formula chiusa del debito residuo nell'ammortamento alla francese, quindi resta esatto anche cambiando il tasso di scenario. Il cash flow annuo va letto come impegno mensile: diviso dodici e' quanto si mette di tasca propria ogni mese in quello scenario, ed e' il numero che dice se lo scenario e' sostenibile o solo sfavorevole.")
+        r = S.nota_riga(ws, r, "Il patrimonio netto a fine orizzonte usa la formula chiusa del debito residuo nell'ammortamento alla francese, quindi resta esatto anche cambiando il tasso di scenario. Il cash flow annuo va letto come impegno mensile: diviso dodici è quanto si mette di tasca propria ogni mese in quello scenario, ed è il numero che dice se lo scenario è sostenibile o solo sfavorevole.")
         r += 1
 
         r = S.sezione(ws, r, "Prezzo massimo sostenibile", secondaria=True)
         riga_obiettivo = r
         r = S.campo(ws, r, "Rendimento netto obiettivo", 0.04, S.PERC, input_utente=True, nota="Il rendimento sotto il quale l'operazione non ha senso rispetto alle alternative. Lo usa anche il foglio Confronto immobili per dare l'esito di ciascun annuncio.")
         self.nome("rend_obiettivo", ws, f"B{riga_obiettivo}")
-        r = S.campo(ws, r, "Costo totale sostenibile a quel rendimento", f"=utile_locazione/B{riga_obiettivo}", S.EURO, nota="Serve come ordine di grandezza: il costo totale non e' proporzionale al prezzo, perche' una parte delle sue voci non dipende dal prezzo.")
+        r = S.campo(ws, r, "Costo totale sostenibile a quel rendimento", f"=utile_locazione/B{riga_obiettivo}", S.EURO, nota="Serve come ordine di grandezza: il costo totale non è proporzionale al prezzo, perché una parte delle sue voci non dipende dal prezzo.")
         riga_costo_sost = r - 1
 
         # Il prezzo massimo si ricava in forma chiusa, non per proporzione. La
-        # versione precedente divideva il costo sostenibile per uno piu' l'incidenza
-        # percentuale dei costi accessori dello scenario base, cioe' assumeva che
+        # versione precedente divideva il costo sostenibile per uno più l'incidenza
+        # percentuale dei costi accessori dello scenario base, cioè assumeva che
         # quell'incidenza restasse costante al variare del prezzo. Non resta
         # costante, e sbaglia sempre nella stessa direzione: notaio, oneri del mutuo,
         # imposte ipotecaria e catastale e, con il prezzo-valore, l'intera imposta di
         # registro sono importi fissi, quindi la loro incidenza percentuale cresce se
         # il prezzo scende e cala se sale. Su un immobile piccolo con prezzo-valore la
-        # distorsione e' di alcune migliaia di euro, cioe' proprio nell'ordine di
+        # distorsione è di alcune migliaia di euro, cioè proprio nell'ordine di
         # grandezza della trattativa che questo numero dovrebbe guidare.
         #
-        # L'algebra e' elementare e vale la pena scriverla, perche' e' cio' che le
-        # tre celle seguenti calcolano. Il costo totale in funzione del prezzo P e'
-        # lineare a tratti, cioe' P*(1+k)+c dove k raccoglie tutto cio' che scala col
-        # prezzo e c tutto cio' che non scala. L'utile netto annuo, a sua volta,
-        # scende quando il prezzo sale, perche' manutenzione e accantonamento per la
+        # L'algebra è elementare e vale la pena scriverla, perché è ciò che le
+        # tre celle seguenti calcolano. Il costo totale in funzione del prezzo P è
+        # lineare a tratti, cioè P*(1+k)+c dove k raccoglie tutto ciò che scala col
+        # prezzo e c tutto ciò che non scala. L'utile netto annuo, a sua volta,
+        # scende quando il prezzo sale, perché manutenzione e accantonamento per la
         # ristrutturazione sono quote del valore: utile(P) = utile_base - (P-prezzo)*m.
         # Imporre utile(P)/costo(P) = obiettivo da' un'equazione di primo grado in P,
-        # la cui soluzione e' (utile_base + prezzo*m - obiettivo*c)/(obiettivo*(1+k)+m).
+        # la cui soluzione è (utile_base + prezzo*m - obiettivo*c)/(obiettivo*(1+k)+m).
         riga_k = r
         r = S.campo(
             ws, r, "Quota del prezzo che diventa costo aggiuntivo",
@@ -1964,7 +1964,7 @@ class Costruttore:
             'IF(AND(usa_prezzo_valore="SI",rendita>0),0,IF(agevolata="SI",reg_prima,reg_ord)))'
             "+provv_pct*(1+iva_provv)",
             S.PERC_1,
-            nota="Per ogni euro di prezzo in piu', quanti centesimi di costi accessori si aggiungono. Con il prezzo-valore l'imposta di registro non entra, perche' resta ancorata alla rendita catastale e non cresce col prezzo.",
+            nota="Per ogni euro di prezzo in più, quanti centesimi di costi accessori si aggiungono. Con il prezzo-valore l'imposta di registro non entra, perché resta ancorata alla rendita catastale e non cresce col prezzo.",
         )
         riga_c = r
         r = S.campo(
@@ -1973,30 +1973,30 @@ class Costruttore:
             'IF(AND(usa_prezzo_valore="SI",rendita>0),MAX(valore_catastale*IF(agevolata="SI",reg_prima,reg_ord),reg_min),0)'
             "+ipo_priv+cat_priv)+notaio_cv+altri_costi+oneri_mutuo",
             S.EURO,
-            nota="Notaio, altri costi, oneri del mutuo, imposte fisse, e con il prezzo-valore l'intera imposta di registro. Sono la ragione per cui l'incidenza percentuale dei costi non e' costante.",
+            nota="Notaio, altri costi, oneri del mutuo, imposte fisse, e con il prezzo-valore l'intera imposta di registro. Sono la ragione per cui l'incidenza percentuale dei costi non è costante.",
         )
         riga_m = r
         r = S.campo(
             ws, r, "Costi annui che scalano col prezzo",
             "=manut_pct+ristrutt_pct/ristrutt_anni",
             S.PERC_1,
-            nota="Manutenzione ordinaria e accantonamento per la ristrutturazione di fine ciclo sono quote del valore, quindi un prezzo piu' alto abbassa l'utile netto oltre ad alzare il costo totale.",
+            nota="Manutenzione ordinaria e accantonamento per la ristrutturazione di fine ciclo sono quote del valore, quindi un prezzo più alto abbassa l'utile netto oltre ad alzare il costo totale.",
         )
         riga_pmax = r
         r = S.campo(
             ws, r, "Prezzo massimo corrispondente",
             f"=IFERROR((utile_locazione+prezzo*B{riga_m}-B{riga_obiettivo}*B{riga_c})/(B{riga_obiettivo}*(1+B{riga_k})+B{riga_m}),\"non calcolabile\")",
             S.EURO, risultato=True,
-            nota="Soluzione esatta, non piu' una proporzione sull'incidenza dei costi. Se il rendimento obiettivo e' tanto alto da non essere raggiungibile a nessun prezzo positivo, il valore risulta negativo: e' la risposta corretta, e va letta come non esiste un prezzo che giustifichi l'operazione a quella soglia.",
+            nota="Soluzione esatta, non più una proporzione sull'incidenza dei costi. Se il rendimento obiettivo è tanto alto da non essere raggiungibile a nessun prezzo positivo, il valore risulta negativo: è la risposta corretta, e va letta come non esiste un prezzo che giustifichi l'operazione a quella soglia.",
         )
-        r = S.campo(ws, r, "Scarto rispetto al prezzo trattato", f"=B{riga_pmax}-prezzo", S.EURO, nota="Se negativo, il prezzo trattato e' sopra quello che l'immobile puo' giustificare a quel rendimento, e la differenza e' lo sconto da ottenere.")
+        r = S.campo(ws, r, "Scarto rispetto al prezzo trattato", f"=B{riga_pmax}-prezzo", S.EURO, nota="Se negativo, il prezzo trattato è sopra quello che l'immobile può giustificare a quel rendimento, e la differenza è lo sconto da ottenere.")
 
         # Controllo di chiusura. Ricalcola il rendimento netto al prezzo appena
         # trovato usando le formule esatte delle imposte, floor di legge compreso, e
         # lo confronta con l'obiettivo. Deve dare zero: se non lo da', un'assunzione
         # della linearizzazione non tiene, tipicamente il minimo di legge
-        # dell'imposta di registro che diventa vincolante sui prezzi molto bassi. E'
-        # scritto qui, e non lasciato a un test, perche' chi cambia gli input a video
+        # dell'imposta di registro che diventa vincolante sui prezzi molto bassi. È
+        # scritto qui, e non lasciato a un test, perché chi cambia gli input a video
         # deve poterlo vedere nel momento in cui succede.
         imposte_pmax = (
             f'IF(da_impresa="SI",B{riga_pmax}*IF(agevolata="SI",iva_prima,IF(di_lusso="SI",iva_lusso,iva_ord))+3*fisso_impresa,'
@@ -2008,7 +2008,7 @@ class Costruttore:
         r = S.campo(ws, r, "Verifica: rendimento netto a quel prezzo", f"=IFERROR(({utile_pmax})/({costo_pmax}),\"non calcolabile\")", S.PERC_1,
                     nota="Ricalcolato con le formule esatte delle imposte, minimo di legge compreso.")
         r = S.campo(ws, r, "Scarto dalla soglia, deve essere zero", f"=IFERROR(B{riga_ver}-B{riga_obiettivo},\"non calcolabile\")", "0.0000%",
-                    nota="Diverso da zero solo se un'assunzione della soluzione chiusa non tiene: il caso noto e' il minimo di legge dell'imposta di registro, che su prezzi molto bassi diventa vincolante e rende il costo totale non piu' lineare nel prezzo.")
+                    nota="Diverso da zero solo se un'assunzione della soluzione chiusa non tiene: il caso noto è il minimo di legge dell'imposta di registro, che su prezzi molto bassi diventa vincolante e rende il costo totale non più lineare nel prezzo.")
         r = S.campo(ws, r, "Canone minimo per un cash flow non negativo", "=(rata_annua+condominio*quota_condominio+prezzo*manut_pct+assicurazione+rendita*riv_rendita*imu_molt*imu_aliquota+accantonamento_ristrutturazione)/((12-mesi_sfitto)*(1-morosita_pct)*(1-ced_libero))", S.EURO_DEC, risultato=True, nota="Canone mensile sotto il quale l'immobile assorbe cassa invece di generarla.")
 
     # ------------------------------------------------------------- estrazioni
@@ -2016,7 +2016,7 @@ class Costruttore:
         """Foglio tecnico nascosto: le estrazioni casuali della simulazione.
 
         La simulazione probabilistica ha un problema pratico in Excel. Usare la
-        funzione casuale nativa la renderebbe volatile, cioe' ogni ricalcolo
+        funzione casuale nativa la renderebbe volatile, cioè ogni ricalcolo
         cambierebbe tutti i numeri e due letture consecutive dello stesso file
         darebbero risultati diversi: inutilizzabile per decidere e impossibile da
         verificare.
@@ -2024,11 +2024,11 @@ class Costruttore:
         La soluzione adottata separa le due cose. Le estrazioni sono numeri fissi,
         generati una volta sola alla creazione del file con un seme dichiarato,
         quindi identiche a ogni riapertura e riproducibili. Il calcolo che sta sopra,
-        invece, e' formula viva: cambiando un input tutti i mille scenari si
-        ricalcolano davanti agli occhi, ma sulla stessa estrazione. Si ottiene cosi'
+        invece, è formula viva: cambiando un input tutti i mille scenari si
+        ricalcolano davanti agli occhi, ma sulla stessa estrazione. Si ottiene così
         una simulazione stabile e insieme interattiva.
 
-        Il foglio e' nascosto perche' non c'e' nulla da leggerci: si scopre solo se
+        Il foglio è nascosto perché non c'è nulla da leggerci: si scopre solo se
         si vuole ispezionare il motore.
         """
         import random
@@ -2057,12 +2057,12 @@ class Costruttore:
             ws.cell(row=r, column=8, value=f"=MEDIAN(0,mesi_sfitto+$C{r}*vol_sfitto,12)")
             ws.cell(row=r, column=9, value=f"=MAX(0,tasso+$D{r}*vol_tasso)")
             # La rivalutazione si compone su tutto l'orizzonte, quindi l'estrazione
-            # non e' la variazione di un anno ma la media dell'intero periodo, e la
+            # non è la variazione di un anno ma la media dell'intero periodo, e la
             # sua dispersione scende con la radice del numero di anni. Senza questa
             # correzione un'estrazione verrebbe trattata come un regime permanente e
             # la coda alta produrrebbe patrimoni finali fuori scala.
             ws.cell(row=r, column=10, value=f"=riv_immobile+$E{r}*vol_rivalutazione/SQRT(MAX(orizzonte,1))")
-            # L'evento di morosita' grave toglie i mesi di canone impostati.
+            # L'evento di morosità grave toglie i mesi di canone impostati.
             ws.cell(
                 row=r, column=11,
                 value=(
@@ -2084,11 +2084,11 @@ class Costruttore:
             )
             ws.cell(row=r, column=18, value=f"=$P{r}*(1-costi_vendita)-$Q{r}")
             # Il montante confronta due strade che partono dallo stesso esborso. Chi
-            # compra, se il flusso di cassa e' negativo, deve versare quella somma ogni
-            # anno prendendola da altrove, e quel denaro ha un costo opportunita': i
+            # compra, se il flusso di cassa è negativo, deve versare quella somma ogni
+            # anno prendendola da altrove, e quel denaro ha un costo opportunità: i
             # flussi vanno quindi capitalizzati al rendimento del portafoglio
             # alternativo, non sommati a valore nominale. Con flusso positivo vale il
-            # simmetrico, cioe' la cassa incassata si reinveste.
+            # simmetrico, cioè la cassa incassata si reinveste.
             ws.cell(
                 row=r, column=19,
                 value=f"=$R{r}+IF(rend_port=0,$O{r}*orizzonte,$O{r}*((1+rend_port)^orizzonte-1)/rend_port)",
@@ -2106,11 +2106,11 @@ class Costruttore:
         """Distribuzione degli esiti e classifica delle variabili che pesano.
 
         Il foglio Scenari risponde alla domanda su cosa succede in tre casi scelti a
-        mano. Questo risponde a due domande diverse e piu' difficili: quanto e'
+        mano. Questo risponde a due domande diverse e più difficili: quanto è
         probabile ciascun esito, e quale delle ipotesi conta davvero.
 
-        La prima e' una simulazione su mille estrazioni, che restituisce percentili e
-        probabilita' invece di un numero solo. La seconda e' un'analisi a tornado, che
+        La prima è una simulazione su mille estrazioni, che restituisce percentili e
+        probabilità invece di un numero solo. La seconda è un'analisi a tornado, che
         muove una variabile per volta di una percentuale uguale per tutte e ordina le
         variabili per quanto spostano il risultato: serve a sapere su cosa vale la
         pena raccogliere informazione migliore, e su cosa invece non cambia nulla.
@@ -2134,13 +2134,13 @@ class Costruttore:
             ("vol_sfitto", "Incertezza sui mesi di sfitto", 1.5, S.NUMERO_DEC,
              "In mesi. Uno e mezzo copre l'anno con un cambio di inquilino andato lungo."),
             ("vol_tasso", "Incertezza sul tasso", 0.0, S.PERC,
-             "Zero per un tasso fisso, che e' certo per definizione. Su un variabile un punto percentuale e' un'ipotesi ordinaria."),
+             "Zero per un tasso fisso, che è certo per definizione. Su un variabile un punto percentuale è un'ipotesi ordinaria."),
             ("vol_rivalutazione", "Incertezza sulla rivalutazione annua", 0.04, S.PERC,
-             "Riferita al singolo anno. Poiche' la rivalutazione si compone, la simulazione la scala per la radice dell'orizzonte: su venticinque anni l'incertezza sulla media annua e' un quinto di quella su un anno solo."),
-            ("prob_morosita_grave", "Probabilita' annua di morosita' grave", 0.05, S.PERC,
-             "Non il piccolo ritardo, che sta gia' nell'accantonamento ordinario, ma l'inquilino che smette di pagare e va sfrattato."),
-            ("mesi_persi_morosita", "Mesi di canone persi in caso di morosita' grave", 12, S.NUMERO_DEC,
-             "Fra convalida di sfratto ed esecuzione passa in genere piu' di un anno, e nel frattempo le imposte e le spese si pagano lo stesso."),
+             "Riferita al singolo anno. Poichè la rivalutazione si compone, la simulazione la scala per la radice dell'orizzonte: su venticinque anni l'incertezza sulla media annua è un quinto di quella su un anno solo."),
+            ("prob_morosita_grave", "Probabilità annua di morosità grave", 0.05, S.PERC,
+             "Non il piccolo ritardo, che sta già nell'accantonamento ordinario, ma l'inquilino che smette di pagare e va sfrattato."),
+            ("mesi_persi_morosita", "Mesi di canone persi in caso di morosità grave", 12, S.NUMERO_DEC,
+             "Fra convalida di sfratto ed esecuzione passa in genere più di un anno, e nel frattempo le imposte e le spese si pagano lo stesso."),
         ]:
             riga = r
             r = S.campo(ws, r, etichetta, valore, formato, input_utente=True, nota=nota)
@@ -2150,11 +2150,11 @@ class Costruttore:
         r = S.sezione(ws, r, "Come vanno a finire i mille scenari", 5, secondaria=True)
         r = S.intestazioni(ws, r, ["Grandezza", "Peggiore 5%", "Mediana", "Migliore 5%"], [46, 18, 18, 18])
         for etichetta, intervallo, formato, nota in [
-            ("Cash flow annuo", "sim_cash_flow", S.EURO, "Diviso dodici e' l'impegno mensile. La colonna di sinistra e' lo scenario che va messo in conto, non quello da escludere."),
+            ("Cash flow annuo", "sim_cash_flow", S.EURO, "Diviso dodici è l'impegno mensile. La colonna di sinistra è lo scenario che va messo in conto, non quello da escludere."),
             ("Utile netto annuo", "sim_utile", S.EURO, ""),
             ("Rendimento netto", "sim_rendimento", S.PERC, ""),
             ("Patrimonio a fine orizzonte", "sim_patrimonio", S.EURO, "Valore dell'immobile al netto dei costi di vendita e del debito residuo."),
-            ("Montante complessivo", "sim_montante", S.EURO, "Patrimonio piu' i flussi di cassa capitalizzati al rendimento del portafoglio alternativo. E' la grandezza confrontabile con il non comprare, perche' tratta allo stesso modo il denaro impiegato nelle due strade."),
+            ("Montante complessivo", "sim_montante", S.EURO, "Patrimonio più i flussi di cassa capitalizzati al rendimento del portafoglio alternativo. È la grandezza confrontabile con il non comprare, perché tratta allo stesso modo il denaro impiegato nelle due strade."),
         ]:
             e = ws.cell(row=r, column=1, value=etichetta)
             e.font = S.ETICHETTA
@@ -2173,19 +2173,19 @@ class Costruttore:
             r += 1
         r += 1
 
-        r = S.sezione(ws, r, "Le probabilita' che contano", 5, secondaria=True)
+        r = S.sezione(ws, r, "Le probabilità che contano", 5, secondaria=True)
         nomi_prob = ["prob_cash_negativo", "prob_sotto_obiettivo", "prob_perdita_capitale", "prob_batte_alternativa"]
         for indice, (etichetta, formula, nota) in enumerate([
-            ("Probabilita' di cash flow negativo",
+            ("Probabilità di cash flow negativo",
              '=COUNTIF(sim_cash_flow,"<0")/COUNT(sim_cash_flow)',
-             "Quanto spesso l'immobile assorbe cassa invece di darne. Con la leva e' quasi sempre alta: la domanda non e' se accade ma se e' sostenibile."),
-            ("Probabilita' di rendimento sotto l'obiettivo",
+             "Quanto spesso l'immobile assorbe cassa invece di darne. Con la leva è quasi sempre alta: la domanda non è se accade ma se è sostenibile."),
+            ("Probabilità di rendimento sotto l'obiettivo",
              '=COUNTIF(sim_rendimento,"<"&rend_obiettivo)/COUNT(sim_rendimento)',
              "Rispetto alla soglia impostata nel foglio Scenari."),
-            ("Probabilita' di perdere capitale proprio",
+            ("Probabilità di perdere capitale proprio",
              '=COUNTIF(sim_patrimonio,"<"&esborso)/COUNT(sim_patrimonio)',
              "Patrimonio finale inferiore a quanto messo all'inizio, senza contare l'inflazione."),
-            ("Probabilita' di battere il portafoglio alternativo",
+            ("Probabilità di battere il portafoglio alternativo",
              '=COUNTIF(sim_montante,">"&(esborso*(1+rend_port)^orizzonte))/COUNT(sim_montante)',
              "Entrambe le strade partono dallo stesso esborso; chi compra versa anche i flussi negativi, che nel montante sono capitalizzati allo stesso rendimento. Per l'abitazione principale il confronto corretto resta quello del foglio Confronto affitto, che tiene conto del canone risparmiato."),
         ]):
@@ -2194,9 +2194,9 @@ class Costruttore:
             self.nome(nomi_prob[indice], ws, f"B{riga}")
         r += 1
 
-        r = S.sezione(ws, r, "Quale ipotesi pesa di piu'", 5, secondaria=True)
-        r = S.nota_riga(ws, r, "Ogni variabile viene mossa da sola del dieci per cento in meno e in piu', tenendo ferme le altre, e si misura di quanto si sposta il cash flow annuo. L'ordine dice dove conviene spendere tempo a raccogliere un dato migliore: sulla variabile in cima si',  su quella in fondo no.", 5)
-        r = S.intestazioni(ws, r, ["Variabile", "Meno 10%", "Piu' 10%", "Ampiezza"], [46, 18, 18, 18])
+        r = S.sezione(ws, r, "Quale ipotesi pesa di più", 5, secondaria=True)
+        r = S.nota_riga(ws, r, "Ogni variabile viene mossa da sola del dieci per cento in meno e in più, tenendo ferme le altre, e si misura di quanto si sposta il cash flow annuo. L'ordine dice dove conviene spendere tempo a raccogliere un dato migliore: sulla variabile in cima si',  su quella in fondo no.", 5)
+        r = S.intestazioni(ws, r, ["Variabile", "Meno 10%", "Più 10%", "Ampiezza"], [46, 18, 18, 18])
         prima_t = r
         costi_fissi = "(ricavo_effettivo-noi_annuo)"
         base_cf = f"(ricavo_effettivo-{costi_fissi}-ricavo_effettivo*ced_libero-rata_annua)"
@@ -2236,27 +2236,27 @@ class Costruttore:
         r = S.campo(ws, r, "Cash flow di riferimento", "=" + base_cf, S.EURO, nota="Il valore centrale rispetto a cui si misurano gli scostamenti.")
         r += 1
         for testo in [
-            "Una precisazione sulla simulazione, per non farle dire piu' di quello che sa. Le estrazioni assumono che le variabili siano indipendenti fra loro, e nella realta' non lo sono: quando i tassi salgono i prezzi tendono a scendere, e quando il mercato del lavoro peggiora aumentano insieme sfitto e morosita'. La distribuzione va quindi letta come una misura della dispersione degli esiti, non come una probabilita' oggettiva.",
-            "L'incertezza dichiarata in cima al foglio e' l'unica cosa che si sceglie, ed e' anche l'unica che non si puo' verificare: nessuno conosce la volatilita' vera del proprio canone. Il modo onesto di usarla e' provare valori diversi e guardare se la decisione cambia. Se cambia, la decisione non era solida.",
+            "Una precisazione sulla simulazione, per non farle dire più di quello che sa. Le estrazioni assumono che le variabili siano indipendenti fra loro, e nella realtà non lo sono: quando i tassi salgono i prezzi tendono a scendere, e quando il mercato del lavoro peggiora aumentano insieme sfitto e morosità. La distribuzione va quindi letta come una misura della dispersione degli esiti, non come una probabilità oggettiva.",
+            "L'incertezza dichiarata in cima al foglio è l'unica cosa che si sceglie, ed è anche l'unica che non si può verificare: nessuno conosce la volatilità vera del proprio canone. Il modo onesto di usarla è provare valori diversi e guardare se la decisione cambia. Se cambia, la decisione non era solida.",
         ]:
             r = S.nota_riga(ws, r, testo, 5)
 
     # ------------------------------------------------------------ comproprieta
     def foglio_comproprieta(self) -> None:
-        """Ripartizione dell'operazione fra piu' acquirenti.
+        """Ripartizione dell'operazione fra più acquirenti.
 
-        Comprare in due, in tre o in N non richiede di costituire una societa': la
-        comunione costituita o mantenuta al solo scopo del godimento di una o piu'
-        cose non e' un contratto di societa' ed e' regolata dalle norme sulla
-        comunione, art. 2248 del codice civile. La societa' nasce quando si conferisce
-        per esercitare in comune un'attivita' economica, art. 2247, che e' cosa diversa
+        Comprare in due, in tre o in N non richiede di costituire una società: la
+        comunione costituita o mantenuta al solo scopo del godimento di una o più
+        cose non è un contratto di società ed è regolata dalle norme sulla
+        comunione, art. 2248 del codice civile. La società nasce quando si conferisce
+        per esercitare in comune un'attività economica, art. 2247, che è cosa diversa
         dal possedere insieme un immobile e incassarne il canone.
 
-        Il foglio serve a due cose. La prima e' ripartire correttamente: ciascuno
+        Il foglio serve a due cose. La prima è ripartire correttamente: ciascuno
         sopporta pesi e vantaggi in proporzione alla propria quota, art. 1101, e sul
-        piano fiscale ciascuno fa storia a se', perche' l'opzione per la cedolare
+        piano fiscale ciascuno fa storia a sé, perché l'opzione per la cedolare
         secca si esercita disgiuntamente e produce effetti solo per chi l'ha
-        esercitata, e perche' l'aliquota marginale IRPEF e' personale. La seconda e'
+        esercitata, e perché l'aliquota marginale IRPEF è personale. La seconda è
         rendere visibili le regole di governo della comunione, che sono la parte che
         si scopre tardi e che conviene scrivere in un patto prima di firmare.
         """
@@ -2266,8 +2266,8 @@ class Costruttore:
         r = S.titolo(
             ws,
             1,
-            "Acquisto in piu' persone",
-            "Una riga per acquirente. Le quote devono sommare a cento. Ciascuno sceglie il proprio regime fiscale e ha la propria aliquota marginale: in comproprieta' la cedolare secca si opta individualmente.",
+            "Acquisto in più persone",
+            "Una riga per acquirente. Le quote devono sommare a cento. Ciascuno sceglie il proprio regime fiscale e ha la propria aliquota marginale: in comproprietà la cedolare secca si opta individualmente.",
             20,
         )
 
@@ -2319,7 +2319,7 @@ class Costruttore:
             ws.cell(row=r, column=11, value=f'=IF({vuoto},"",ricavo_effettivo*$B{r})').number_format = S.EURO
             ws.cell(row=r, column=12, value=f'=IF({vuoto},"",(ricavo_effettivo-noi_annuo)*$B{r})').number_format = S.EURO
             ws.cell(row=r, column=13, value=f'=IF({vuoto},"",noi_annuo*$B{r})').number_format = S.EURO
-            # L'imposta e' personale: dipende dal regime scelto da ciascuno e, in
+            # L'imposta è personale: dipende dal regime scelto da ciascuno e, in
             # regime ordinario, dalla sua aliquota marginale.
             ws.cell(
                 row=r, column=14,
@@ -2369,13 +2369,13 @@ class Costruttore:
 
         r = S.sezione(ws, r, "Come si governa una comunione, e cosa conviene scrivere prima", 20, secondaria=True)
         for testo in [
-            "Non serve costituire una societa'. La comunione costituita o mantenuta al solo scopo del godimento di una o piu' cose e' regolata dalle norme sulla comunione e non e' un contratto di societa', art. 2248 del codice civile. Il contratto di societa' presuppone che si conferisca per esercitare in comune un'attivita' economica, art. 2247: possedere insieme un immobile e incassarne il canone non lo e'. Se pero' l'attivita' diventa organizzata, tipicamente la locazione turistica gestita con servizi oppure il comprare per ristrutturare e rivendere, si scivola nell'impresa e, in mancanza di forma, in una societa' di fatto con responsabilita' illimitata e solidale di tutti.",
+            "Non serve costituire una società. La comunione costituita o mantenuta al solo scopo del godimento di una o più cose è regolata dalle norme sulla comunione e non è un contratto di società, art. 2248 del codice civile. Il contratto di società presuppone che si conferisca per esercitare in comune un'attività economica, art. 2247: possedere insieme un immobile e incassarne il canone non lo è. Se però l'attività diventa organizzata, tipicamente la locazione turistica gestita con servizi oppure il comprare per ristrutturare e rivendere, si scivola nell'impresa e, in mancanza di forma, in una società di fatto con responsabilità illimitata e solidale di tutti.",
             "Le maggioranze si contano per valore delle quote e non per teste. L'ordinaria amministrazione si decide a maggioranza, che vincola la minoranza dissenziente, ma tutti vanno informati prima, art. 1105. Le innovazioni e gli atti eccedenti l'ordinaria amministrazione richiedono una maggioranza che rappresenti almeno due terzi del valore, art. 1108. Serve invece l'unanimita' per vendere, per costituire diritti reali e per le locazioni di durata superiore a nove anni.",
-            "La regola che decide il destino dell'operazione e' l'articolo 1111: ciascun partecipante puo' sempre domandare lo scioglimento della comunione. Chiunque, in qualsiasi momento, puo' costringere gli altri a dividere e quindi, su un immobile indivisibile, a vendere. Il correttivo esiste ed e' il patto di rimanere in comunione, valido per un massimo di dieci anni e opponibile anche agli aventi causa: oltre i dieci si riduce automaticamente. Va messo per iscritto e rinnovato.",
-            "Vale la pena adottare un regolamento della comunione a maggioranza, art. 1106, che disciplini l'ordinaria amministrazione e deleghi la gestione a uno dei partecipanti o a un terzo, definendone poteri e obblighi. Accanto al regolamento conviene un patto che copra cio' che il codice non risolve: patto di indivisione, diritto di prelazione reciproco sulle quote, criterio di valorizzazione della quota in caso di uscita, ripartizione delle spese straordinarie, e cosa succede se uno smette di contribuire.",
-            "Ciascuno puo' disporre della propria quota e cederla a terzi, art. 1103: senza un patto di prelazione ci si puo' ritrovare in comunione con uno sconosciuto. Ciascuno deve contribuire alle spese in proporzione alla quota, ma puo' liberarsene rinunciando al proprio diritto, art. 1104, e il cessionario risponde in solido con il cedente dei contributi non versati.",
-            "Sul fisco ciascuno fa storia a se'. Il reddito si dichiara pro quota, l'opzione per la cedolare secca si esercita disgiuntamente e vale solo per chi l'ha esercitata, quindi in un immobile in due uno puo' stare in cedolare e l'altro in IRPEF ordinaria. Il massimale della detrazione degli interessi e' riferito all'immobile e si ripartisce fra i cointestatari del mutuo. Sull'agevolazione prima casa ciascuno verifica i requisiti per la propria quota, con una differenza che conta: possedere una quota di altra abitazione nello stesso Comune insieme a un fratello, a un genitore o a un estraneo non preclude l'agevolazione, mentre possederla insieme al coniuge la preclude.",
-            "Quando invece una struttura societaria ha senso. La societa' semplice immobiliare regge il mero godimento, evita la doppia imposizione e la disciplina delle societa' non operative, e non paga la plusvalenza oltre il quinquennio; in cambio non puo' esercitare attivita' commerciale, quindi niente compravendita speculativa e niente locazione turistica organizzata, non puo' optare per la cedolare secca perche' l'opzione e' riservata al locatore persona fisica, e i soci rispondono illimitatamente. La societa' a responsabilita' limitata separa il patrimonio ma porta reddito d'impresa, doppia imposizione sulla distribuzione, costi di contabilita' e il rischio di essere qualificata non operativa. La regola pratica: per tenere e affittare si resta in comunione, per fare impresa si costituisce una societa'.",
+            "La regola che decide il destino dell'operazione è l'articolo 1111: ciascun partecipante può sempre domandare lo scioglimento della comunione. Chiunque, in qualsiasi momento, può costringere gli altri a dividere e quindi, su un immobile indivisibile, a vendere. Il correttivo esiste ed è il patto di rimanere in comunione, valido per un massimo di dieci anni e opponibile anche agli aventi causa: oltre i dieci si riduce automaticamente. Va messo per iscritto e rinnovato.",
+            "Vale la pena adottare un regolamento della comunione a maggioranza, art. 1106, che disciplini l'ordinaria amministrazione e deleghi la gestione a uno dei partecipanti o a un terzo, definendone poteri e obblighi. Accanto al regolamento conviene un patto che copra ciò che il codice non risolve: patto di indivisione, diritto di prelazione reciproco sulle quote, criterio di valorizzazione della quota in caso di uscita, ripartizione delle spese straordinarie, e cosa succede se uno smette di contribuire.",
+            "Ciascuno può disporre della propria quota e cederla a terzi, art. 1103: senza un patto di prelazione ci si può ritrovare in comunione con uno sconosciuto. Ciascuno deve contribuire alle spese in proporzione alla quota, ma può liberarsene rinunciando al proprio diritto, art. 1104, e il cessionario risponde in solido con il cedente dei contributi non versati.",
+            "Sul fisco ciascuno fa storia a sé. Il reddito si dichiara pro quota, l'opzione per la cedolare secca si esercita disgiuntamente e vale solo per chi l'ha esercitata, quindi in un immobile in due uno può stare in cedolare e l'altro in IRPEF ordinaria. Il massimale della detrazione degli interessi è riferito all'immobile e si ripartisce fra i cointestatari del mutuo. Sull'agevolazione prima casa ciascuno verifica i requisiti per la propria quota, con una differenza che conta: possedere una quota di altra abitazione nello stesso Comune insieme a un fratello, a un genitore o a un estraneo non preclude l'agevolazione, mentre possederla insieme al coniuge la preclude.",
+            "Quando invece una struttura societaria ha senso. La società semplice immobiliare regge il mero godimento, evita la doppia imposizione e la disciplina delle società non operative, e non paga la plusvalenza oltre il quinquennio; in cambio non può esercitare attività commerciale, quindi niente compravendita speculativa e niente locazione turistica organizzata, non può optare per la cedolare secca perché l'opzione è riservata al locatore persona fisica, e i soci rispondono illimitatamente. La società a responsabilità limitata separa il patrimonio ma porta reddito d'impresa, doppia imposizione sulla distribuzione, costi di contabilità e il rischio di essere qualificata non operativa. La regola pratica: per tenere e affittare si resta in comunione, per fare impresa si costituisce una società.",
         ]:
             r = S.nota_riga(ws, r, testo, 20)
 
@@ -2387,31 +2387,31 @@ class Costruttore:
             ws,
             1,
             "Verifiche prima di firmare",
-            "Una proposta di acquisto accettata dal venditore e' gia' un contratto preliminare vincolante: le verifiche vanno chiuse prima, oppure vanno trasformate in condizioni scritte nella proposta stessa.",
+            "Una proposta di acquisto accettata dal venditore è già un contratto preliminare vincolante: le verifiche vanno chiuse prima, oppure vanno trasformate in condizioni scritte nella proposta stessa.",
             7,
         )
         r = S.intestazioni(
             ws, r,
-            ["Fase", "Verifica", "Perche' conta", "Documento o fonte", "Chi la fa", "Stato", "Note"],
+            ["Fase", "Verifica", "Perchè conta", "Documento o fonte", "Chi la fa", "Stato", "Note"],
             [16, 40, 62, 34, 20, 14, 30],
         )
         prima = r
 
         voci = [
             ("Prima della proposta", "Visura catastale aggiornata e planimetria depositata",
-             "L'atto e' nullo se manca la dichiarazione di conformita' fra planimetria e stato di fatto. Non ogni difformita' pero' produce nullita': la Cassazione distingue le irregolarita' significative dai difetti minori.",
+             "L'atto è nullo se manca la dichiarazione di conformità fra planimetria e stato di fatto. Non ogni difformità però produce nullità: la Cassazione distingue le irregolarità significative dai difetti minori.",
              "Agenzia delle Entrate, servizi catastali", "Acquirente o tecnico", "da fare", ""),
-            ("Prima della proposta", "Conformita' urbanistica ed edilizia",
-             "E' la corrispondenza fra lo stato di fatto e tutti i titoli edilizi della storia del fabbricato. E' cosa diversa dalla conformita' catastale e va verificata separatamente: e' la difformita' che blocca davvero la vendita e il mutuo.",
+            ("Prima della proposta", "Conformità urbanistica ed edilizia",
+             "È la corrispondenza fra lo stato di fatto e tutti i titoli edilizi della storia del fabbricato. È cosa diversa dalla conformità catastale e va verificata separatamente: è la difformità che blocca davvero la vendita e il mutuo.",
              "Accesso agli atti in Comune, titoli edilizi", "Tecnico di parte", "da fare", ""),
             ("Prima della proposta", "Stato legittimo e tolleranze costruttive",
-             "Il decreto Salva Casa ha ampliato le tolleranze dell'articolo 34-bis del DPR 380/2001 per le difformita' realizzate prima del 24 maggio 2024, e ha dato valore probatorio alle dichiarazioni del tecnico. Sapere in quale regime ricade l'immobile cambia il costo della regolarizzazione.",
+             "Il decreto Salva Casa ha ampliato le tolleranze dell'articolo 34-bis del DPR 380/2001 per le difformità realizzate prima del 24 maggio 2024, e ha dato valore probatorio alle dichiarazioni del tecnico. Sapere in quale regime ricade l'immobile cambia il costo della regolarizzazione.",
              "Relazione del tecnico, DL 69/2024 convertito in legge 105/2024", "Tecnico di parte", "da fare", ""),
             ("Prima della proposta", "Visura ipotecaria ventennale",
              "Rivela ipoteche, pignoramenti, sequestri, diritti di terzi, servitu' e trascrizioni pregiudizievoli. L'ipoteca del venditore va cancellata prima o contestualmente al rogito.",
              "Conservatoria dei registri immobiliari", "Notaio o visurista", "da fare", ""),
-            ("Prima della proposta", "Atto di provenienza e continuita' delle trascrizioni",
-             "Dice come il venditore e' diventato proprietario. Una provenienza per donazione e' un rischio concreto per il mutuo, perche' l'immobile e' aggredibile dai legittimari lesi.",
+            ("Prima della proposta", "Atto di provenienza e continuità delle trascrizioni",
+             "Dice come il venditore è diventato proprietario. Una provenienza per donazione è un rischio concreto per il mutuo, perché l'immobile è aggredibile dai legittimari lesi.",
              "Atto notarile di acquisto o successione", "Notaio", "da fare", ""),
             ("Prima della proposta", "Quotazioni OMI della zona e comparabili reali",
              "Ancora il prezzo a un riferimento verificabile invece che alla richiesta dell'agenzia. Le quotazioni OMI sono semestrali, gratuite e pubbliche.",
@@ -2420,43 +2420,43 @@ class Costruttore:
              "L'acquirente risponde in solido con il venditore delle spese dell'anno in corso e di quello precedente. Vanno letti anche i verbali delle ultime assemblee, per i lavori deliberati e non ancora pagati.",
              "Consuntivi, riparti, verbali, regolamento", "Amministratore", "da fare", ""),
             ("Nella proposta", "Condizione sospensiva o risolutiva legata al mutuo",
-             "Senza clausola, se la banca non delibera si perde la caparra e si deve comunque la provvigione. Con la sospensiva il contratto non produce effetti finche' la banca non eroga; con la risolutiva il contratto si scioglie se la condizione non si avvera entro il termine.",
+             "Senza clausola, se la banca non delibera si perde la caparra e si deve comunque la provvigione. Con la sospensiva il contratto non produce effetti finché la banca non eroga; con la risolutiva il contratto si scioglie se la condizione non si avvera entro il termine.",
              "Testo della proposta, articoli 1353 e seguenti del codice civile", "Acquirente e legale", "da fare", ""),
             ("Nella proposta", "Provvigione dell'agenzia legata all'avveramento della condizione",
-             "La provvigione matura alla conclusione dell'affare. Se la condizione non si avvera e nulla e' stato pattuito, l'agenzia puo' comunque pretenderla: va escluso espressamente per iscritto.",
+             "La provvigione matura alla conclusione dell'affare. Se la condizione non si avvera e nulla è stato pattuito, l'agenzia può comunque pretenderla: va escluso espressamente per iscritto.",
              "Testo della proposta", "Acquirente e legale", "da fare", ""),
             ("Nella proposta", "Termine per la stipula del definitivo",
              "Senza un termine, l'obbligo di concludere resta indeterminato e diventa difficile far valere l'inadempimento della controparte.",
              "Testo della proposta", "Acquirente e legale", "da fare", ""),
             ("Nella proposta", "Stato di fatto e di diritto e garanzia di libertà da gravami",
-             "Va scritto che l'immobile e' trasferito libero da ipoteche, pesi, vincoli, pegni e da qualsivoglia gravame, e che il venditore garantisce la conformita' urbanistica e catastale.",
+             "Va scritto che l'immobile è trasferito libero da ipoteche, pesi, vincoli, pegni e da qualsivoglia gravame, e che il venditore garantisce la conformità urbanistica e catastale.",
              "Testo della proposta", "Acquirente e legale", "da fare", ""),
             ("Nella proposta", "Natura delle somme versate, acconto o caparra confirmatoria",
              "La caparra confirmatoria da' diritto al doppio in caso di inadempimento del venditore; l'acconto no. La differenza va scritta, non lasciata implicita.",
              "Articolo 1385 del codice civile", "Acquirente e legale", "da fare", ""),
             ("Mutuo", "Farsi consegnare il PIES di ogni banca interpellata",
-             "Il Prospetto Informativo Europeo Standardizzato e' il documento personalizzato che la banca deve consegnare gratuitamente prima che il cliente sia vincolato, ed e' l'unico modo per confrontare offerte diverse sulla stessa base. Contiene anche una tabella di ammortamento esemplificativa.",
+             "Il Prospetto Informativo Europeo Standardizzato è il documento personalizzato che la banca deve consegnare gratuitamente prima che il cliente sia vincolato, ed è l'unico modo per confrontare offerte diverse sulla stessa base. Contiene anche una tabella di ammortamento esemplificativa.",
              "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "da fare", ""),
             ("Mutuo", "Usare i sette giorni di riflessione sull'offerta vincolante",
-             "Ricevuta l'offerta vincolante il consumatore ha diritto ad almeno sette giorni di riflessione, durante i quali l'offerta resta ferma per la banca e puo' essere accettata in qualsiasi momento. Sono giorni per confrontare, non per aspettare.",
+             "Ricevuta l'offerta vincolante il consumatore ha diritto ad almeno sette giorni di riflessione, durante i quali l'offerta resta ferma per la banca e può essere accettata in qualsiasi momento. Sono giorni per confrontare, non per aspettare.",
              "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "da fare", ""),
             ("Mutuo", "Verificare che il tasso non sia usurario",
-             "Al momento della firma il tasso non puo' superare la soglia d'usura, determinata sul tasso effettivo globale medio pubblicato trimestralmente. E' un controllo di un minuto che si fa una volta sola.",
+             "Al momento della firma il tasso non può superare la soglia d'usura, determinata sul tasso effettivo globale medio pubblicato trimestralmente. È un controllo di un minuto che si fa una volta sola.",
              "Banca d'Italia, tassi effettivi globali medi", "Acquirente", "da fare", ""),
             ("Mutuo", "Confrontare la polizza della banca con il mercato",
-             "La polizza incendio e scoppio e' obbligatoria ma il cliente puo' presentarne una reperita altrove, purche' di protezione equivalente, e la banca deve accettarla. Se si accetta quella proposta dalla banca, il cliente ha diritto di sapere quanta provvigione la compagnia paga alla banca stessa.",
+             "La polizza incendio e scoppio è obbligatoria ma il cliente può presentarne una reperita altrove, purchè di protezione equivalente, e la banca deve accettarla. Se si accetta quella proposta dalla banca, il cliente ha diritto di sapere quanta provvigione la compagnia paga alla banca stessa.",
              "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "da fare", ""),
             ("Mutuo", "Controllare la propria posizione in Centrale dei Rischi",
-             "L'accesso ai propri dati e' gratuito e si fa online. Una segnalazione dimenticata o una pratica ancora aperta presso un mediatore creditizio pesa sulla delibera: l'incarico di mediazione si puo' revocare per iscritto, e con esso decade la richiesta in corso.",
+             "L'accesso ai propri dati è gratuito e si fa online. Una segnalazione dimenticata o una pratica ancora aperta presso un mediatore creditizio pesa sulla delibera: l'incarico di mediazione si può revocare per iscritto, e con esso decade la richiesta in corso.",
              "Banca d'Italia, accesso alla Centrale dei Rischi", "Acquirente", "da fare", ""),
-            ("Mutuo", "Sapere che la portabilita' e' gratuita per legge",
-             "Trasferire il mutuo a un'altra banca, cioe' la surroga, e' per legge senza spese ne' penali, e non richiede il consenso della banca di partenza. In pratica se ne ottiene una nella vita del mutuo: le banche identificano il surrogatore seriale e negano la delibera, e le surroghe hanno spesso spread piu' alti proprio per questo.",
+            ("Mutuo", "Sapere che la portabilità è gratuita per legge",
+             "Trasferire il mutuo a un'altra banca, cioè la surroga, è per legge senza spese né penali, e non richiede il consenso della banca di partenza. In pratica se ne ottiene una nella vita del mutuo: le banche identificano il surrogatore seriale e negano la delibera, e le surroghe hanno spesso spread più alti proprio per questo.",
              "Banca d'Italia, guida al mutuo ipotecario", "Acquirente", "n.a.", ""),
             ("Prima del rogito", "Attestato di prestazione energetica",
-             "E' obbligatorio allegarlo all'atto e va indicato negli annunci. Determina anche la classe da cui partire per ogni valutazione di adeguamento futuro.",
-             "APE in corso di validita'", "Venditore", "da fare", ""),
-            ("Prima del rogito", "Dichiarazione di conformita' o rispondenza degli impianti",
-             "Per gli impianti realizzati dopo il 2008 serve la dichiarazione di conformita' ai sensi del DM 37/2008; per i piu' vecchi puo' bastare la dichiarazione di rispondenza rilasciata da un tecnico abilitato.",
+             "È obbligatorio allegarlo all'atto e va indicato negli annunci. Determina anche la classe da cui partire per ogni valutazione di adeguamento futuro.",
+             "APE in corso di validità", "Venditore", "da fare", ""),
+            ("Prima del rogito", "Dichiarazione di conformità o rispondenza degli impianti",
+             "Per gli impianti realizzati dopo il 2008 serve la dichiarazione di conformità ai sensi del DM 37/2008; per i più vecchi può bastare la dichiarazione di rispondenza rilasciata da un tecnico abilitato.",
              "Dichiarazione dell'installatore o del tecnico", "Venditore", "da fare", ""),
             ("Prima del rogito", "Trascrizione del preliminare se i tempi sono lunghi",
              "La trascrizione ai sensi dell'articolo 2645-bis protegge da ipoteche e pignoramenti iscritti dopo la firma e da' privilegio sul credito restitutorio. Ha un costo, e su tempi lunghi o su venditori a rischio lo vale.",
@@ -2468,25 +2468,25 @@ class Costruttore:
              "Va chiesta in atto e comporta la tassazione sul valore catastale, il blocco dell'accertamento di valore e la riduzione del trenta per cento dell'onorario notarile.",
              "Articolo 1 comma 497 legge 266/2005", "Notaio", "da fare", ""),
             ("Nuova costruzione", "Fideiussione a garanzia degli acconti",
-             "Il decreto legislativo 122/2005 impone al costruttore di consegnare una fideiussione bancaria o assicurativa a garanzia di tutte le somme versate prima del trasferimento. La tutela non e' rinunciabile e ogni patto contrario e' nullo.",
+             "Il decreto legislativo 122/2005 impone al costruttore di consegnare una fideiussione bancaria o assicurativa a garanzia di tutte le somme versate prima del trasferimento. La tutela non è rinunciabile e ogni patto contrario è nullo.",
              "Decreto legislativo 122/2005", "Notaio", "n.a.", ""),
             ("Nuova costruzione", "Polizza indennitaria decennale postuma",
              "Copre i danni materiali da rovina totale o parziale e da gravi difetti costruttivi per dieci anni dall'ultimazione. Va consegnata all'atto e gli estremi vanno indicati nel rogito.",
              "Decreto legislativo 122/2005, articolo 4", "Notaio", "n.a.", ""),
-            ("Nuova costruzione", "Permesso di costruire, agibilita' e accatastamento",
+            ("Nuova costruzione", "Permesso di costruire, agibilità e accatastamento",
              "La banca non delibera prima dell'accatastamento definitivo. Vanno verificati il titolo edilizio, il collaudo, l'agibilita' e la corrispondenza fra progetto approvato e stato realizzato.",
-             "Titoli edilizi e certificato di agibilita'", "Tecnico di parte", "n.a.", ""),
+             "Titoli edilizi e certificato di agibilità", "Tecnico di parte", "n.a.", ""),
             ("Nuova costruzione", "Capitolato, extracapitolato e cronoprogramma",
-             "Distinguere cosa e' incluso nel prezzo da cosa e' extra evita la sorpresa piu' cara dell'acquisto sulla carta. Il cronoprogramma con le penali per il ritardo va scritto.",
+             "Distinguere cosa è incluso nel prezzo da cosa è extra evita la sorpresa più cara dell'acquisto sulla carta. Il cronoprogramma con le penali per il ritardo va scritto.",
              "Contratto di appalto e capitolato", "Acquirente", "n.a.", ""),
             ("Se si affitta", "Codice identificativo nazionale e adempimenti della locazione breve",
              "Dal 2026 il CIN va indicato in ogni annuncio e comunicazione. Servono inoltre la comunicazione alla questura degli alloggiati, i dispositivi di sicurezza obbligatori e il rispetto dei regolamenti comunali e condominiali.",
              "Ministero del turismo, banca dati strutture ricettive", "Proprietario", "n.a.", ""),
             ("Se si affitta", "Accordo territoriale e attestazione, se canone concordato",
-             "Il canone concordato richiede l'attestazione di conformita' rilasciata da un'associazione firmataria dell'accordo territoriale del Comune, senza la quale i benefici fiscali decadono.",
+             "Il canone concordato richiede l'attestazione di conformità rilasciata da un'associazione firmataria dell'accordo territoriale del Comune, senza la quale i benefici fiscali decadono.",
              "Accordo territoriale del Comune", "Proprietario", "n.a.", ""),
             ("Se si affitta", "Verifica del regolamento condominiale",
-             "Un regolamento contrattuale puo' vietare la locazione turistica o l'uso diverso dall'abitazione. Va letto prima di costruire un piano su affitti brevi.",
+             "Un regolamento contrattuale può vietare la locazione turistica o l'uso diverso dall'abitazione. Va letto prima di costruire un piano su affitti brevi.",
              "Regolamento condominiale trascritto", "Proprietario", "n.a.", ""),
         ]
 
@@ -2531,10 +2531,10 @@ class Costruttore:
         """Costo reale di un'aggiudicazione all'asta, e confronto con il libero.
 
         Un'asta valutata con il modello del libero mercato da' un numero che
-        sembra ottimo e non lo e', perche' le due operazioni differiscono in
-        quattro punti che il modello ordinario non vede: non c'e' provvigione ma
-        c'e' il compenso del delegato, il prezzo non si tratta ma si costruisce
-        per rilanci, l'immobile puo' essere occupato e la liberazione ha tempi e
+        sembra ottimo e non lo è, perché le due operazioni differiscono in
+        quattro punti che il modello ordinario non vede: non c'è provvigione ma
+        c'è il compenso del delegato, il prezzo non si tratta ma si costruisce
+        per rilanci, l'immobile può essere occupato e la liberazione ha tempi e
         costi, e non esiste garanzia per i vizi. Questo foglio li mette in conto.
         """
         ws = self.wb.create_sheet("Asta")
@@ -2545,7 +2545,7 @@ class Costruttore:
             1,
             "Acquisto all'asta giudiziaria",
             "Le celle gialle sono gli input, presi dall'avviso di vendita e dalla perizia del custode. "
-            "Il confronto in fondo dice quanto sconto sul valore di mercato serve perche' l'operazione "
+            "Il confronto in fondo dice quanto sconto sul valore di mercato serve perché l'operazione "
             "regga i suoi rischi specifici, che sono diversi da quelli di una compravendita ordinaria.",
             4,
         )
@@ -2553,18 +2553,18 @@ class Costruttore:
         r = S.sezione(ws, r, "L'asta", 4)
         riga_base = r
         r = S.campo(ws, r, "Prezzo base d'asta", 72_000, S.EURO, input_utente=True,
-                    nota="Dall'avviso di vendita. Non e' il prezzo che pagherai: e' il punto di partenza.")
+                    nota="Dall'avviso di vendita. Non è il prezzo che pagherai: è il punto di partenza.")
         self.nome("asta_base", ws, f"B{riga_base}")
         riga_off = r
         r = S.campo(ws, r, "Offerta minima ammessa", "=asta_base*(1-asta_ribasso_max)", S.EURO,
-                    nota="L'offerta e' inefficace se inferiore di oltre un quarto al prezzo base, art. 571 c.p.c.")
+                    nota="L'offerta è inefficace se inferiore di oltre un quarto al prezzo base, art. 571 c.p.c.")
         riga_rib = r
         r = S.campo(ws, r, "Ribasso massimo ammesso sull'offerta", 0.25, S.PERC, input_utente=True,
                     nota="Un quarto per legge. Si tocca solo se l'avviso di vendita dice altro.")
         self.nome("asta_ribasso_max", ws, f"B{riga_rib}")
         riga_agg = r
         r = S.campo(ws, r, "Prezzo di aggiudicazione ipotizzato", 84_000, S.EURO, input_utente=True,
-                    nota="Con piu' offerenti si apre la gara: qui si mette il prezzo a cui si e' disposti a fermarsi, non la base.")
+                    nota="Con più offerenti si apre la gara: qui si mette il prezzo a cui si è disposti a fermarsi, non la base.")
         self.nome("asta_aggiudicazione", ws, f"B{riga_agg}")
         riga_cauz = r
         r = S.campo(ws, r, "Cauzione da versare con l'offerta", "=asta_aggiudicazione*asta_cauzione_pct", S.EURO,
@@ -2575,14 +2575,14 @@ class Costruttore:
         self.nome("asta_cauzione_pct", ws, f"B{riga_cpct}")
         riga_term = r
         r = S.campo(ws, r, "Termine per il saldo, giorni", 120, S.NUMERO, input_utente=True,
-                    nota="Fissato dall'ordinanza di vendita, di norma centoventi giorni. E' il vincolo che decide se serve un mutuo gia' deliberato.")
+                    nota="Fissato dall'ordinanza di vendita, di norma centoventi giorni. È il vincolo che decide se serve un mutuo già deliberato.")
         self.nome("asta_giorni_saldo", ws, f"B{riga_term}")
         r += 1
 
         r = S.sezione(ws, r, "Costi dell'aggiudicazione", 4)
         riga_imp = r
         r = S.campo(ws, r, "Imposte di trasferimento", "=MAX(reg_min,IF(asta_agevolata=\"SI\",asta_base_imponibile*reg_prima,asta_base_imponibile*reg_ord))+ipo_priv+cat_priv", S.EURO,
-                    nota="Stessa disciplina del libero mercato: registro proporzionale piu' ipotecaria e catastale fisse. L'agevolazione prima casa si chiede nella domanda di partecipazione.")
+                    nota="Stessa disciplina del libero mercato: registro proporzionale più ipotecaria e catastale fisse. L'agevolazione prima casa si chiede nella domanda di partecipazione.")
         self.nome("asta_imposte", ws, f"B{riga_imp}")
         riga_agv = r
         r = S.campo(ws, r, "Agevolazione prima casa richiesta", "SI", input_utente=True,
@@ -2599,22 +2599,22 @@ class Costruttore:
         self.nome("asta_prezzo_valore", ws, f"B{riga_pv}")
         riga_del = r
         r = S.campo(ws, r, "Compenso del delegato a carico dell'aggiudicatario", 1_500, S.EURO, input_utente=True,
-                    nota="Nelle vendite delegate ai professionisti, art. 591-bis c.p.c., una quota del compenso e' posta a carico dell'aggiudicatario. Lo dice l'avviso: va letto, non stimato.")
+                    nota="Nelle vendite delegate ai professionisti, art. 591-bis c.p.c., una quota del compenso è posta a carico dell'aggiudicatario. Lo dice l'avviso: va letto, non stimato.")
         self.nome("asta_delegato", ws, f"B{riga_del}")
         riga_canc = r
         r = S.campo(ws, r, "Spese di cancellazione dei gravami", 500, S.EURO, input_utente=True,
-                    nota="Il decreto ordina la cancellazione di pignoramenti e ipoteche, art. 586 c.p.c., ma le formalita' hanno un costo che di norma resta all'aggiudicatario.")
+                    nota="Il decreto ordina la cancellazione di pignoramenti e ipoteche, art. 586 c.p.c., ma le formalità hanno un costo che di norma resta all'aggiudicatario.")
         riga_lib = r
         r = S.campo(ws, r, "Costo stimato della liberazione", 0, S.EURO, input_utente=True,
-                    nota="Zero se l'immobile e' libero. Se e' occupato, sono le spese della procedura di rilascio curata dal custode piu' l'eventuale ripristino.")
+                    nota="Zero se l'immobile è libero. Se è occupato, sono le spese della procedura di rilascio curata dal custode più l'eventuale ripristino.")
         self.nome("asta_liberazione", ws, f"B{riga_lib}")
         riga_tec = r
         r = S.campo(ws, r, "Verifica tecnica e visure di parte", 600, S.EURO, input_utente=True,
-                    nota="La perizia agli atti e' del tribunale, non tua, ed e' spesso vecchia di anni. Una verifica propria costa poco rispetto a cio' che evita.")
+                    nota="La perizia agli atti è del tribunale, non tua, ed è spesso vecchia di anni. Una verifica propria costa poco rispetto a ciò che evita.")
         riga_tot = r
         r = S.campo(ws, r, "Costo totale dell'operazione",
                     f"=asta_aggiudicazione+asta_imposte+B{riga_del}+B{riga_canc}+B{riga_lib}+B{riga_tec}", S.EURO,
-                    risultato=True, nota="Non c'e' provvigione di agenzia: e' il solo risparmio strutturale dell'asta rispetto al libero.")
+                    risultato=True, nota="Non c'è provvigione di agenzia: è il solo risparmio strutturale dell'asta rispetto al libero.")
         self.nome("asta_costo_totale", ws, f"B{riga_tot}")
         riga_inc = r
         r = S.campo(ws, r, "Incidenza dei costi sull'aggiudicazione",
@@ -2630,11 +2630,11 @@ class Costruttore:
         riga_sc = r
         r = S.campo(ws, r, "Sconto effettivo sul valore di mercato",
                     "=IF(asta_valore_mercato>0,1-asta_costo_totale/asta_valore_mercato,0)", S.PERC,
-                    risultato=True, nota="E' il numero che decide. Si confronta con la soglia sotto, non con zero.")
+                    risultato=True, nota="È il numero che decide. Si confronta con la soglia sotto, non con zero.")
         self.nome("asta_sconto", ws, f"B{riga_sc}")
         riga_soglia = r
         r = S.campo(ws, r, "Sconto minimo che giustifica i rischi dell'asta", 0.20, S.PERC, input_utente=True,
-                    nota="Venti per cento e' l'ordine di grandezza comunemente ritenuto minimo. Non e' una regola di legge: e' il prezzo dei quattro rischi elencati sotto.")
+                    nota="Venti per cento è l'ordine di grandezza comunemente ritenuto minimo. Non è una regola di legge: è il prezzo dei quattro rischi elencati sotto.")
         self.nome("asta_soglia", ws, f"B{riga_soglia}")
         riga_esito = r
         r = S.campo(ws, r, "Esito",
@@ -2644,7 +2644,7 @@ class Costruttore:
         riga_max = r
         r = S.campo(ws, r, "Prezzo massimo a cui fermarsi in gara",
                     f"=MAX(0,asta_valore_mercato*(1-asta_soglia)-asta_imposte-B{riga_del}-B{riga_canc}-B{riga_lib}-B{riga_tec})", S.EURO,
-                    risultato=True, nota="E' il numero da scriversi su un foglio prima di entrare in gara, perche' in gara non si ragiona.")
+                    risultato=True, nota="È il numero da scriversi su un foglio prima di entrare in gara, perché in gara non si ragiona.")
         r += 1
 
         for cella, regola in (
@@ -2655,24 +2655,24 @@ class Costruttore:
 
         r = S.sezione(ws, r, "I quattro rischi che il prezzo deve pagare", 4)
         for testo in [
-            "Nessuna garanzia per i vizi. L'articolo 2922 del codice civile esclude la garanzia per i vizi della cosa nella vendita forzata, e aggiunge che la vendita non puo' essere impugnata per causa di lesione. Si compra nello stato di fatto e di diritto in cui il bene si trova: un impianto da rifare, una difformita' edilizia o una superficie inferiore a quella indicata restano interamente a carico di chi aggiudica.",
+            "Nessuna garanzia per i vizi. L'articolo 2922 del codice civile esclude la garanzia per i vizi della cosa nella vendita forzata, e aggiunge che la vendita non può essere impugnata per causa di lesione. Si compra nello stato di fatto e di diritto in cui il bene si trova: un impianto da rifare, una difformità edilizia o una superficie inferiore a quella indicata restano interamente a carico di chi aggiudica.",
             "L'occupazione. L'articolo 560 del codice di procedura civile lascia il debitore e i familiari conviventi nel possesso dell'immobile fino alla pronuncia del decreto di trasferimento. Se poi non escono, il rilascio lo cura il custode, ma servono mesi. L'articolo 2923 del codice civile rende inoltre opponibile all'acquirente la locazione con data certa anteriore al pignoramento: si eredita il contratto e il canone. Con l'eccezione, prevista dallo stesso articolo, del canone inferiore di un terzo al giusto prezzo.",
-            "Il termine per il saldo. Il prezzo va versato nel termine fissato dall'ordinanza, e chi non lo rispetta decade e perde la cauzione a titolo di multa, articolo 587 del codice di procedura civile. Il mutuo va quindi istruito prima di offrire, non dopo: l'articolo 585 prevede il finanziamento con versamento diretto alla procedura e ipoteca di primo grado, ed e' la forma che le banche conoscono.",
-            "La regolarizzazione edilizia. La perizia dice se l'immobile ha difformita' e se sono sanabili, e la sanatoria post aggiudicazione ha termini piu' larghi ma un costo che va stimato prima. Il decreto di trasferimento cancella pignoramenti e ipoteche, articolo 586, ma non sana nulla di urbanistico.",
+            "Il termine per il saldo. Il prezzo va versato nel termine fissato dall'ordinanza, e chi non lo rispetta decade e perde la cauzione a titolo di multa, articolo 587 del codice di procedura civile. Il mutuo va quindi istruito prima di offrire, non dopo: l'articolo 585 prevede il finanziamento con versamento diretto alla procedura e ipoteca di primo grado, ed è la forma che le banche conoscono.",
+            "La regolarizzazione edilizia. La perizia dice se l'immobile ha difformità e se sono sanabili, e la sanatoria post aggiudicazione ha termini più larghi ma un costo che va stimato prima. Il decreto di trasferimento cancella pignoramenti e ipoteche, articolo 586, ma non sana nulla di urbanistico.",
         ]:
             r = S.nota_riga(ws, r, testo, 4)
         r += 1
-        r = S.nota_riga(ws, r, "Il perimetro di questo foglio e' l'aggiudicazione, non la partecipazione: non modella la gara fra offerenti ne' le aste con incanto, ormai residuali. E la perizia agli atti va letta per intero, in particolare i capitoli sullo stato occupativo, sulla regolarita' edilizia e sulla provenienza: e' il documento piu' informativo di tutta l'operazione, ed e' gratuito.", 4)
+        r = S.nota_riga(ws, r, "Il perimetro di questo foglio è l'aggiudicazione, non la partecipazione: non modella la gara fra offerenti né le aste con incanto, ormai residuali. E la perizia agli atti va letta per intero, in particolare i capitoli sullo stato occupativo, sulla regolarità edilizia e sulla provenienza: è il documento più informativo di tutta l'operazione, ed è gratuito.", 4)
 
     # ------------------------------------------------------- dossier tecnico
     def foglio_dossier(self) -> None:
         """Fascicolo dei documenti da farsi consegnare prima di impegnarsi.
 
-        Sta separato dalla Checklist perche' risponde a una domanda diversa: la
+        Sta separato dalla Checklist perché risponde a una domanda diversa: la
         Checklist elenca verifiche da fare, questo elenca carte da avere in mano.
         Senza le carte le verifiche non si possono fare, e la richiesta va fatta
         in trattativa, quando si ha ancora potere negoziale, non dopo la proposta
-        accettata, quando l'obbligo di comprare esiste gia'.
+        accettata, quando l'obbligo di comprare esiste già.
         """
         ws = self.wb.create_sheet("Dossier tecnico")
         ws.sheet_view.showGridLines = False
@@ -2680,9 +2680,9 @@ class Costruttore:
             ws,
             1,
             "Documentazione tecnica da richiedere in trattativa",
-            "E' il fascicolo che un tecnico incaricato chiede all'agenzia o al venditore prima della proposta. "
-            "Le colonne gialle si compilano man mano. Un documento marcato bloccante non e' un giudizio del modello: "
-            "senza quello l'atto e' nullo, il mutuo non si delibera, oppure il costo di regolarizzazione resta ignoto.",
+            "È il fascicolo che un tecnico incaricato chiede all'agenzia o al venditore prima della proposta. "
+            "Le colonne gialle si compilano man mano. Un documento marcato bloccante non è un giudizio del modello: "
+            "senza quello l'atto è nullo, il mutuo non si delibera, oppure il costo di regolarizzazione resta ignoto.",
             11,
         )
         r = S.intestazioni(
@@ -2698,75 +2698,75 @@ class Costruttore:
         # quantificazione di un costo; importante quando incide su prezzo o rischio;
         # se ricorre quando dipende dalla situazione concreta dell'immobile.
         voci = [
-            ("Identificazione e titolarita'", "Visura catastale storica per immobile",
+            ("Identificazione e titolarità", "Visura catastale storica per immobile",
              "Agenzia delle Entrate, catasto", "Art. 29 c. 1-bis legge 52/1985",
-             "Da' categoria, rendita, consistenza e tutte le variazioni subite. La rendita e' la base di quasi tutte le imposte, e la sequenza storica delle variazioni e' il primo indizio di lavori mai dichiarati.",
-             "bloccante", "1 EUR per unita'"),
-            ("Identificazione e titolarita'", "Planimetria catastale depositata",
+             "Da' categoria, rendita, consistenza e tutte le variazioni subite. La rendita è la base di quasi tutte le imposte, e la sequenza storica delle variazioni è il primo indizio di lavori mai dichiarati.",
+             "bloccante", "1 EUR per unità"),
+            ("Identificazione e titolarità", "Planimetria catastale depositata",
              "Agenzia delle Entrate, catasto", "Art. 29 c. 1-bis legge 52/1985",
-             "E' il termine di paragone della dichiarazione di conformita' catastale che il venditore rende in atto a pena di nullita'. Va confrontata con lo stato di fatto, stanza per stanza, non solo guardata.",
+             "È il termine di paragone della dichiarazione di conformità catastale che il venditore rende in atto a pena di nullità. Va confrontata con lo stato di fatto, stanza per stanza, non solo guardata.",
              "bloccante", "circa 2 EUR"),
-            ("Identificazione e titolarita'", "Elaborato planimetrico ed elenco dei subalterni",
+            ("Identificazione e titolarità", "Elaborato planimetrico ed elenco dei subalterni",
              "Agenzia delle Entrate, catasto", "Prassi catastale",
-             "Individua parti comuni e pertinenze, cantina, box e posto auto, e dice se sono censite autonomamente. E' il documento che rivela la pertinenza che l'annuncio dava per compresa e che catastalmente non lo e'.",
+             "Individua parti comuni e pertinenze, cantina, box e posto auto, e dice se sono censite autonomamente. È il documento che rivela la pertinenza che l'annuncio dava per compresa e che catastalmente non lo è.",
              "importante", "circa 2 EUR"),
-            ("Identificazione e titolarita'", "Ispezione ipotecaria ventennale su immobile e venditore",
+            ("Identificazione e titolarità", "Ispezione ipotecaria ventennale su immobile e venditore",
              "Conservatoria dei registri immobiliari", "Artt. 2643 e seguenti c.c.",
              "Rivela ipoteche, pignoramenti, sequestri, domande giudiziali, servitu' trascritte e diritti di terzi. L'ipoteca del venditore si cancella prima o contestualmente al rogito, con tempi e costi da mettere a calendario.",
              "bloccante", "80-200 EUR"),
-            ("Identificazione e titolarita'", "Atto di provenienza e continuita' delle trascrizioni",
+            ("Identificazione e titolarità", "Atto di provenienza e continuità delle trascrizioni",
              "Venditore, notaio rogante", "Artt. 2643 e 2650 c.c.",
-             "Dice come il venditore e' diventato proprietario. Una provenienza donativa e' aggredibile dai legittimari lesi e molte banche non la finanziano; una successoria richiede accettazione tacita trascritta e voltura.",
+             "Dice come il venditore è diventato proprietario. Una provenienza donativa è aggredibile dai legittimari lesi e molte banche non la finanziano; una successoria richiede accettazione tacita trascritta e voltura.",
              "bloccante", "gratuito dal venditore"),
-            ("Identificazione e titolarita'", "Dati del venditore: identita', stato civile, regime patrimoniale",
+            ("Identificazione e titolarità", "Dati del venditore: identità, stato civile, regime patrimoniale",
              "Venditore", "Artt. 177 e 179 c.c.",
-             "In comunione legale l'atto richiede l'intervento di entrambi i coniugi. Se il venditore e' impresa servono visura camerale, poteri del firmatario e verifica di procedure concorsuali in corso.",
+             "In comunione legale l'atto richiede l'intervento di entrambi i coniugi. Se il venditore è impresa servono visura camerale, poteri del firmatario e verifica di procedure concorsuali in corso.",
              "bloccante", "visura 5-25 EUR"),
-            ("Identificazione e titolarita'", "Certificato di destinazione urbanistica",
+            ("Identificazione e titolarità", "Certificato di destinazione urbanistica",
              "Comune, ufficio urbanistica", "Art. 30 c. 2 DPR 380/2001",
-             "Obbligatorio a pena di nullita' quando l'atto comprende terreni; non serve per l'area di pertinenza di un fabbricato censito se inferiore a cinquemila metri quadrati. Fuori da quel caso resta utile per sapere cosa si potra' fare dell'area.",
-             "se ricorre", "bollo piu' diritti"),
+             "Obbligatorio a pena di nullità quando l'atto comprende terreni; non serve per l'area di pertinenza di un fabbricato censito se inferiore a cinquemila metri quadrati. Fuori da quel caso resta utile per sapere cosa si potrà fare dell'area.",
+             "se ricorre", "bollo più diritti"),
 
-            ("Legittimita' urbanistica", "Titolo edilizio originario con tutti gli elaborati grafici",
+            ("Legittimità urbanistica", "Titolo edilizio originario con tutti gli elaborati grafici",
              "Comune, archivio edilizio", "Art. 9-bis c. 1-bis DPR 380/2001",
-             "E' il fondamento dello stato legittimo: licenza, concessione o permesso che ha previsto la costruzione. Senza gli elaborati approvati non esiste termine di paragone con lo stato di fatto, e nessun tecnico puo' asseverare la conformita'.",
+             "È il fondamento dello stato legittimo: licenza, concessione o permesso che ha previsto la costruzione. Senza gli elaborati approvati non esiste termine di paragone con lo stato di fatto, e nessun tecnico può asseverare la conformità.",
              "bloccante", "accesso agli atti"),
-            ("Legittimita' urbanistica", "Tutti i titoli successivi: DIA, SCIA, CILA, varianti",
+            ("Legittimità urbanistica", "Tutti i titoli successivi: DIA, SCIA, CILA, varianti",
              "Comune, archivio edilizio", "Art. 9-bis c. 1-bis DPR 380/2001",
-             "Lo stato legittimo e' il titolo originario integrato dagli eventuali titoli successivi che hanno abilitato interventi parziali. Un intervento eseguito e mai titolato interrompe la catena e rende l'immobile difforme.",
+             "Lo stato legittimo è il titolo originario integrato dagli eventuali titoli successivi che hanno abilitato interventi parziali. Un intervento eseguito e mai titolato interrompe la catena e rende l'immobile difforme.",
              "bloccante", "compreso nell'accesso"),
-            ("Legittimita' urbanistica", "Dichiarazione sostitutiva per opere iniziate prima del 1 settembre 1967",
+            ("Legittimità urbanistica", "Dichiarazione sostitutiva per opere iniziate prima del 1 settembre 1967",
              "Venditore, atto notorio", "Art. 40 c. 3 legge 47/1985",
-             "Per gli edifici iniziati prima di quella data, in luogo degli estremi della licenza si puo' produrre una dichiarazione sostitutiva di atto notorio che ne attesti l'inizio anteriore. E' la via che rende commerciabile un fabbricato antico privo di titolo.",
+             "Per gli edifici iniziati prima di quella data, in luogo degli estremi della licenza si può produrre una dichiarazione sostitutiva di atto notorio che ne attesti l'inizio anteriore. È la via che rende commerciabile un fabbricato antico privo di titolo.",
              "se ricorre", "gratuito"),
-            ("Legittimita' urbanistica", "Condono: domanda, ricevute di oblazione e oneri, sanatoria",
+            ("Legittimità urbanistica", "Condono: domanda, ricevute di oblazione e oneri, sanatoria",
              "Comune, venditore", "Leggi 47/1985, 724/1994, 326/2003",
-             "Un condono chiesto e non concluso lascia l'immobile in sospeso: il titolo non c'e' ancora e l'esito non e' garantito. Vanno verificati il pagamento integrale e, se il provvedimento manca, lo stato dell'istruttoria.",
+             "Un condono chiesto e non concluso lascia l'immobile in sospeso: il titolo non c'è ancora e l'esito non è garantito. Vanno verificati il pagamento integrale e, se il provvedimento manca, lo stato dell'istruttoria.",
              "se ricorre", "accesso agli atti"),
-            ("Legittimita' urbanistica", "Dichiarazione asseverata sulle tolleranze costruttive",
+            ("Legittimità urbanistica", "Dichiarazione asseverata sulle tolleranze costruttive",
              "Tecnico abilitato", "Art. 34-bis c. 3 DPR 380/2001",
-             "Le tolleranze non sono violazioni ma vanno dichiarate dal tecnico con atto asseverato da allegare al trasferimento. Per le opere entro il 24 maggio 2024 la soglia e' del 5 per cento sotto i cento metri quadrati, 4 fra cento e trecento, 3 fra trecento e cinquecento, 2 oltre.",
+             "Le tolleranze non sono violazioni ma vanno dichiarate dal tecnico con atto asseverato da allegare al trasferimento. Per le opere entro il 24 maggio 2024 la soglia è del 5 per cento sotto i cento metri quadrati, 4 fra cento e trecento, 3 fra trecento e cinquecento, 2 oltre.",
              "bloccante", "compresa nella perizia"),
-            ("Legittimita' urbanistica", "Relazione di conformita' urbanistica e catastale di parte",
+            ("Legittimità urbanistica", "Relazione di conformità urbanistica e catastale di parte",
              "Tecnico incaricato dall'acquirente", "Art. 9-bis DPR 380/2001, art. 29 legge 52/1985",
-             "Sintetizza tutto il resto e quantifica il costo di regolarizzazione di cio' che non torna. Va commissionata dall'acquirente: la relazione del tecnico del venditore non risponde verso di lui.",
+             "Sintetizza tutto il resto e quantifica il costo di regolarizzazione di ciò che non torna. Va commissionata dall'acquirente: la relazione del tecnico del venditore non risponde verso di lui.",
              "bloccante", "400-900 EUR"),
-            ("Legittimita' urbanistica", "Agibilita' o certificato storico di abitabilita'",
+            ("Legittimità urbanistica", "Agibilità o certificato storico di abitabilità",
              "Comune, venditore", "Art. 24 DPR 380/2001",
-             "Attesta sicurezza, igiene, salubrita', risparmio energetico e conformita' dell'opera al progetto. La sua assenza non impedisce l'atto ma e' un indice: quasi sempre significa che qualcosa non fu mai chiuso.",
+             "Attesta sicurezza, igiene, salubrità, risparmio energetico e conformità dell'opera al progetto. La sua assenza non impedisce l'atto ma è un indice: quasi sempre significa che qualcosa non fu mai chiuso.",
              "importante", "accesso agli atti"),
-            ("Legittimita' urbanistica", "Assenza di ordinanze, diffide e procedimenti sanzionatori",
+            ("Legittimità urbanistica", "Assenza di ordinanze, diffide e procedimenti sanzionatori",
              "Comune, edilizia privata", "Art. 22 legge 241/1990",
              "Un procedimento aperto o un'ordinanza di demolizione non trascritta non compare in visura ipotecaria e si scopre solo chiedendolo. Serve la delega del proprietario oppure la dimostrazione di un interesse qualificato.",
              "bloccante", "diritti di segreteria"),
-            ("Legittimita' urbanistica", "Verifica della destinazione d'uso, dei frazionamenti e delle fusioni",
+            ("Legittimità urbanistica", "Verifica della destinazione d'uso, dei frazionamenti e delle fusioni",
              "Tecnico, su titoli e catasto", "Art. 23-ter DPR 380/2001",
-             "Un ufficio venduto come abitazione, o due unita' unite di fatto e non in catasto, cambiano imposte, agevolazione prima casa e possibilita' di locazione. Il confronto fra categoria catastale, titolo edilizio e stato di fatto lo rivela.",
+             "Un ufficio venduto come abitazione, o due unità unite di fatto e non in catasto, cambiano imposte, agevolazione prima casa e possibilità di locazione. Il confronto fra categoria catastale, titolo edilizio e stato di fatto lo rivela.",
              "importante", "compreso nella perizia"),
 
             ("Struttura e sismica", "Denuncia dei lavori e autorizzazione sismica",
              "Genio Civile, ufficio tecnico regionale", "Artt. 93 e 94 DPR 380/2001",
-             "In zona sismica i lavori strutturali richiedono preavviso e, fuori dalla bassa sismicita', autorizzazione preventiva. La loro assenza su interventi gia' eseguiti e' una difformita' che non si sana con una semplice pratica edilizia.",
+             "In zona sismica i lavori strutturali richiedono preavviso e, fuori dalla bassa sismicità, autorizzazione preventiva. La loro assenza su interventi già eseguiti è una difformità che non si sana con una semplice pratica edilizia.",
              "se ricorre", "accesso agli atti"),
             ("Struttura e sismica", "Certificato di collaudo statico",
              "Comune o Genio Civile", "Art. 67 DPR 380/2001",
@@ -2783,48 +2783,48 @@ class Costruttore:
              "se ricorre", "accesso agli atti"),
             ("Vincoli e tutele", "Se bene culturale: denuncia di trasferimento e prelazione",
              "Soprintendenza", "Artt. 59-62 d.lgs. 42/2004",
-             "Il trasferimento va denunciato e lo Stato ha diritto di prelazione entro il termine di legge. Finche' il termine non decorre l'acquisto non e' definitivo, e la circostanza va scritta nella proposta.",
+             "Il trasferimento va denunciato e lo Stato ha diritto di prelazione entro il termine di legge. Finchè il termine non decorre l'acquisto non è definitivo, e la circostanza va scritta nella proposta.",
              "se ricorre", "gratuito"),
             ("Vincoli e tutele", "Vincolo idrogeologico, piano di assetto idrogeologico, usi civici",
-             "Comune, Regione, autorita' di bacino", "Norme regionali e di piano",
-             "Determinano cosa si puo' fare dell'area e, nel caso del rischio idraulico, incidono su assicurabilita' e valore. Un uso civico non estinto rende l'immobile inalienabile senza sdemanializzazione.",
+             "Comune, Regione, autorità di bacino", "Norme regionali e di piano",
+             "Determinano cosa si può fare dell'area e, nel caso del rischio idraulico, incidono su assicurabilità e valore. Un uso civico non estinto rende l'immobile inalienabile senza sdemanializzazione.",
              "se ricorre", "consultazione gratuita"),
             ("Vincoli e tutele", "Convenzioni urbanistiche ed edilizia convenzionata",
              "Comune, atto di provenienza", "Convenzione e norme di piano",
-             "Un immobile in edilizia convenzionata puo' avere un prezzo massimo di cessione ancora vigente: pagare sopra quel prezzo espone alla ripetizione dell'eccedenza. Il vincolo si rimuove con atto oneroso, da quantificare prima di trattare.",
+             "Un immobile in edilizia convenzionata può avere un prezzo massimo di cessione ancora vigente: pagare sopra quel prezzo espone alla ripetizione dell'eccedenza. Il vincolo si rimuove con atto oneroso, da quantificare prima di trattare.",
              "se ricorre", "accesso agli atti"),
 
-            ("Impianti ed energia", "Dichiarazione di conformita' degli impianti",
+            ("Impianti ed energia", "Dichiarazione di conformità degli impianti",
              "Venditore, installatore", "DM 37/2008",
              "Elettrico, termico, gas, idrico e ricezione. Serve per l'agibilita' e per qualunque intervento futuro. La sua assenza non blocca l'atto ma sposta sull'acquirente il costo dell'adeguamento e della messa a norma.",
              "importante", "gratuito dal venditore"),
             ("Impianti ed energia", "Dichiarazione di rispondenza per impianti anteriori al 2008",
              "Tecnico abilitato", "Art. 7 c. 6 DM 37/2008",
-             "Sostituisce la dichiarazione di conformita' quando questa non e' reperibile, ed e' rilasciata da un professionista o da un'impresa con i requisiti di legge dopo verifica dell'impianto. Ha un costo e va messo a preventivo.",
+             "Sostituisce la dichiarazione di conformità quando questa non è reperibile, ed è rilasciata da un professionista o da un'impresa con i requisiti di legge dopo verifica dell'impianto. Ha un costo e va messo a preventivo.",
              "se ricorre", "300-600 EUR"),
             ("Impianti ed energia", "Libretto di impianto e ultimo rapporto di efficienza energetica",
              "Venditore, manutentore", "DPR 74/2013",
-             "Dice eta', potenza e stato della caldaia e se le manutenzioni obbligatorie sono state fatte. Una caldaia a fine vita e' una spesa certa a breve, che va scontata dal prezzo e non scoperta a dicembre.",
+             "Dice età, potenza e stato della caldaia e se le manutenzioni obbligatorie sono state fatte. Una caldaia a fine vita è una spesa certa a breve, che va scontata dal prezzo e non scoperta a dicembre.",
              "importante", "gratuito dal venditore"),
-            ("Impianti ed energia", "Attestato di prestazione energetica in corso di validita'",
+            ("Impianti ed energia", "Attestato di prestazione energetica in corso di validità",
              "Certificatore accreditato", "D.lgs. 192/2005",
              "Va allegato all'atto e indicato nell'annuncio. Determina la classe da cui parte ogni valutazione di adeguamento futuro e incide sul valore, sui costi di gestione e sull'accesso ad alcune agevolazioni.",
              "bloccante", "150-350 EUR"),
             ("Impianti ed energia", "Denuncia dell'impianto di terra e verifiche periodiche",
              "Amministratore, INAIL o organismo abilitato", "DPR 462/2001",
-             "Riguarda le parti comuni e le pertinenze come autorimesse e locali tecnici. La periodicita' delle verifiche dipende dal tipo di luogo, e l'omissione e' una responsabilita' che passa alla proprieta'.",
+             "Riguarda le parti comuni e le pertinenze come autorimesse e locali tecnici. La periodicità delle verifiche dipende dal tipo di luogo, e l'omissione è una responsabilità che passa alla proprietà.",
              "se ricorre", "gratuito dall'amministratore"),
             ("Impianti ed energia", "Documentazione dell'ascensore: matricola, dichiarazioni, verifiche biennali",
              "Amministratore, manutentore", "DPR 162/1999",
-             "Un ascensore fuori verifica o da adeguare e' una spesa straordinaria in arrivo, e la delibera puo' essere gia' stata presa. Va incrociata con i verbali di assemblea.",
+             "Un ascensore fuori verifica o da adeguare è una spesa straordinaria in arrivo, e la delibera può essere già stata presa. Va incrociata con i verbali di assemblea.",
              "se ricorre", "gratuito dall'amministratore"),
             ("Impianti ed energia", "Certificato di prevenzione incendi",
              "Comando provinciale dei vigili del fuoco", "DPR 151/2011",
-             "Riguarda le attivita' soggette, tipicamente autorimesse oltre trecento metri quadrati e centrali termiche sopra una certa potenza. La sua mancanza espone il condominio a sanzioni e a lavori di adeguamento.",
+             "Riguarda le attività soggette, tipicamente autorimesse oltre trecento metri quadrati e centrali termiche sopra una certa potenza. La sua mancanza espone il condominio a sanzioni e a lavori di adeguamento.",
              "se ricorre", "gratuito dall'amministratore"),
             ("Impianti ed energia", "Valutazione della presenza di amianto e del suo stato",
              "Tecnico, amministratore", "Legge 257/1992, DM 6 settembre 1994",
-             "Negli edifici anteriori al 1994 e' frequente in coperture, canne fumarie e tubazioni. Non e' vietato di per se' se in buono stato e confinato, ma va censito, valutato e gestito, e la rimozione ha costi rilevanti.",
+             "Negli edifici anteriori al 1994 è frequente in coperture, canne fumarie e tubazioni. Non è vietato di per sé se in buono stato e confinato, ma va censito, valutato e gestito, e la rimozione ha costi rilevanti.",
              "importante", "verifica 200-500 EUR"),
             ("Impianti ed energia", "Misurazione del gas radon dove prescritta",
              "Laboratorio riconosciuto", "D.lgs. 101/2020",
@@ -2837,7 +2837,7 @@ class Costruttore:
 
             ("Condominio", "Regolamento di condominio, con gli estremi di trascrizione se contrattuale",
              "Amministratore", "Artt. 1138 c.c. e 63 disp. att. c.c.",
-             "Un regolamento contrattuale trascritto puo' vietare la locazione turistica, l'uso diverso dall'abitazione, gli animali o il cambio di destinazione. Va letto prima di costruire un piano di reddito su affitti brevi.",
+             "Un regolamento contrattuale trascritto può vietare la locazione turistica, l'uso diverso dall'abitazione, gli animali o il cambio di destinazione. Va letto prima di costruire un piano di reddito su affitti brevi.",
              "bloccante", "gratuito"),
             ("Condominio", "Tabelle millesimali",
              "Amministratore", "Art. 68 disp. att. c.c.",
@@ -2845,11 +2845,11 @@ class Costruttore:
              "importante", "gratuito"),
             ("Condominio", "Consuntivi degli ultimi due esercizi e preventivo in corso",
              "Amministratore", "Art. 1130 c.c.",
-             "Sono l'unica base attendibile per la voce spese condominiali del modello. La stima a voce dell'agenzia e' sistematicamente ottimistica, e la differenza su vent'anni non e' piccola.",
+             "Sono l'unica base attendibile per la voce spese condominiali del modello. La stima a voce dell'agenzia è sistematicamente ottimistica, e la differenza su vent'anni non è piccola.",
              "importante", "gratuito"),
             ("Condominio", "Verbali delle assemblee degli ultimi tre anni",
              "Amministratore", "Art. 1136 c.c.",
-             "Rivelano i lavori deliberati e non ancora eseguiti, che sono un costo certo che arriva dopo il rogito, e le liti in corso. E' il documento che piu' spesso cambia il prezzo di una trattativa.",
+             "Rivelano i lavori deliberati e non ancora eseguiti, che sono un costo certo che arriva dopo il rogito, e le liti in corso. È il documento che più spesso cambia il prezzo di una trattativa.",
              "bloccante", "gratuito"),
             ("Condominio", "Dichiarazione dell'amministratore su spese insolute e liti in corso",
              "Amministratore", "Art. 63 disp. att. c.c.",
@@ -2861,12 +2861,12 @@ class Costruttore:
              "importante", "gratuito"),
             ("Condominio", "Documentazione tecnica delle parti comuni",
              "Amministratore", "Norme di settore e regolamenti locali",
-             "Agibilita' dell'edificio, antincendio, impianto di terra, ascensore, e dove istituito il fascicolo del fabbricato. Serve a capire se l'edificio ha adempimenti aperti che diventeranno quote straordinarie.",
+             "Agibilità dell'edificio, antincendio, impianto di terra, ascensore, e dove istituito il fascicolo del fabbricato. Serve a capire se l'edificio ha adempimenti aperti che diventeranno quote straordinarie.",
              "importante", "gratuito"),
 
             ("Nuova costruzione", "Fideiussione a garanzia delle somme versate",
              "Costruttore, banca o assicurazione", "Artt. 2 e 3 d.lgs. 122/2005",
-             "Obbligatoria per ogni somma versata prima del trasferimento, a pena di nullita' relativa azionabile dal solo acquirente. La tutela non e' rinunciabile e ogni patto contrario e' nullo: non si versa un euro senza averla in mano.",
+             "Obbligatoria per ogni somma versata prima del trasferimento, a pena di nullità relativa azionabile dal solo acquirente. La tutela non è rinunciabile e ogni patto contrario è nullo: non si versa un euro senza averla in mano.",
              "bloccante", "a carico del costruttore"),
             ("Nuova costruzione", "Polizza indennitaria decennale postuma",
              "Costruttore, assicurazione", "Art. 4 d.lgs. 122/2005",
@@ -2878,28 +2878,28 @@ class Costruttore:
              "bloccante", "compreso nell'atto"),
             ("Nuova costruzione", "Permesso di costruire, varianti ed elaborati approvati",
              "Comune, costruttore", "DPR 380/2001",
-             "Va confrontato con quanto si sta comprando: superfici, altezze, destinazione delle parti comuni, numero di posti auto. La differenza fra reso e approvato e' il rischio tipico dell'acquisto sulla carta.",
+             "Va confrontato con quanto si sta comprando: superfici, altezze, destinazione delle parti comuni, numero di posti auto. La differenza fra reso e approvato è il rischio tipico dell'acquisto sulla carta.",
              "bloccante", "accesso agli atti"),
-            ("Nuova costruzione", "Agibilita' e accatastamento definitivo",
+            ("Nuova costruzione", "Agibilità e accatastamento definitivo",
              "Comune, costruttore", "Art. 24 DPR 380/2001",
              "La banca non delibera prima dell'accatastamento definitivo. Su un immobile in costruzione la tempistica di questi due adempimenti determina la data del rogito, e va scritta con le relative penali.",
              "bloccante", "a carico del costruttore"),
             ("Nuova costruzione", "Visura camerale del costruttore e verifica di procedure concorsuali",
              "Registro imprese, tribunale", "Art. 5 d.lgs. 122/2005",
-             "La tutela della legge nasce proprio dal rischio di crisi dell'impresa. Bilanci, anzianita' e assenza di procedure in corso dicono quanto quel rischio sia teorico.",
+             "La tutela della legge nasce proprio dal rischio di crisi dell'impresa. Bilanci, anzianità e assenza di procedure in corso dicono quanto quel rischio sia teorico.",
              "importante", "5-25 EUR"),
             ("Nuova costruzione", "Capitolato, extracapitolato, cronoprogramma e penali",
              "Costruttore", "Contratto di appalto e preliminare",
-             "Distinguere cosa e' compreso nel prezzo da cosa e' extra evita la sorpresa piu' cara dell'acquisto sulla carta. Il cronoprogramma senza penali per il ritardo non e' un impegno.",
+             "Distinguere cosa è compreso nel prezzo da cosa è extra evita la sorpresa più cara dell'acquisto sulla carta. Il cronoprogramma senza penali per il ritardo non è un impegno.",
              "importante", "compreso"),
 
             ("Occupazione e tributi", "Contratti di locazione o comodato in essere",
              "Venditore", "Legge 431/1998, art. 1599 c.c.",
-             "La locazione con data certa anteriore e' opponibile all'acquirente, che subentra nel contratto: si compra un immobile gia' occupato, al canone gia' pattuito, fino alla scadenza. E' fra le prime cose da chiedere.",
+             "La locazione con data certa anteriore è opponibile all'acquirente, che subentra nel contratto: si compra un immobile già occupato, al canone già pattuito, fino alla scadenza. È fra le prime cose da chiedere.",
              "bloccante", "gratuito dal venditore"),
             ("Occupazione e tributi", "Stato di occupazione e impegno alla liberazione",
              "Venditore", "Art. 1477 c.c.",
-             "Vanno scritti chi occupa l'immobile e a che titolo, e il termine entro cui sara' libero. Un'occupazione senza titolo trasforma l'acquisto in un contenzioso di durata imprevedibile.",
+             "Vanno scritti chi occupa l'immobile e a che titolo, e il termine entro cui sarà libero. Un'occupazione senza titolo trasforma l'acquisto in un contenzioso di durata imprevedibile.",
              "bloccante", "gratuito"),
             ("Occupazione e tributi", "Ultime ricevute IMU e TARI, e situazione dei tributi locali",
              "Venditore", "Regolamenti comunali",
@@ -2915,87 +2915,87 @@ class Costruttore:
              "se ricorre", "polizza 0,5-1% del valore"),
             ("Occupazione e tributi", "Se provenienza successoria: successione, accettazione trascritta, voltura",
              "Venditore, notaio", "Artt. 2648 e 2650 c.c.",
-             "Senza accettazione dell'eredita' trascritta la continuita' delle trascrizioni si interrompe e il notaio non roga. E' un adempimento che il venditore spesso non ha fatto e che richiede tempo.",
+             "Senza accettazione dell'eredita' trascritta la continuità delle trascrizioni si interrompe e il notaio non roga. È un adempimento che il venditore spesso non ha fatto e che richiede tempo.",
              "se ricorre", "a carico del venditore"),
             ("Occupazione e tributi", "Rilievo metrico e verifica delle superfici dichiarate",
              "Tecnico incaricato dall'acquirente", "DPR 138/1998, allegato C",
-             "La superficie commerciale dell'annuncio non e' un dato normato e comprende quote di balconi e pertinenze secondo criteri variabili. Il prezzo al metro quadro con cui si confronta il mercato dipende da quale superficie si usa.",
+             "La superficie commerciale dell'annuncio non è un dato normato e comprende quote di balconi e pertinenze secondo criteri variabili. Il prezzo al metro quadro con cui si confronta il mercato dipende da quale superficie si usa.",
              "importante", "compreso nella perizia"),
             ("Garanzie e dichiarazioni", "Relazione notarile preliminare ipocatastale ventennale",
              "Notaio incaricato", "Artt. 2643 e seguenti c.c.",
-             "Non e' la visura ma la sua lettura professionale, con la responsabilita' del notaio dietro: ricostruisce la catena delle trascrizioni per vent'anni, verifica la continuita' e censisce iscrizioni e gravami. Va chiesta prima della proposta, non alla settimana del rogito, quando cio' che emerge non si puo' piu' usare per trattare.",
+             "Non è la visura ma la sua lettura professionale, con la responsabilità del notaio dietro: ricostruisce la catena delle trascrizioni per vent'anni, verifica la continuità e censisce iscrizioni e gravami. Va chiesta prima della proposta, non alla settimana del rogito, quando ciò che emerge non si può più usare per trattare.",
              "bloccante", "300-600 EUR"),
-            ("Garanzie e dichiarazioni", "Dichiarazione del venditore di liberta' da ipoteche, pignoramenti e sequestri",
+            ("Garanzie e dichiarazioni", "Dichiarazione del venditore di libertà da ipoteche, pignoramenti e sequestri",
              "Venditore, in atto e nella proposta", "Art. 1482 c.c.",
-             "La legge tutela il compratore solo se i gravami non erano dichiarati dal venditore e da lui ignorati: in quel caso puo' sospendere il prezzo, far fissare un termine per la liberazione e ottenere la risoluzione con il danno. Se invece li conosceva, resta solo la garanzia per evizione. La dichiarazione in atto e' cio' che tiene in vita il rimedio, e va anticipata nella proposta.",
+             "La legge tutela il compratore solo se i gravami non erano dichiarati dal venditore e da lui ignorati: in quel caso può sospendere il prezzo, far fissare un termine per la liberazione e ottenere la risoluzione con il danno. Se invece li conosceva, resta solo la garanzia per evizione. La dichiarazione in atto è ciò che tiene in vita il rimedio, e va anticipata nella proposta.",
              "bloccante", "gratuito"),
             ("Garanzie e dichiarazioni", "Dichiarazione su oneri e diritti di terzi non apparenti",
              "Venditore, in atto e nella proposta", "Art. 1489 c.c.",
-             "E' la voce che nessuno chiede e che nessuna visura copre. Servitu' non apparenti, comodati, diritti personali di godimento e oneri reali non si trascrivono e non compaiono da nessuna parte: se non sono dichiarati nel contratto e il compratore non ne aveva conoscenza, si puo' domandare la risoluzione o la riduzione del prezzo, ma occorre poterlo provare.",
+             "È la voce che nessuno chiede e che nessuna visura copre. Servitu' non apparenti, comodati, diritti personali di godimento e oneri reali non si trascrivono e non compaiono da nessuna parte: se non sono dichiarati nel contratto e il compratore non ne aveva conoscenza, si può domandare la risoluzione o la riduzione del prezzo, ma occorre poterlo provare.",
              "bloccante", "gratuito"),
             ("Garanzie e dichiarazioni", "Assenso alla cancellazione dell'ipoteca e verifica dell'avvenuta cancellazione",
              "Banca creditrice, conservatoria", "Art. 2882 c.c., art. 40-bis d.lgs. 385/1993",
-             "Estinzione e cancellazione sono due cose diverse. Con la procedura semplificata la banca rilascia quietanza e trasmette la comunicazione al conservatore entro trenta giorni senza oneri, ma puo' anche comunicare che l'ipoteca permane per un giustificato motivo ostativo. Va quindi verificata la cancellazione nei registri, non la quietanza.",
+             "Estinzione e cancellazione sono due cose diverse. Con la procedura semplificata la banca rilascia quietanza e trasmette la comunicazione al conservatore entro trenta giorni senza oneri, ma può anche comunicare che l'ipoteca permane per un giustificato motivo ostativo. Va quindi verificata la cancellazione nei registri, non la quietanza.",
              "bloccante", "gratuito o assenso notarile"),
-            ("Garanzie e dichiarazioni", "Dichiarazione sostitutiva di atto di notorieta' del venditore",
+            ("Garanzie e dichiarazioni", "Dichiarazione sostitutiva di atto di notorietà del venditore",
              "Venditore", "Artt. 47 e 76 DPR 445/2000",
-             "E' lo strumento con cui una dichiarazione privata acquista peso: riguarda stati, qualita' e fatti a diretta conoscenza del dichiarante, e chi rende dichiarazioni mendaci o forma atti falsi e' punito ai sensi del codice penale. E' la forma da chiedere per l'assenza di controversie, per lo stato di occupazione e per le opere anteriori al 1967.",
+             "È lo strumento con cui una dichiarazione privata acquista peso: riguarda stati, qualità e fatti a diretta conoscenza del dichiarante, e chi rende dichiarazioni mendaci o forma atti falsi è punito ai sensi del codice penale. È la forma da chiedere per l'assenza di controversie, per lo stato di occupazione e per le opere anteriori al 1967.",
              "importante", "bollo se autenticata"),
             ("Garanzie e dichiarazioni", "Se provenienza successoria non divisa: rinuncia alla prelazione dei coeredi",
              "Coeredi, notaio", "Art. 732 c.c.",
-             "Il coerede che vende la sua quota a un estraneo deve notificare la proposta agli altri, che hanno prelazione per due mesi. Senza notifica i coeredi possono riscattare la quota dall'acquirente e da ogni successivo avente causa, finche' dura la comunione ereditaria: e' un rischio che segue il bene e non si prescrive con il rogito.",
+             "Il coerede che vende la sua quota a un estraneo deve notificare la proposta agli altri, che hanno prelazione per due mesi. Senza notifica i coeredi possono riscattare la quota dall'acquirente e da ogni successivo avente causa, finché dura la comunione ereditaria: è un rischio che segue il bene e non si prescrive con il rogito.",
              "se ricorre", "gratuito"),
             ("Garanzie e dichiarazioni", "Vincoli di destinazione: fondo patrimoniale, trust, atti ex art. 2645-ter",
              "Conservatoria, atto di provenienza", "Artt. 167 e 2645-ter c.c.",
-             "Sono vincoli trascritti che limitano la disponibilita' del bene e richiedono consensi o autorizzazioni ulteriori. Un immobile in fondo patrimoniale con figli minori puo' richiedere l'autorizzazione del giudice: e' un passaggio che allunga i tempi e va saputo prima di fissare la data del rogito.",
+             "Sono vincoli trascritti che limitano la disponibilità del bene e richiedono consensi o autorizzazioni ulteriori. Un immobile in fondo patrimoniale con figli minori può richiedere l'autorizzazione del giudice: è un passaggio che allunga i tempi e va saputo prima di fissare la data del rogito.",
              "se ricorre", "compreso nella relazione"),
-            ("Garanzie e dichiarazioni", "Se il venditore e' impresa: preliminare trascritto a giusto prezzo",
+            ("Garanzie e dichiarazioni", "Se il venditore è impresa: preliminare trascritto a giusto prezzo",
              "Notaio", "Art. 166 c. 3 d.lgs. 14/2019",
-             "Non e' solo protezione da ipoteche successive. Le vendite e i preliminari trascritti ai sensi dell'articolo 2645-bis, conclusi a giusto prezzo e aventi ad oggetto immobili ad uso abitativo destinati ad abitazione principale dell'acquirente o di parenti entro il terzo grado, non sono soggetti all'azione revocatoria in caso di liquidazione giudiziale del venditore.",
+             "Non è solo protezione da ipoteche successive. Le vendite e i preliminari trascritti ai sensi dell'articolo 2645-bis, conclusi a giusto prezzo e aventi ad oggetto immobili ad uso abitativo destinati ad abitazione principale dell'acquirente o di parenti entro il terzo grado, non sono soggetti all'azione revocatoria in caso di liquidazione giudiziale del venditore.",
              "se ricorre", "trascrizione e onorario"),
-            ("Garanzie e dichiarazioni", "Solvibilita' del venditore e rischio di revocatoria ordinaria",
+            ("Garanzie e dichiarazioni", "Solvibilità del venditore e rischio di revocatoria ordinaria",
              "Registro imprese, tribunale", "Art. 2901 c.c.",
-             "Chi compra da un debitore esposto rischia l'azione revocatoria del creditore, che nel termine di cinque anni puo' far dichiarare inefficace l'atto nei suoi confronti se l'acquirente era consapevole del pregiudizio. Su un venditore in difficolta' conclamata il prezzo di mercato e la tracciabilita' del pagamento sono la difesa.",
+             "Chi compra da un debitore esposto rischia l'azione revocatoria del creditore, che nel termine di cinque anni può far dichiarare inefficace l'atto nei suoi confronti se l'acquirente era consapevole del pregiudizio. Su un venditore in difficoltà conclamata il prezzo di mercato e la tracciabilità del pagamento sono la difesa.",
              "importante", "5-25 EUR"),
-            ("Garanzie e dichiarazioni", "Capacita' e legittimazione delle parti",
+            ("Garanzie e dichiarazioni", "Capacità e legittimazione delle parti",
              "Venditore, tribunale, registro imprese", "Artt. 320, 374 e 2384 c.c.",
-             "Minori, interdetti e beneficiari di amministrazione di sostegno richiedono l'autorizzazione del giudice; una societa' richiede la verifica dei poteri del firmatario e il certificato di vigenza. Un atto stipulato da chi non poteva stipularlo e' un contenzioso che comincia dopo il pagamento.",
+             "Minori, interdetti e beneficiari di amministrazione di sostegno richiedono l'autorizzazione del giudice; una società richiede la verifica dei poteri del firmatario e il certificato di vigenza. Un atto stipulato da chi non poteva stipularlo è un contenzioso che comincia dopo il pagamento.",
              "bloccante", "gratuito o vigenza 10 EUR"),
             ("Garanzie e dichiarazioni", "Verifica delle prelazioni legali applicabili",
              "Notaio, Comune, Soprintendenza", "Art. 732 c.c., d.lgs. 42/2004, legge 590/1965",
              "Coeredi, beni culturali, fondi agricoli confinanti e, per gli immobili urbani non abitativi, il conduttore. Una prelazione non rispettata da' al titolare il riscatto contro l'acquirente, quindi va esclusa per iscritto prima e non spiegata dopo.",
              "importante", "compreso nella relazione"),
-            ("Garanzie e dichiarazioni", "Dichiarazione in atto su mediazione e modalita' di pagamento",
+            ("Garanzie e dichiarazioni", "Dichiarazione in atto su mediazione e modalità di pagamento",
              "Acquirente e venditore, in atto", "Art. 35 c. 22 DL 223/2006",
-             "Le parti devono dichiarare in atto le analitiche modalita' di pagamento, se si sono avvalse di un mediatore e con quali importi e mezzi di pagamento della provvigione. Non e' una formalita': la dichiarazione incompleta o mendace espone a sanzione e all'accertamento di valore, e la tracciabilita' e' anche la difesa dell'acquirente sul prezzo effettivamente pagato.",
+             "Le parti devono dichiarare in atto le analitiche modalità di pagamento, se si sono avvalse di un mediatore e con quali importi e mezzi di pagamento della provvigione. Non è una formalità: la dichiarazione incompleta o mendace espone a sanzione e all'accertamento di valore, e la tracciabilità è anche la difesa dell'acquirente sul prezzo effettivamente pagato.",
              "bloccante", "gratuito"),
             ("Asta giudiziaria", "Perizia di stima del custode, integrale",
              "Portale delle vendite pubbliche, tribunale", "Art. 173-bis disp. att. c.p.c.",
-             "E' il documento piu' informativo dell'intera operazione ed e' gratuito. Vanno letti per intero i capitoli sullo stato occupativo, sulla regolarita' edilizia e urbanistica, sulla provenienza e sulla stima del costo di regolarizzazione. Il riassunto dell'annuncio non basta, e la perizia e' del tribunale, non di chi compra: spesso e' vecchia di anni.",
+             "È il documento più informativo dell'intera operazione ed è gratuito. Vanno letti per intero i capitoli sullo stato occupativo, sulla regolarità edilizia e urbanistica, sulla provenienza e sulla stima del costo di regolarizzazione. Il riassunto dell'annuncio non basta, e la perizia è del tribunale, non di chi compra: spesso è vecchia di anni.",
              "bloccante", "gratuita"),
             ("Asta giudiziaria", "Avviso e ordinanza di vendita",
              "Delegato o cancelleria", "Artt. 570, 576 e 591-bis c.p.c.",
-             "Portano i sei numeri che governano l'offerta: prezzo base, offerta minima, cauzione, termine per il saldo, quota del compenso del delegato a carico dell'aggiudicatario e modalita' di partecipazione. La quota del delegato varia e va letta, non stimata.",
+             "Portano i sei numeri che governano l'offerta: prezzo base, offerta minima, cauzione, termine per il saldo, quota del compenso del delegato a carico dell'aggiudicatario e modalità di partecipazione. La quota del delegato varia e va letta, non stimata.",
              "bloccante", "gratuiti"),
             ("Asta giudiziaria", "Relazione del custode sullo stato di occupazione",
              "Custode giudiziario", "Artt. 559 e 560 c.p.c.",
-             "Debitore e familiari conviventi non perdono il possesso fino al decreto di trasferimento. Sapere se l'immobile e' libero, occupato dal debitore, locato con contratto opponibile o occupato senza titolo cambia i tempi di disponibilita' e il costo della liberazione, che e' la voce piu' variabile dell'operazione.",
+             "Debitore e familiari conviventi non perdono il possesso fino al decreto di trasferimento. Sapere se l'immobile è libero, occupato dal debitore, locato con contratto opponibile o occupato senza titolo cambia i tempi di disponibilità e il costo della liberazione, che è la voce più variabile dell'operazione.",
              "bloccante", "gratuita"),
             ("Asta giudiziaria", "Contratti di locazione opponibili e loro data certa",
              "Custode, perizia", "Art. 2923 c.c.",
-             "La locazione con data certa anteriore al pignoramento e' opponibile all'acquirente, che eredita contratto e canone. L'eccezione, prevista dalla stessa norma, e' il canone inferiore di un terzo al giusto prezzo, che e' la difesa contro il contratto di comodo stipulato per svalutare il bene.",
+             "La locazione con data certa anteriore al pignoramento è opponibile all'acquirente, che eredita contratto e canone. L'eccezione, prevista dalla stessa norma, è il canone inferiore di un terzo al giusto prezzo, che è la difesa contro il contratto di comodo stipulato per svalutare il bene.",
              "se ricorre", "gratuiti"),
             ("Asta giudiziaria", "Delibera del mutuo con versamento diretto alla procedura",
              "Banca", "Art. 585 c.p.c.",
              "Il finanziamento deve prevedere il versamento diretto alle casse della procedura e l'ipoteca di primo grado sull'immobile venduto, e il decreto lo indica: il conservatore non trascrive il decreto se non insieme all'iscrizione dell'ipoteca. Non tutte le banche lo praticano, e va verificato prima di versare la cauzione, non dopo.",
              "bloccante", "istruttoria"),
-            ("Asta giudiziaria", "Stima del costo di regolarizzazione delle difformita'",
+            ("Asta giudiziaria", "Stima del costo di regolarizzazione delle difformità",
              "Tecnico di parte, sulla perizia", "Art. 586 c.p.c., DPR 380/2001",
-             "Il decreto di trasferimento cancella pignoramenti e ipoteche ma non sana nulla di urbanistico. La sanatoria dopo l'aggiudicazione ha termini piu' larghi e un costo che va stimato prima di offrire, perche' entra nel prezzo massimo a cui ci si puo' spingere.",
+             "Il decreto di trasferimento cancella pignoramenti e ipoteche ma non sana nulla di urbanistico. La sanatoria dopo l'aggiudicazione ha termini più larghi e un costo che va stimato prima di offrire, perché entra nel prezzo massimo a cui ci si può spingere.",
              "bloccante", "compresa nella verifica"),
             ("Asta giudiziaria", "Verifica tecnica di parte sull'immobile",
              "Tecnico incaricato dall'acquirente", "Art. 2922 c.c.",
-             "Nella vendita forzata non ha luogo la garanzia per i vizi e la vendita non si puo' impugnare per lesione: tutto cio' che si scopre dopo resta a carico di chi aggiudica. E' la ragione per cui la visita con il custode va fatta, e va fatta con un tecnico.",
+             "Nella vendita forzata non ha luogo la garanzia per i vizi e la vendita non si può impugnare per lesione: tutto ciò che si scopre dopo resta a carico di chi aggiudica. È la ragione per cui la visita con il custode va fatta, e va fatta con un tecnico.",
              "bloccante", "300-700 EUR"),
         ]
 
@@ -3071,10 +3071,10 @@ class Costruttore:
 
         r = S.sezione(ws, r, "Come si usa questo foglio", 11, secondaria=True)
         for testo in [
-            "La richiesta si fa per iscritto e in una volta sola, elencando i documenti con il loro riferimento normativo: una mail che chiede quindici cose motivate ottiene risposte diverse da quindici telefonate. Le voci marcate se ricorre si tolgono prima di inviare, marcandole non applicabile, cosi' la richiesta resta credibile.",
-            "Cio' che l'agenzia non ha, di norma esiste comunque. I documenti catastali e ipotecari li prende un tecnico o un visurista in giornata. I titoli edilizi stanno nell'archivio del Comune e si ottengono con l'accesso agli atti, che pero' richiede la delega scritta del proprietario oppure la dimostrazione di un interesse qualificato, tipicamente la proposta gia' sottoscritta: e' la ragione per cui la proposta va condizionata invece che attesa.",
-            "Un venditore che rifiuta di consegnare le carte, o un'agenzia che chiede di firmare prima, non sta necessariamente nascondendo qualcosa, ma sta chiedendo di assumersi un rischio che si puo' rifiutare. La via praticabile e' la proposta con condizione sospensiva legata all'esito della verifica tecnica, con termine breve e provvigione dovuta solo ad avveramento.",
-            "Il costo complessivo della verifica preventiva sta fra le seicento e le millecinquecento euro, contando la relazione del tecnico, le visure e i diritti di accesso agli atti. E' fra lo zero virgola cinque e l'uno per cento del prezzo, ed e' l'unica spesa dell'operazione che serve a non farla, quando non va fatta.",
+            "La richiesta si fa per iscritto e in una volta sola, elencando i documenti con il loro riferimento normativo: una mail che chiede quindici cose motivate ottiene risposte diverse da quindici telefonate. Le voci marcate se ricorre si tolgono prima di inviare, marcandole non applicabile, così la richiesta resta credibile.",
+            "Ciò che l'agenzia non ha, di norma esiste comunque. I documenti catastali e ipotecari li prende un tecnico o un visurista in giornata. I titoli edilizi stanno nell'archivio del Comune e si ottengono con l'accesso agli atti, che però richiede la delega scritta del proprietario oppure la dimostrazione di un interesse qualificato, tipicamente la proposta già sottoscritta: è la ragione per cui la proposta va condizionata invece che attesa.",
+            "Un venditore che rifiuta di consegnare le carte, o un'agenzia che chiede di firmare prima, non sta necessariamente nascondendo qualcosa, ma sta chiedendo di assumersi un rischio che si può rifiutare. La via praticabile è la proposta con condizione sospensiva legata all'esito della verifica tecnica, con termine breve e provvigione dovuta solo ad avveramento.",
+            "Il costo complessivo della verifica preventiva sta fra le seicento e le millecinquecento euro, contando la relazione del tecnico, le visure e i diritti di accesso agli atti. È fra lo zero virgola cinque e l'uno per cento del prezzo, ed è l'unica spesa dell'operazione che serve a non farla, quando non va fatta.",
         ]:
             r = S.nota_riga(ws, r, testo, 11)
 
@@ -3086,10 +3086,10 @@ class Costruttore:
             ws,
             1,
             "Registro degli immobili in valutazione",
-            "Un immobile per riga. Le colonne calcolate danno prezzo al metro quadro, rendimento lordo e scarto rispetto alla quotazione OMI della zona, cosi' che il confronto sia immediato. Le due colonne in coda dichiarano il regime di acquisto della singola riga, prima casa e venditore impresa: lasciate vuote, la riga eredita il regime del foglio Immobile. Il file si popola anche dalla riga di comando con lo strumento annunci.",
+            "Un immobile per riga. Le colonne calcolate danno prezzo al metro quadro, rendimento lordo e scarto rispetto alla quotazione OMI della zona, così che il confronto sia immediato. Le due colonne in coda dichiarano il regime di acquisto della singola riga, prima casa e venditore impresa: lasciate vuote, la riga eredita il regime del foglio Immobile. Il file si popola anche dalla riga di comando con lo strumento annunci.",
             26,
         )
-        # L'ordine delle colonne e' contrattuale: `annunci.esporta_in_excel` scrive
+        # L'ordine delle colonne è contrattuale: `annunci.esporta_in_excel` scrive
         # posizione per posizione e le tre colonne di formula non vanno mai toccate.
         colonne = [
             ("ID", 12), ("Data", 12), ("Stato", 16), ("Fonte", 18), ("Agenzia", 22),
@@ -3107,7 +3107,7 @@ class Costruttore:
             ("Prima casa", 12), ("Venditore impresa", 16),
         ]
         CALCOLATE = (19, 22, 29)   # prezzo al mq, scarto su OMI, rendimento lordo
-        # Le colonne con una tendina. Il riempimento generico delle righe, piu'
+        # Le colonne con una tendina. Il riempimento generico delle righe, più
         # sotto, le salta: senza questa esclusione le colorava di giallo dopo che
         # `S.scelta` le aveva colorate di azzurro, e la cella tornava a somigliare
         # a una dove si digita. Il test lo ha trovato prima di me.
@@ -3116,9 +3116,9 @@ class Costruttore:
         r = S.intestazioni(ws, r, [c[0] for c in colonne], [c[1] for c in colonne])
         prima = r
 
-        # L'elenco arriva da `annunci.STATI_ANNUNCIO`, che e' la sorgente unica
+        # L'elenco arriva da `annunci.STATI_ANNUNCIO`, che è la sorgente unica
         # condivisa con l'aiuto della riga di comando: due copie di un elenco di
-        # valori ammessi divergono, e queste due erano gia' divergenti.
+        # valori ammessi divergono, e queste due erano già divergenti.
         stato = DataValidation(type="list", formula1='"' + ",".join(A.STATI_ANNUNCIO) + '"', allow_blank=True)
         ws.add_data_validation(stato)
         nuova = DataValidation(type="list", formula1='"SI,NO"', allow_blank=True)
@@ -3128,7 +3128,7 @@ class Costruttore:
 
         # Riga dimostrativa, con dati interamente di fantasia: mostra il formato
         # atteso di ogni colonna senza esporre l'annuncio, l'agenzia o il recapito di
-        # nessuno. Il dominio `.invalid` e' riservato dalla RFC 2606 e non risolve.
+        # nessuno. Il dominio `.invalid` è riservato dalla RFC 2606 e non risolve.
         esempi = [
             ("house_1", date(2026, 1, 1), "da contattare", "portale.invalid", "Agenzia di esempio",
              "000 0000000", "https://portale.invalid/annuncio/1", "Comune di esempio",
@@ -3148,8 +3148,8 @@ class Costruttore:
             for colonna in (17, 18, 20, 21, 27, 28):
                 ws.cell(row=riga, column=colonna).number_format = S.EURO
             ws.cell(row=riga, column=23).number_format = S.EURO_DEC
-            # Prezzo al metro quadro, sul prezzo richiesto: e' quello confrontabile
-            # con la quotazione di zona, mentre l'obiettivo e' una propria ipotesi.
+            # Prezzo al metro quadro, sul prezzo richiesto: è quello confrontabile
+            # con la quotazione di zona, mentre l'obiettivo è una propria ipotesi.
             ws.cell(row=riga, column=19, value=f'=IF(N($P{riga})>0,$Q{riga}/$P{riga},"")').number_format = S.EURO
             ws.cell(
                 row=riga, column=22,
@@ -3162,8 +3162,8 @@ class Costruttore:
             S.scelta(stato, ws.cell(row=riga, column=3))
             S.scelta(nuova, ws.cell(row=riga, column=14))
             S.scelta(uso, ws.cell(row=riga, column=13))
-            # Il vuoto e' ammesso e significa "eredita dal foglio Immobile": la
-            # validazione non lo vieta, percio' le due colonne restano a tre stati.
+            # Il vuoto è ammesso e significa "eredita dal foglio Immobile": la
+            # validazione non lo vieta, perciò le due colonne restano a tre stati.
             S.scelta(nuova, ws.cell(row=riga, column=37))
             S.scelta(nuova, ws.cell(row=riga, column=38))
             for col in range(1, TOTALE + 1):
@@ -3193,10 +3193,10 @@ class Costruttore:
     def foglio_confronto_immobili(self) -> None:
         """Applica il modello a ogni riga del registro annunci, una per riga.
 
-        Il resto del workbook valuta un immobile alla volta, in profondita'. Questo
-        foglio fa il movimento opposto: prende gli annunci gia' raccolti e li mette
+        Il resto del workbook valuta un immobile alla volta, in profondità. Questo
+        foglio fa il movimento opposto: prende gli annunci già raccolti e li mette
         in fila con le stesse regole, per rispondere alla domanda che viene prima,
-        cioe' quale dei candidati meriti la valutazione approfondita.
+        cioè quale dei candidati meriti la valutazione approfondita.
 
         Le colonne intermedie esistono apposta e non vanno compattate: ogni formula
         legge la colonna precedente invece di ricalcolare tutto da capo, il che
@@ -3209,20 +3209,20 @@ class Costruttore:
             ws,
             1,
             "Confronto fra gli immobili in valutazione",
-            "Una riga per annuncio, alimentata dal foglio Annunci. Il prezzo usato e' l'obiettivo se compilato, altrimenti il richiesto.",
+            "Una riga per annuncio, alimentata dal foglio Annunci. Il prezzo usato è l'obiettivo se compilato, altrimenti il richiesto.",
         )
 
         r = S.sezione(ws, r, "Assunzioni comuni a tutti gli immobili")
         riga_ltv = r
-        r = S.campo(ws, r, "Loan to value applicato a ogni immobile", 0.75, S.PERC, input_utente=True, nota="Serve a confrontare a parita' di leva. Zero per confrontare gli acquisti in contanti.")
+        r = S.campo(ws, r, "Loan to value applicato a ogni immobile", 0.75, S.PERC, input_utente=True, nota="Serve a confrontare a parità di leva. Zero per confrontare gli acquisti in contanti.")
         self.nome("ltv_conf", ws, f"B{riga_ltv}")
         riga_aliq = r
-        r = S.campo(ws, r, "Aliquota sul canone", "=ced_libero", S.PERC, nota="Predefinita alla cedolare secca a canone libero. Si puo' sovrascrivere con 10% per il concordato o con l'aliquota marginale per il regime ordinario.", input_utente=True)
+        r = S.campo(ws, r, "Aliquota sul canone", "=ced_libero", S.PERC, nota="Predefinita alla cedolare secca a canone libero. Si può sovrascrivere con 10% per il concordato o con l'aliquota marginale per il regime ordinario.", input_utente=True)
         self.nome("aliquota_conf", ws, f"B{riga_aliq}")
-        r = S.nota_riga(ws, r, "Tutto il resto arriva dagli altri fogli: tasso e durata dal foglio Mutuo, sfitto, morosita', manutenzione, assicurazione e aliquota IMU dal foglio Locazione, provvigione, notaio e altri costi dal foglio Immobile, soglia di rendimento dal foglio Scenari.")
-        r = S.nota_riga(ws, r, "Il regime di acquisto si dichiara per riga, nelle due colonne in coda al foglio Annunci: prima casa e venditore impresa. Le colonne \"Prima casa\" e \"Da impresa\" di questo foglio mostrano il regime che la riga sta effettivamente usando, e sono quelle che le formule delle imposte e dei costi accessori leggono. Lasciare vuota la cella nel registro non e' un NO: significa che la riga eredita il regime impostato nel foglio Immobile, quindi un registro compilato senza toccare quelle colonne si comporta esattamente come prima.")
-        r = S.nota_riga(ws, r, "Restano globali due assunzioni che il registro non porta: l'opzione prezzo-valore e la qualifica di immobile di lusso, cioe' la categoria A/1, A/8 o A/9, entrambe prese dal foglio Immobile. La prima e' una scelta che si esercita in atto e che conviene quasi sempre, la seconda riguarda un caso raro: se in lista c'e' un immobile di lusso accanto a immobili ordinari, quello va valutato a parte.")
-        r = S.nota_riga(ws, r, "Una cosa che il foglio non puo' controllare per costruzione: l'agevolazione prima casa si usa una volta sola, mentre qui possono esserci piu' righe che la dichiarano. E' corretto cosi', perche' ogni riga e' un'alternativa all'altra e non un acquisto che si somma agli altri, ma la lettura giusta della graduatoria e' che il bonus andra' a una sola di quelle righe.")
+        r = S.nota_riga(ws, r, "Tutto il resto arriva dagli altri fogli: tasso e durata dal foglio Mutuo, sfitto, morosità, manutenzione, assicurazione e aliquota IMU dal foglio Locazione, provvigione, notaio e altri costi dal foglio Immobile, soglia di rendimento dal foglio Scenari.")
+        r = S.nota_riga(ws, r, "Il regime di acquisto si dichiara per riga, nelle due colonne in coda al foglio Annunci: prima casa e venditore impresa. Le colonne \"Prima casa\" e \"Da impresa\" di questo foglio mostrano il regime che la riga sta effettivamente usando, e sono quelle che le formule delle imposte e dei costi accessori leggono. Lasciare vuota la cella nel registro non è un NO: significa che la riga eredita il regime impostato nel foglio Immobile, quindi un registro compilato senza toccare quelle colonne si comporta esattamente come prima.")
+        r = S.nota_riga(ws, r, "Restano globali due assunzioni che il registro non porta: l'opzione prezzo-valore e la qualifica di immobile di lusso, cioè la categoria A/1, A/8 o A/9, entrambe prese dal foglio Immobile. La prima è una scelta che si esercita in atto e che conviene quasi sempre, la seconda riguarda un caso raro: se in lista c'è un immobile di lusso accanto a immobili ordinari, quello va valutato a parte.")
+        r = S.nota_riga(ws, r, "Una cosa che il foglio non può controllare per costruzione: l'agevolazione prima casa si usa una volta sola, mentre qui possono esserci più righe che la dichiarano. È corretto così, perché ogni riga è un'alternativa all'altra e non un acquisto che si somma agli altri, ma la lettura giusta della graduatoria è che il bonus andrà a una sola di quelle righe.")
         r += 1
 
         intest = [
@@ -3290,24 +3290,24 @@ class Costruttore:
             ws.cell(row=r, column=25, value=f'=IF(OR({vuoto},N($S{r})=0),"",$P{r}/$S{r})').number_format = S.NUMERO_DEC
             # Il blocco OMI. La zona di riferimento e le due quotazioni arrivano dal
             # registro, lo scarto no: si ricalcola qui invece di leggere la colonna V
-            # del foglio Annunci, perche' quella confronta la quotazione di zona con
+            # del foglio Annunci, perché quella confronta la quotazione di zona con
             # il prezzo richiesto mentre questo foglio valuta il prezzo che usa
-            # davvero, cioe' l'obiettivo quando e' compilato. Leggerla da la' avrebbe
+            # davvero, cioè l'obiettivo quando è compilato. Leggerla da là avrebbe
             # messo in riga un solo numero riferito a un prezzo diverso da quello di
-            # tutte le altre colonne, che e' il tipo di incoerenza che non si vede.
+            # tutte le altre colonne, che è il tipo di incoerenza che non si vede.
             # Il regime di acquisto della riga. Le due colonne non sono decorative:
             # sono le celle che le formule delle imposte e dei costi accessori
             # leggono, al posto dei nomi globali del foglio Immobile che leggevano
-            # prima. Il registro puo' dichiararlo per riga, e il vuoto significa
-            # eredita dal foglio Immobile, cioe' il comportamento precedente. Il
-            # regime resta visibile accanto alle imposte proprio perche' una
+            # prima. Il registro può dichiararlo per riga, e il vuoto significa
+            # eredita dal foglio Immobile, cioè il comportamento precedente. Il
+            # regime resta visibile accanto alle imposte proprio perché una
             # graduatoria in cui una riga paga l'IVA e un'altra il registro va letta
             # sapendolo, non scoprendolo.
             ws.cell(row=r, column=26, value=f'=IF({vuoto},"",IF(Annunci!$AK{s}="",agevolata,Annunci!$AK{s}))')
             ws.cell(row=r, column=27, value=f'=IF({vuoto},"",IF(Annunci!$AL{s}="",da_impresa,Annunci!$AL{s}))')
-            # La concatenazione con la stringa vuota non e' un vezzo: una cella vuota
+            # La concatenazione con la stringa vuota non è un vezzo: una cella vuota
             # nel registro, letta per riferimento diretto, arriva a video come zero,
-            # e un codice di zona OMI che vale zero e' un dato falso, non un dato
+            # e un codice di zona OMI che vale zero è un dato falso, non un dato
             # assente. Lo stesso vale per le due quotazioni, che restano bianche
             # invece di dichiarare un valore di zero euro al metro quadro.
             ws.cell(row=r, column=28, value=f'=IF({vuoto},"",Annunci!$J{s}&"")')
@@ -3356,10 +3356,10 @@ class Costruttore:
 
         r += 1
         for testo in [
-            "Le righe si popolano da sole man mano che il foglio Annunci si riempie: restano vuote finche' non c'e' un identificativo nella riga corrispondente. Gli annunci arrivano anche dalla riga di comando, con `python tools/valuta.py excel --con-annunci`.",
-            "La colonna del cash flow e' quella che separa le operazioni sostenibili da quelle che assorbono cassa ogni mese, e non coincide quasi mai con l'ordine del rendimento lordo. Il debt service coverage ratio sotto uno dice la stessa cosa in forma di soglia.",
-            "Le tre colonne del blocco OMI dicono in quale zona dell'Osservatorio cade l'immobile e fra quali quotazioni al metro quadro si muove quella zona per la tipologia, e vengono dal registro annunci: si popolano con `python tools/valuta.py omi cerca --comune ...` e finiscono qui attraverso il foglio Annunci. Lo scarto e' calcolato su questo foglio, contro il prezzo al mq della colonna E, quindi contro il prezzo obiettivo quando c'e': puo' percio' differire dallo scarto della colonna V del foglio Annunci, che confronta sempre il prezzo richiesto. La differenza fra i due numeri e' esattamente lo sconto che si sta chiedendo.",
-            "Uno scarto negativo non e' di per se' un affare e uno positivo non e' di per se' un prezzo fuori mercato: la quotazione OMI e' un intervallo medio di zona per tipologia, non una stima dell'immobile, e non vede lo stato di conservazione, il piano, l'affaccio, la classe energetica ne' i lavori deliberati in condominio. Serve a segnalare le righe da capire, non a ordinarle.",
+            "Le righe si popolano da sole man mano che il foglio Annunci si riempie: restano vuote finché non c'è un identificativo nella riga corrispondente. Gli annunci arrivano anche dalla riga di comando, con `python tools/valuta.py excel --con-annunci`.",
+            "La colonna del cash flow è quella che separa le operazioni sostenibili da quelle che assorbono cassa ogni mese, e non coincide quasi mai con l'ordine del rendimento lordo. Il debt service coverage ratio sotto uno dice la stessa cosa in forma di soglia.",
+            "Le tre colonne del blocco OMI dicono in quale zona dell'Osservatorio cade l'immobile e fra quali quotazioni al metro quadro si muove quella zona per la tipologia, e vengono dal registro annunci: si popolano con `python tools/valuta.py omi cerca --comune ...` e finiscono qui attraverso il foglio Annunci. Lo scarto è calcolato su questo foglio, contro il prezzo al mq della colonna E, quindi contro il prezzo obiettivo quando c'è: può perciò differire dallo scarto della colonna V del foglio Annunci, che confronta sempre il prezzo richiesto. La differenza fra i due numeri è esattamente lo sconto che si sta chiedendo.",
+            "Uno scarto negativo non è di per sé un affare e uno positivo non è di per sé un prezzo fuori mercato: la quotazione OMI è un intervallo medio di zona per tipologia, non una stima dell'immobile, e non vede lo stato di conservazione, il piano, l'affaccio, la classe energetica né i lavori deliberati in condominio. Serve a segnalare le righe da capire, non a ordinarle.",
             "Questo foglio serve a scegliere quale immobile approfondire, non a decidere. Per l'immobile che sopravvive alla selezione si compila il foglio Immobile con i suoi dati reali, si verifica l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, e si legge il foglio Metriche.",
         ]:
             r = S.nota_riga(ws, r, testo, 6)
@@ -3381,17 +3381,17 @@ class Costruttore:
         fonti = [
             ("Istituzionale", "Agenzia delle Entrate, l'acquisto della casa e le imposte", "Aliquote di registro, IVA, ipotecaria e catastale; regola prezzo-valore e moltiplicatori.", P.FONTI["imposte_acquisto"]),
             ("Istituzionale", "Agenzia delle Entrate, agevolazioni prima casa", "Requisiti, termini, decadenza e credito d'imposta per riacquisto.", P.FONTI["agevolazioni_prima_casa"]),
-            ("Istituzionale", "Agenzia delle Entrate, locazioni brevi e cedolare secca", "Aliquote 21 e 26 per cento, soglia di due unita' dal 2026, obblighi degli intermediari. Guida aggiornata ad aprile 2026.", P.FONTI["locazioni_brevi"]),
+            ("Istituzionale", "Agenzia delle Entrate, locazioni brevi e cedolare secca", "Aliquote 21 e 26 per cento, soglia di due unità dal 2026, obblighi degli intermediari. Guida aggiornata ad aprile 2026.", P.FONTI["locazioni_brevi"]),
             ("Istituzionale", "Agenzia delle Entrate, registrazione dei contratti di locazione", "Imposta di registro sui canoni, minimi e riduzione per il canone concordato.", P.FONTI["registrazione_locazione"]),
             ("Istituzionale", "Osservatorio del mercato immobiliare, quotazioni", "Prezzi al metro quadro di compravendita e locazione per zona omogenea, semestrali e gratuiti.", P.FONTI["quotazioni_omi"]),
             ("Dati aperti", "ondata, quotazioni immobiliari Agenzia Entrate", "Le stesse quotazioni OMI ripubblicate in CSV pronti all'uso, senza registrazione ai servizi telematici.", P.FONTI["omi_open_data"]),
             ("Dati aperti", "Attribuzione obbligatoria delle quotazioni", "Le condizioni della fornitura OMI impongono di citare la fonte quando i dati vengono usati: Agenzia Entrate - OMI. Vale per le colonne di quotazione del foglio Annunci e per lo scarto che ne deriva.", P.FONTI["quotazioni_omi"]),
-            ("Istituzionale", "Banca d'Italia, guida al mutuo ipotecario", "Diritti del cliente in forma ufficiale: PIES, sette giorni di riflessione sull'offerta vincolante, portabilita' gratuita, verifica del tasso d'usura, liberta' di scelta della polizza, accesso alla Centrale dei Rischi.", "https://www.bancaditalia.it/pubblicazioni/guide-bi/guida-mutuo/"),
+            ("Istituzionale", "Banca d'Italia, guida al mutuo ipotecario", "Diritti del cliente in forma ufficiale: PIES, sette giorni di riflessione sull'offerta vincolante, portabilità gratuita, verifica del tasso d'usura, libertà di scelta della polizza, accesso alla Centrale dei Rischi.", "https://www.bancaditalia.it/pubblicazioni/guide-bi/guida-mutuo/"),
             ("Istituzionale", "Banca centrale europea, portale dati", "Tassi bancari armonizzati sulle nuove erogazioni per acquisto abitazione in Italia, ed Euribor. Sono la media di quello che le banche hanno davvero applicato, non un tasso pubblicitario. Interrogabili con python tools/valuta.py tassi.", "https://data.ecb.europa.eu/"),
             ("Istituzionale", "Consap, fondo di garanzia per la prima casa", "Garanzia statale fino all'ottanta per cento per under 36 con ISEE entro quarantamila euro, prorogata al 31 dicembre 2027.", P.FONTI["fondo_consap"]),
-            ("Tecnica", "Carlo Pagliai, conformita' catastale e urbanistica nelle compravendite", "Differenza fra le due conformita', obblighi di legge, nullita' dell'atto e verifiche da fare.", P.FONTI["conformita_pagliai"]),
+            ("Tecnica", "Carlo Pagliai, conformità catastale e urbanistica nelle compravendite", "Differenza fra le due conformità, obblighi di legge, nullità dell'atto e verifiche da fare.", P.FONTI["conformita_pagliai"]),
             ("Tecnica", "Carlo Pagliai, tolleranze costruttive dopo il Salva Casa", "Nuovo perimetro dell'articolo 34-bis del DPR 380/2001 e valore probatorio delle dichiarazioni del tecnico.", P.FONTI["salva_casa_tolleranze"]),
-            ("Tecnica", "Carlo Pagliai, canale Telegram", "Aggiornamenti quotidiani su giurisprudenza urbanistica e commerciabilita' degli immobili.", "https://t.me/pagliaicarlo"),
+            ("Tecnica", "Carlo Pagliai, canale Telegram", "Aggiornamenti quotidiani su giurisprudenza urbanistica e commerciabilità degli immobili.", "https://t.me/pagliaicarlo"),
             ("Notarile", "Tutele nell'acquisto di immobili da costruire", "Fideiussione obbligatoria e polizza decennale postuma del decreto legislativo 122/2005.", P.FONTI["immobili_da_costruire"]),
             ("Fiscale", "Fisco e Tasse, cedolare secca affitti brevi dal 2026", "Soglia di due appartamenti e conferma delle aliquote 21 e 26 per cento.", P.FONTI["cedolare_2026"]),
             ("Fiscale", "Fisco e Tasse, aliquote IRPEF 2026", "Scaglioni 23, 33 e 43 per cento dopo la riduzione della seconda aliquota.", P.FONTI["irpef_2026"]),
@@ -3400,16 +3400,16 @@ class Costruttore:
             ("Fiscale", "MutuiOnline, detrazione degli interessi del mutuo prima casa 2026", "Massimale di quattromila euro, aliquota del diciannove per cento, requisito di residenza entro dodici mesi.", P.FONTI["detrazione_interessi"]),
             ("Divulgativa", "Paolo Coletti, foglio rendita immobiliare", "Impostazione del rendimento immobiliare su quarant'anni con sfitto, ristrutturazione periodica e confronto con l'indice azionario. File del 17 febbraio 2022: il metodo resta valido, le aliquote no.", P.FONTI["coletti_rendita"]),
             ("Divulgativa", "Paolo Coletti, foglio acquisto casa o affitto", "Confronto fra comprare e affittare con ammortamento dei costi di acquisto sugli anni di permanenza. File del 17 febbraio 2022.", P.FONTI["coletti_casa_o_affitto"]),
-            ("Divulgativa", "Paolo Coletti, foglio mutuo con investimento", "Mutuo confrontato con l'investimento della liquidita' in BTP o azioni, con detrazione degli interessi modellata anno per anno. File del 29 settembre 2025.", P.FONTI["coletti_mutuo_investimento"]),
+            ("Divulgativa", "Paolo Coletti, foglio mutuo con investimento", "Mutuo confrontato con l'investimento della liquidità in BTP o azioni, con detrazione degli interessi modellata anno per anno. File del 29 settembre 2025.", P.FONTI["coletti_mutuo_investimento"]),
             ("Divulgativa", "Paolo Coletti, indice dei materiali", "Elenco completo dei fogli di calcolo e dei notebook pubblicati.", "https://www.paolocoletti.com/youtube/"),
             ("Divulgativa", "Bite Salad, gestione di una casa in affitto con Excel", "Modello di tracciamento dei movimenti reali di un immobile locato e calcolo del ROI anno per anno, rivisto dallo stesso Coletti.", "https://www.bitesalad.com/2024/12/affitto-excel-coletti/"),
             ("Community", "Reddit r/ItaliaPersonalFinance, comprare casa for dummies", "Guida della community ai passaggi dell'acquisto.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/17i7wfz/comprare_casa_for_dummies/"),
-            ("Community", "Reddit r/ItaliaPersonalFinance, perche' comprare per affittare e' un pessimo investimento", "Tesi critica sul rendimento reale della locazione residenziale.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/1k9dfbv/"),
-            ("Community", "Reddit r/ItaliaPersonalFinance, acquistare per affitti brevi non e' investire", "Distinzione fra investimento e attivita' imprenditoriale nella locazione turistica.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/1r7zufg/acquistando_un_immobile_per_affitti_brevi_non/"),
-            ("Community", "Reddit r/ItaliaPersonalFinance, il simulatore mutui piu' preciso del web", "Confronto fra simulatori di ammortamento.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/1jg5mp8/"),
+            ("Community", "Reddit r/ItaliaPersonalFinance, perché comprare per affittare è un pessimo investimento", "Tesi critica sul rendimento reale della locazione residenziale.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/1k9dfbv/"),
+            ("Community", "Reddit r/ItaliaPersonalFinance, acquistare per affitti brevi non è investire", "Distinzione fra investimento e attività imprenditoriale nella locazione turistica.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/1r7zufg/acquistando_un_immobile_per_affitti_brevi_non/"),
+            ("Community", "Reddit r/ItaliaPersonalFinance, il simulatore mutui più preciso del web", "Confronto fra simulatori di ammortamento.", "https://www.reddit.com/r/ItaliaPersonalFinance/comments/1jg5mp8/"),
             ("Community", "Wiki open source di Italia Personal Finance", "Raccolta di contenuti e fogli di calcolo della community italiana.", "https://github.com/emish89/italiapersonalfinance"),
             ("Software", "Sossoldi", "Applicazione open source di tracciamento del patrimonio netto, utile a inquadrare l'immobile dentro il patrimonio complessivo.", "https://github.com/napitek/sossoldi"),
-            ("Software", "ai-realestate-claude", "Motore di analisi immobiliare con punteggio della proprieta', flussi di cassa e rapporti in PDF. Mercato statunitense.", "https://github.com/zubair-trabzada/ai-realestate-claude"),
+            ("Software", "ai-realestate-claude", "Motore di analisi immobiliare con punteggio della proprietà, flussi di cassa e rapporti in PDF. Mercato statunitense.", "https://github.com/zubair-trabzada/ai-realestate-claude"),
             ("Software", "RealEstateInvestmentCal", "Calcolatore in Streamlit con ROI annuo e TIR con e senza leva finanziaria.", "https://github.com/moonnstarr/RealEstateInvestmentCal"),
             ("Software", "rental-property-calculator", "Analisi di annunci con cash flow, cap rate e cash on cash.", "https://github.com/gmlesher/rental-property-calculator"),
             ("Software", "Rental Property Deal Analyzer", "Oltre venti metriche e punteggio del contratto, con estrazione dei dati dall'annuncio.", "https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer"),

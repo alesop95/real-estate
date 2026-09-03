@@ -1,0 +1,5 @@
+## File esclusi dalla normalizzazione dei trattini.
+## Una riga per percorso, con il motivo dopo il cancelletto: un'esclusione senza
+## motivo viene rifiutata dallo strumento.
+
+_notes/dossier/conversazioni/ChatGPT-Acquisto monolocale prima casa (DA METTERE).md # conversazione copiata verbatim da una fonte esterna, che per la regola di stile mantiene la formattazione originale; sta inoltre sotto _notes, non versionata

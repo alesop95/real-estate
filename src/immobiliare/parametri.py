@@ -2,11 +2,11 @@
 """Parametri normativi e fiscali dell'acquisto e della locazione residenziale in Italia.
 
 Ogni costante porta accanto la fonte e la data di verifica. La revisione qui
-dichiarata e' quella del 28 agosto 2026: i valori riflettono la legge di bilancio
+dichiarata è quella del 28 agosto 2026: i valori riflettono la legge di bilancio
 2026 (legge 30 dicembre 2025, n. 199) e la guida dell'Agenzia delle Entrate sulle
 locazioni brevi aggiornata ad aprile 2026.
 
-Il modulo non calcola nulla: espone soltanto i numeri, cosi' che l'aggiornamento
+Il modulo non calcola nulla: espone soltanto i numeri, così che l'aggiornamento
 annuale sia un intervento in un solo file e il resto del codice resti stabile.
 """
 
@@ -48,7 +48,7 @@ class ImposteTrasferimento:
     catastale_da_impresa: float = 200.0
 
     # Regola prezzo-valore, art. 1 comma 497 legge 266/2005: la base imponibile del
-    # registro e' la rendita catastale rivalutata del 5% per il moltiplicatore.
+    # registro è la rendita catastale rivalutata del 5% per il moltiplicatore.
     # Vale solo fuori campo IVA, per persone fisiche, su immobili a uso abitativo e
     # relative pertinenze, e va chiesta espressamente al notaio in atto.
     rivalutazione_rendita: float = 1.05
@@ -71,7 +71,7 @@ IMPOSTE_TRASFERIMENTO = ImposteTrasferimento()
 class PrimaCasa:
     """Requisiti e termini dell'agevolazione prima casa.
 
-    Il termine per rivendere la precedente abitazione agevolata e' passato da uno a
+    Il termine per rivendere la precedente abitazione agevolata è passato da uno a
     due anni con la legge di bilancio 2025, art. 1 comma 116 legge 207/2024, e vale
     per gli atti dal 1 gennaio 2025 e per quelli 2024 il cui termine annuale non era
     ancora scaduto al 31 dicembre 2024. Il termine per riacquistare dopo una vendita
@@ -99,7 +99,7 @@ class Mutuo:
     """Oneri fiscali e accessori del finanziamento ipotecario.
 
     L'imposta sostitutiva assorbe registro, bollo, ipotecarie e catastali sul
-    contratto di finanziamento, DPR 601/1973 artt. 15-20: 0,25% se il mutuo e' per
+    contratto di finanziamento, DPR 601/1973 artt. 15-20: 0,25% se il mutuo è per
     l'acquisto della prima casa, 2% negli altri casi. La banca la trattiene
     direttamente dall'erogato.
     """
@@ -139,7 +139,7 @@ class FondoConsap:
 
     Garanzia statale sulla quota capitale, che permette alle banche di erogare oltre
     l'80% del valore dell'immobile. La misura potenziata all'80% per under 36 e altre
-    categorie prioritarie con ISEE entro 40.000 euro e' prorogata al 31 dicembre 2027.
+    categorie prioritarie con ISEE entro 40.000 euro è prorogata al 31 dicembre 2027.
     """
 
     garanzia_standard: float = 0.50
@@ -148,7 +148,7 @@ class FondoConsap:
     eta_massima_under36: int = 36
     scadenza_misura_potenziata: date = date(2027, 12, 31)
     # L'esenzione da registro, ipotecaria, catastale e il credito d'imposta IVA per
-    # gli under 36, art. 64 DL 73/2021, NON e' piu' in vigore: e' scaduta il
+    # gli under 36, art. 64 DL 73/2021, NON è più in vigore: è scaduta il
     # 31 dicembre 2023, salvo la coda sui preliminari registrati entro tale data.
     esenzione_imposte_under36_attiva: bool = False
 
@@ -166,8 +166,8 @@ class Imu:
 
     Base imponibile: rendita catastale rivalutata del 5% moltiplicata per il
     coefficiente di categoria, 160 per i fabbricati del gruppo A esclusa A/10.
-    L'abitazione principale e' esente, salvo A/1, A/8 e A/9 che restano imponibili
-    con detrazione di 200 euro. L'aliquota base e' lo 0,86%, che i Comuni possono
+    L'abitazione principale è esente, salvo A/1, A/8 e A/9 che restano imponibili
+    con detrazione di 200 euro. L'aliquota base è lo 0,86%, che i Comuni possono
     azzerare o portare fino all'1,06%: il valore reale va letto nella delibera
     comunale dell'anno.
     """
@@ -183,7 +183,7 @@ class Imu:
     detrazione_abitazione_principale: float = 200.0
     # Riduzioni: 50% per immobile concesso in comodato a parenti in linea retta entro
     # il primo grado alle condizioni di legge, 25% di sconto sull'imposta per i
-    # contratti a canone concordato, cioe' imposta ridotta al 75%.
+    # contratti a canone concordato, cioè imposta ridotta al 75%.
     riduzione_canone_concordato: float = 0.75
     riduzione_comodato: float = 0.50
     scadenza_acconto: str = "16 giugno"
@@ -203,12 +203,12 @@ class Locazione:
 
     Le aliquote di cedolare secca in vigore nel 2026 sono: 21% sui contratti a canone
     libero, 10% sui contratti a canone concordato nei Comuni ad alta tensione
-    abitativa e sui contratti per studenti universitari, 21% sulla prima unita'
+    abitativa e sui contratti per studenti universitari, 21% sulla prima unità
     destinata a locazione breve e 26% dalla seconda in poi.
 
     Dal 1 gennaio 2026 il regime delle locazioni brevi si applica a un massimo di due
-    unita' immobiliari per periodo d'imposta: dalla terza scatta la presunzione di
-    attivita' d'impresa con obbligo di partita IVA. La soglia era di quattro unita'
+    unità immobiliari per periodo d'imposta: dalla terza scatta la presunzione di
+    attività d'impresa con obbligo di partita IVA. La soglia era di quattro unità
     fino al 31 dicembre 2025.
     """
 
@@ -221,17 +221,17 @@ class Locazione:
     abbattimento_forfettario_ordinario: float = 0.05   # imponibile 95%
     abbattimento_forfettario_concordato: float = 0.25  # imponibile 75%
 
-    # Imposta di registro annuale in regime ordinario, a carico per meta' di ciascuna
+    # Imposta di registro annuale in regime ordinario, a carico per metà di ciascuna
     # parte salvo diverso accordo; la cedolare secca la sostituisce.
     registro_annuo: float = 0.02
     registro_minimo: float = 67.0
     riduzione_base_registro_concordato: float = 0.30
     bollo_per_copia: float = 16.0
 
-    # Sconto tipico del canone concordato rispetto al libero. Non e' un valore di
+    # Sconto tipico del canone concordato rispetto al libero. Non è un valore di
     # legge: il canone concordato deriva dall'accordo territoriale del Comune, e la
     # forbice osservata sta fra il dieci e il venti per cento. Serve come default
-    # dichiarato, perche' confrontare i due regimi allo stesso canone attribuisce al
+    # dichiarato, perché confrontare i due regimi allo stesso canone attribuisce al
     # concordato il vantaggio fiscale senza il costo che lo giustifica.
     sconto_canone_concordato: float = 0.15
 
@@ -257,7 +257,7 @@ class Irpef:
     """Scaglioni IRPEF 2026.
 
     La legge di bilancio 2026 ha ridotto la seconda aliquota dal 35% al 33% per i
-    redditi fra 28.000 e 50.000 euro; il beneficio e' neutralizzato oltre i 200.000
+    redditi fra 28.000 e 50.000 euro; il beneficio è neutralizzato oltre i 200.000
     euro di reddito complessivo.
     """
 
@@ -282,9 +282,9 @@ IRPEF = Irpef()
 class Plusvalenza:
     """Tassazione della plusvalenza da cessione, art. 67 comma 1 lett. b TUIR.
 
-    La plusvalenza e' imponibile se fra acquisto e rivendita passano meno di cinque
+    La plusvalenza è imponibile se fra acquisto e rivendita passano meno di cinque
     anni, salvo che l'immobile sia stato adibito ad abitazione principale del cedente
-    o dei suoi familiari per la maggior parte del periodo. In atto si puo' chiedere al
+    o dei suoi familiari per la maggior parte del periodo. In atto si può chiedere al
     notaio l'imposta sostitutiva del 26% in luogo dell'IRPEF.
 
     Per gli immobili oggetto di interventi agevolati con superbonus conclusi da meno
@@ -311,8 +311,8 @@ class CostiAccessori:
     """Costi non fiscali dell'operazione e della gestione.
 
     Sono valori di mercato indicativi: vanno sempre sostituiti con i preventivi reali.
-    La provvigione di agenzia e' soggetta a IVA al 22% ed e' dovuta, salvo patto
-    contrario, alla conclusione dell'affare, cioe' all'accettazione della proposta,
+    La provvigione di agenzia è soggetta a IVA al 22% ed è dovuta, salvo patto
+    contrario, alla conclusione dell'affare, cioè all'accettazione della proposta,
     non al rogito.
     """
 
@@ -381,24 +381,24 @@ class RisaliteEuribor:
 
     Esistono per sostituire un numero inventato con un numero osservato. Chi
     simula un mutuo a tasso variabile deve scegliere di quanto far salire il tasso,
-    e la scelta spontanea e' un punto percentuale, perche' e' l'ordine di grandezza
-    che suona prudente. Fra giugno 2022 e giugno 2023 l'Euribor a tre mesi e' salito
+    e la scelta spontanea è un punto percentuale, perché è l'ordine di grandezza
+    che suona prudente. Fra giugno 2022 e giugno 2023 l'Euribor a tre mesi è salito
     di 3,78 punti in dodici mesi: chi aveva simulato un punto aveva simulato un
-    quinto dello scenario che si e' verificato, e la rata che ne e' uscita non era
+    quinto dello scenario che si è verificato, e la rata che ne è uscita non era
     quella che aveva dichiarato sostenibile.
 
     I valori sono in punti percentuali e non in frazioni, come li pubblica la
     fonte. Si rileggono in qualunque momento con `python tools/valuta.py tassi
     --risalita`, che li ricalcola sulla serie corrente e segnala se si sono
-    spostati: la scansione e' la stessa di `tassi.risalite_storiche`, quindi il
-    confronto e' fra la stessa misura calcolata in due momenti diversi.
+    spostati: la scansione è la stessa di `tassi.risalite_storiche`, quindi il
+    confronto è fra la stessa misura calcolata in due momenti diversi.
 
-    Perche' la finestra e non il massimo assoluto. Il massimo della serie e' il 7,58
+    Perchè la finestra e non il massimo assoluto. Il massimo della serie è il 7,58
     per cento del marzo 1995 e il minimo il meno 0,58 del dicembre 2021: la loro
-    differenza sono piu' di otto punti, un numero grande e privo di significato,
-    perche' i due estremi distano ventisei anni e nessun piano di ammortamento li
-    attraversa nella stessa finestra. Cio' che un mutuo incontra davvero e' la
-    peggiore finestra di durata fissata, ed e' quella che questi valori misurano.
+    differenza sono più di otto punti, un numero grande e privo di significato,
+    perché i due estremi distano ventisei anni e nessun piano di ammortamento li
+    attraversa nella stessa finestra. Ciò che un mutuo incontra davvero è la
+    peggiore finestra di durata fissata, ed è quella che questi valori misurano.
     """
 
     indice: str = "Euribor 3 mesi"

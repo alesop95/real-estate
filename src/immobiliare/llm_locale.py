@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Cliente per il modello linguistico locale servito da Ollama.
 
-L'uso previsto e' la strutturazione del testo di un annuncio incollato a mano:
+L'uso previsto è la strutturazione del testo di un annuncio incollato a mano:
 il contenuto resta sulla rete locale e non raggiunge alcun servizio esterno, il
-che e' la ragione principale per cui questa strada e' preferita a un servizio in
-cloud. La dipendenza e' opzionale: se l'host non risponde il resto del programma
+che è la ragione principale per cui questa strada è preferita a un servizio in
+cloud. La dipendenza è opzionale: se l'host non risponde il resto del programma
 continua a funzionare e l'inserimento torna manuale.
 
-L'endpoint predefinito e' quello standard di Ollama in locale. Chi serve il modello
+L'endpoint predefinito è quello standard di Ollama in locale. Chi serve il modello
 da un'altra macchina della propria rete imposta la variabile d'ambiente OLLAMA_HOST,
 che ha la precedenza: l'indirizzo di una rete privata non ha ragione di stare nel
 codice sorgente di una repository pubblica.
@@ -27,7 +27,7 @@ TIMEOUT_SECONDI = 300
 
 
 class LlmNonDisponibile(RuntimeError):
-    """L'host Ollama non risponde o il modello richiesto non e' installato."""
+    """L'host Ollama non risponde o il modello richiesto non è installato."""
 
 
 class ClienteLocale:
@@ -92,7 +92,7 @@ class ClienteLocale:
 
 
 def somiglianza(a: list[float], b: list[float]) -> float:
-    """Coseno fra due vettori, zero se uno dei due e' vuoto."""
+    """Coseno fra due vettori, zero se uno dei due è vuoto."""
     if not a or not b or len(a) != len(b):
         return 0.0
     prodotto = sum(x * y for x, y in zip(a, b))
