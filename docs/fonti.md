@@ -246,4 +246,6 @@ Un registro che non elenca ciò che non è riuscito a verificare è incompleto. 
 
 **DealEstate.** Segnalato dall'utente, non trovato in rete con questo nome. Resta come indicazione da verificare prima di qualunque uso.
 
+**Imposta di soggiorno del Comune di Civitanova Marche.** La norma che consente al Comune di istituirla è l'articolo 4 del decreto legislativo 23/2011, riscontrato; l'importo, la periodicità della dichiarazione e il portale di versamento stanno nella delibera e nel regolamento comunali, che non sono stati recuperati. La stessa avvertenza dell'aliquota IMU vale qui: l'unica fonte corretta è l'atto del Comune. Da verificare anche la norma che rende il locatore responsabile del pagamento e non semplice esattore, introdotta nel 2020, il cui testo primario non è stato letto.
+
 **Aliquote IMU comunali.** Non esiste una fonte unica interrogabile a livello nazionale. Il modello espone l'aliquota come input e la guida indirizza alla delibera del Comune, che è l'unica fonte corretta.
