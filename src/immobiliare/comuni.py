@@ -20,9 +20,8 @@ i regolamenti e le delibere di tutti i Comuni in una applicazione interrogabile 
 catastale del Comune e sigla della provincia, e quei due parametri bastano ad atterrare sulla
 pagina del Comune giusto. Entrambi si leggono dalla fornitura OMI che il progetto ha già in
 cache, nelle colonne `Comune_amm` e `Prov` del file delle zone, quindi non serve una tabella di
-codici da mantenere: per i millequattrocentocinque Comuni oggi in cache, che la fornitura scaricata
-copre fra Piemonte e Marche, il collegamento esiste già, e per una regione nuova basta importarne la
-fornitura. L'unico passaggio che
+codici da mantenere: per i duecentoventicinque Comuni delle Marche oggi in cache il collegamento
+esiste già, e per una regione nuova basta importarne la fornitura. L'unico passaggio che
 resta manuale è la scelta dell'anno, che quella applicazione fa con un modulo e non con un
 parametro nell'indirizzo.
 

@@ -928,28 +928,54 @@ def test_comuni_stato_verifica_segue_il_termine_del_28_ottobre():
     assert M.stato_verifica(dt.date(2025, 11, 5), 2026, marzo)[0] == "scaduta"
 
 
-def test_comuni_registro_non_promuove_a_valore_cio_che_nessuno_ha_letto():
-    """Il registro tiene separato il collegamento verificato dal valore verificato.
+def test_comuni_registro_tiene_separato_il_collegamento_dal_valore():
+    """Sapere dove sta il dato e sapere il dato sono due cose diverse.
 
-    Per Civitanova il collegamento all'imposta di soggiorno e' stato raggiunto e letto, ma
-    le tariffe stanno in allegati PDF che nessuno ha aperto: la riga porta quindi il
-    collegamento e nessun numero, e il comando continua a dichiarare mancante la voce.
-    E' la differenza fra sapere dove sta il dato e sapere il dato, e confonderle sarebbe
-    il difetto che questo registro esiste per evitare.
+    Il registro conserva un collegamento verificato anche quando nessuno ha ancora letto il
+    valore che quel collegamento porta, e in quel caso il comando deve continuare a dichiarare
+    la voce mancante invece di tacere. E' la proprieta' per cui il registro esiste: senza,
+    basterebbe un collegamento salvato per far credere che il dato sia acquisito.
+
+    L'altra proprieta' verificata qui riguarda la scrittura del file. Le note contengono punti
+    e virgola, che sono il delimitatore: una riga scritta senza virgolette si tronca a meta' e
+    il troncamento non solleva errori, si limita a perdere l'informazione. Il caso reale c'e'
+    gia' stato, quindi vale congelarlo.
     """
+    import tempfile
+
     from immobiliare import comuni as M
 
-    radice = Path(__file__).resolve().parent.parent
-    registro = M.leggi_registro(radice / M.REGISTRO_PREDEFINITO)
-    verifica = M.verifica_di("Civitanova Marche", registro)
-
-    assert verifica is not None
-    assert verifica.link_imposta_soggiorno.startswith("https://www.comune.civitanova.mc.it/")
-    assert verifica.imposta_soggiorno_notte is None
-    assert verifica.aliquota_imu_altri is None
-    assert len(M.cosa_manca(verifica)) == 2
-    # Un Comune assente dal registro non e' un errore: e' semplicemente tutto da leggere.
+    cartella = Path(tempfile.mkdtemp())
+    percorso = cartella / "comuni-verifiche.csv"
+    percorso.write_text(
+        "comune;provincia;codice_catastale;aliquota_imu_altri;aliquota_imu_principale;"
+        "imposta_soggiorno_notte;link_delibera_imu;link_imposta_soggiorno;verificato_il;note"
+        + chr(10)
+        + "COMUNE DI PROVA;XX;A000;;;;;https://esempio.invalid/atti;;solo il collegamento"
+        + chr(10),
+        encoding="utf-8",
+    )
+    prova = M.verifica_di("Comune di prova", M.leggi_registro(percorso))
+    assert prova is not None
+    assert prova.link_imposta_soggiorno == "https://esempio.invalid/atti"
+    assert prova.imposta_soggiorno_notte is None
+    assert len(M.cosa_manca(prova)) == 2
+    # Un Comune assente non e' un errore: e' semplicemente tutto da leggere.
     assert len(M.cosa_manca(None)) == 2
+
+    # Sul registro vero: l'imposta di soggiorno risulta letta con la sua data, l'aliquota IMU no.
+    radice = Path(__file__).resolve().parent.parent
+    civitanova = M.verifica_di("Civitanova Marche", M.leggi_registro(radice / M.REGISTRO_PREDEFINITO))
+    assert civitanova is not None
+    assert civitanova.imposta_soggiorno_notte == 1.00
+    assert civitanova.verificato_il is not None
+    assert civitanova.aliquota_imu_altri is None
+    assert M.cosa_manca(civitanova) == [
+        "aliquota IMU per gli immobili diversi dall'abitazione principale"
+    ]
+    # La nota contiene punti e virgola e deve arrivare intera: il campo e' quotato nel file.
+    assert ";" in civitanova.note
+    assert civitanova.note.rstrip().endswith(".")
 
 
 if __name__ == "__main__":
