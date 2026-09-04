@@ -61,6 +61,77 @@ Lo stack coincide con quello di un altro progetto di questa macchina, `my-weddin
 
 Due esclusioni vanno dichiarate perché sono le tentazioni naturali. Non si usa un framework con rendering lato server, perché introdurrebbe un server da tenere sveglio e riporterebbe dentro il problema che la scelta di Firebase elimina. Non si usa una libreria di componenti diversa da quella già conosciuta, perché il tempo che si guadagna scegliendo lo strumento migliore in astratto si perde tutto nel primo mese di apprendimento.
 
+## La garanzia di gratuità, e i due vincoli di disegno che ne discendono
+
+Il requisito che lo strumento resti gratuito non si soddisfa con la disciplina di chi guarda i consumi: si soddisfa con una proprietà strutturale, e su Firebase quella proprietà esiste. Il piano Spark non richiede alcuna informazione di pagamento, e la documentazione dei piani dichiara che al superamento della quota gratuita di un prodotto quel prodotto viene spento per il resto del periodo invece di essere addebitato. Non esiste quindi lo scenario in cui arriva un conto: esiste lo scenario in cui l'applicazione si ferma, che è un guasto e non una spesa. La regola operativa che ne deriva è una sola e va scritta dove non si perde: non si collega mai un account di fatturazione al progetto, perché collegarlo significa passare automaticamente al piano a consumo.
+
+Da qui il primo vincolo di disegno, che è il più stretto. Le Cloud Functions non si possono distribuire su un progetto Spark, quindi l'applicazione non ha alcun codice lato server. Le conseguenze sono tre e vanno accettate tutte. L'accesso usa l'autenticazione con email e password di Firebase, e non un accesso verificato da una funzione che restituisce un token personalizzato, che è invece la strada del progetto gemello di questa macchina. I ruoli e l'appartenenza a un'organizzazione non stanno nei claim della sessione, perché scriverli richiede l'SDK di amministrazione e quindi una funzione: stanno in documenti di Firestore, e le regole di sicurezza li leggono con una lettura esplicita, che costa una lettura in più per ogni valutazione e a questa scala non è un problema. Non esistono lavori pianificati, invio di posta, chiamate a servizi esterni: se un domani servissero, quello è il momento in cui il progetto smette di essere gratuito, e va deciso allora e non per inerzia.
+
+Il secondo vincolo riguarda i file. L'archiviazione di file su Spark è la voce contraddittoria già segnalata, e in ogni caso i bucket oltre quello predefinito richiedono il piano a consumo: la prima versione non custodisce documenti, e il dossier tecnico resta una lista di voci con il loro stato. Va evitata anche l'autenticazione via SMS, che richiede Blaze, quindi niente verifica del numero di telefono.
+
+Due scelte minori seguono dallo stesso principio. La registrazione autonoma resta disattivata e gli utenti si creano a mano dalla console, perché un modulo di iscrizione aperto su un progetto gratuito è un invito a consumare la quota di qualcun altro. E l'analitica di Google non si attiva alla creazione del progetto, perché è un prodotto in più da non avere.
+
+Il presidio contro la deriva è un controllo automatico da mettere insieme allo scheletro: un test che fallisce se nel progetto compaiono una dipendenza dalle funzioni, una sezione `functions` nella configurazione di Firebase o una chiamata all'archiviazione dei file. Serve perché il vincolo non si viola con una decisione, si viola con una comodità.
+
+## Come può funzionare senza codice lato server
+
+È l'obiezione naturale di chi ha costruito il progetto gemello di questa macchina, dove l'accesso passa da una funzione che verifica le credenziali con l'SDK di amministrazione e restituisce un token personalizzato. La risposta sta in un equivoco da sciogliere: senza funzioni non vuol dire senza server, vuol dire senza server nostro. Le tre cose che sembrano richiederne uno sono servite da componenti di Google che girano fuori dal browser, e la quarta non ne ha bisogno affatto.
+
+L'autenticazione è già un servizio. Il client manda email e password all'endpoint di identità di Google, che verifica e restituisce un token firmato con scadenza breve. Nessun codice nostro vede la password e nessun codice nostro decide se l'accesso è valido: quella decisione è di Google, e il token che ne esce è verificabile da chiunque abbia la chiave pubblica. Il progetto gemello aveva bisogno di una funzione per una ragione diversa e specifica: le sue credenziali non erano account veri ma codici invito conservati in una collezione, quindi qualcuno doveva confrontarli in un posto fidato e coniare un token al volo. Qui gli account sono account, e quel passaggio non serve.
+
+L'autorizzazione è codice lato server, solo non imperativo. Le regole di sicurezza di Firestore non girano nel browser: girano nel backend di Firestore, che valuta ogni singola lettura e scrittura contro il token verificato prima di eseguirla. Il client non le può aggirare, perché non parla con il database ma con un servizio che le applica. È la ragione per cui l'isolamento fra due organizzazioni non ha bisogno di una funzione: ha bisogno di una regola scritta bene e di test che la mettano alla prova nelle due direzioni, cioè su ciò che deve passare e su ciò che deve essere respinto.
+
+Un esempio concreto, che è anche la forma che prenderà il modello dei dati. L'appartenenza a un'organizzazione sta in un documento, non in un claim, perché scrivere un claim richiederebbe l'SDK di amministrazione:
+
+```
+organizzazioni/{org}
+organizzazioni/{org}/membri/{uid}     ruolo: "amministratore" | "membro" | "lettore"
+organizzazioni/{org}/immobili/{id}
+```
+
+```
+function membro(org) {
+  return exists(/databases/$(database)/documents/organizzazioni/$(org)/membri/$(request.auth.uid));
+}
+function ruolo(org) {
+  return get(/databases/$(database)/documents/organizzazioni/$(org)/membri/$(request.auth.uid)).data.ruolo;
+}
+
+match /organizzazioni/{org}/immobili/{id} {
+  allow read:  if request.auth != null && membro(org);
+  allow write: if request.auth != null && ruolo(org) in ["amministratore", "membro"];
+}
+match /organizzazioni/{org}/membri/{uid} {
+  allow read:   if request.auth != null && membro(org);
+  allow write:  if request.auth != null && ruolo(org) == "amministratore";
+}
+```
+
+Chi invita non ha bisogno di privilegi speciali: scrive un documento di appartenenza, e la regola lo consente solo se chi scrive è già amministratore di quella organizzazione. Chi è invitato non deve accettare nulla, perché il documento esiste già e la regola lo riconosce. Nessuna funzione, e nessuna fiducia nel client: la fiducia sta nella regola, che è valutata dove il client non arriva.
+
+Il calcolo, infine, non ha alcuna ragione di stare su un server, e questa è la parte che si confonde più spesso. Un calcolo va protetto quando il suo risultato concede qualcosa: un prezzo che verrà addebitato, un punteggio che sblocca un premio, una licenza. Qui il risultato è un consiglio a chi ha digitato gli input, e chi manomettesse la formula nel proprio browser ingannerebbe soltanto se stesso. Non c'è niente da nascondere, perché il modello è pubblico e documentato in questo repository, e non c'è niente da difendere, perché nessun dato di terzi entra nel conto.
+
+Restano tre cose che senza funzioni non si possono fare, ed è giusto sapere quali sono prima di scoprirlo a metà strada. Non si può agire al di sopra delle regole, per esempio cancellare l'account di un altro utente o scrivere un claim: se un giorno servisse un pannello di amministrazione con quei poteri, quel giorno il progetto smette di essere gratuito. Non si può eseguire lavoro scatenato da un evento o pianificato nel tempo, quindi niente promemoria, niente posta, niente sincronizzazioni notturne. E non si può parlare con un servizio esterno tenendo una chiave segreta, perché una chiave nel browser non è segreta: le quotazioni OMI restano quindi un'importazione fatta dal manutentore, esattamente come oggi.
+
+Quello che invece si può fare, e conviene sapere che c'è, è tutto ciò che il client SDK esegue in modo trasferito al server: le transazioni e le scritture in blocco sono atomiche perché il backend le applica come una cosa sola, e le regole possono validare forma, tipo e intervallo dei campi, non solo l'identità di chi scrive. La validazione del dominio, per esempio che una quota di comproprietà stia fra zero e uno e che la somma delle quote faccia uno, si scrive nelle regole e non nel browser.
+
+## Le quote, e quanto margine danno davvero
+
+I numeri servono a sapere se il vincolo stringe o è teorico. Il traffico dell'hosting è la voce più stretta: 360 MB al giorno, contro un pacchetto dell'applicazione che compresso sta fra i due e i quattrocento kilobyte, quindi qualcosa come ottocento o novecento aperture a freddo al giorno, e le riaperture non contano perché il browser tiene in cache. Firestore dà cinquantamila letture e ventimila scritture al giorno: una sessione che apre un immobile e i suoi calcoli legge qualche decina di documenti, quindi il margine è di due ordini di grandezza rispetto all'uso di una persona o di un'agenzia piccola. Il gigabyte di dati archiviati basta per migliaia di immobili, perché sono numeri e testo. L'autenticazione arriva a cinquantamila utenti attivi al mese. La conclusione è che per l'uso previsto il vincolo non stringe, e la ragione per rispettarlo non è la quota ma il fatto che superarla spegne il servizio.
+
+## I passi da compiere nella console, una volta sola
+
+Sono otto e li compie chi possiede l'account Google, perché il progetto nasce da lì e non da un file di questo repository.
+
+1. Su `console.firebase.google.com`, creare un progetto nuovo, dandogli un nome che dica cosa è, per esempio `valutazione-immobili`. Alla domanda sull'analitica di Google, rispondere no.
+2. Verificare in basso a sinistra che il piano indicato sia Spark, e non collegare alcun account di fatturazione. È l'unico passo che protegge dalla spesa, e vale più di tutti gli altri.
+3. Alla voce Authentication, iniziare e abilitare il solo metodo email e password. Non abilitare il telefono, che richiede il piano a consumo, e lasciare disattivata la registrazione autonoma.
+4. Alla voce Firestore Database, creare il database in modalità di produzione, cioè con le regole chiuse. Scegliere una collocazione europea, per esempio la multiregione `eur3` oppure `europe-west8` che è Milano: la scelta è definitiva e non si cambia dopo.
+5. Nelle impostazioni del progetto, sezione generale, aggiungere un'applicazione web con l'icona che indica il codice, dandole un soprannome qualsiasi. Alla fine la console mostra un blocco di configurazione con la chiave dell'applicazione e l'identificativo del progetto: va copiato e conservato.
+6. Nella stessa sezione Authentication, alla voce degli utenti, creare a mano il primo utente con la propria email e una password: è così che si entra, perché non c'è iscrizione aperta.
+7. Alla voce Hosting, iniziare, senza seguire la procedura guidata da riga di comando: la distribuzione verrà configurata dal repository, non a mano.
+8. Consegnare all'ambiente di sviluppo l'identificativo del progetto e il blocco di configurazione. Quelle chiavi non sono segreti, perché un'applicazione web le espone per costruzione, ma stanno in un file di ambiente non versionato per la stessa disciplina con cui il progetto tiene fuori da git tutto ciò che è locale, e ciò che protegge i dati non sono le chiavi ma le regole di sicurezza.
+
 ## Il nodo vero: dove vive il motore di calcolo
 
 Questo è il punto su cui lo studio esiste, perché è l'unico dove la scelta sbagliata produce un danno permanente invece di un fastidio.
