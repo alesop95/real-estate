@@ -2037,7 +2037,8 @@ class Costruttore:
         ws.sheet_state = "hidden"
         generatore = random.Random(SEME_SIMULAZIONE)
 
-        intest = ["n", "z canone", "z sfitto", "z tasso", "z rivalutazione", "u evento",
+        intest = ["n", "z comune", "e canone", "e sfitto", "e tasso", "e rivalutazione", "u evento",
+                  "z canone", "z sfitto", "z tasso", "z rivalutazione", "u effettiva",
                   "Canone annuo", "Mesi sfitto", "Tasso", "Rivalutazione", "Ricavo effettivo",
                   "NOI", "Utile netto", "Rata annua", "Cash flow", "Valore finale",
                   "Debito residuo", "Patrimonio finale", "Montante", "Rendimento netto"]
@@ -2048,41 +2049,67 @@ class Costruttore:
         for k in range(ESTRAZIONI):
             r = prima + k
             ws.cell(row=r, column=1, value=k + 1)
-            # Quattro normali standard e una uniforme, fisse.
-            for col in range(2, 6):
+            # Un fattore comune di scenario e quattro componenti proprie, tutte normali
+            # standard e fisse, più una uniforme per l'evento di morosità. L'uniforme è
+            # tenuta lontana da zero e da uno perché la trasformazione che la lega al
+            # fattore comune passa per l'inversa della normale, che in quei due punti
+            # diverge: senza il taglio una riga su un milione produrrebbe un errore.
+            for col in range(2, 7):
                 ws.cell(row=r, column=col, value=round(generatore.gauss(0, 1), 6))
-            ws.cell(row=r, column=6, value=round(generatore.random(), 6))
+            ws.cell(row=r, column=7,
+                    value=round(min(max(generatore.random(), 1e-6), 1 - 1e-6), 6))
 
-            ws.cell(row=r, column=7, value=f"=MAX(0,canone_mese*(1+$B{r}*vol_canone))*12")
-            ws.cell(row=r, column=8, value=f"=MEDIAN(0,mesi_sfitto+$C{r}*vol_sfitto,12)")
-            ws.cell(row=r, column=9, value=f"=MAX(0,tasso+$D{r}*vol_tasso)")
+            # Le cinque estrazioni efficaci. Ciascuna mescola il fattore comune con la
+            # propria componente, con il segno che dice come quella variabile reagisce a
+            # uno scenario favorevole: canone e rivalutazione salgono, sfitto e tasso
+            # scendono, la morosità diventa meno probabile. I due pesi sono la radice
+            # della correlazione e la radice del suo complemento, e la scelta non è
+            # estetica: così la varianza di ogni estrazione efficace resta uno, quindi le
+            # incertezze dichiarate in cima al foglio restano esattamente quelle, e la
+            # correlazione fra due variabili dello stesso segno vale esattamente il
+            # parametro impostato. Con la correlazione a zero i pesi diventano zero e uno
+            # e la simulazione torna identica a quella indipendente, estrazione per
+            # estrazione: è la proprietà che rende la modifica verificabile.
+            ws.cell(row=r, column=8, value=f"=carico_comune*$B{r}+scarto_proprio*$C{r}")
+            ws.cell(row=r, column=9, value=f"=-carico_comune*$B{r}+scarto_proprio*$D{r}")
+            ws.cell(row=r, column=10, value=f"=-carico_comune*$B{r}+scarto_proprio*$E{r}")
+            ws.cell(row=r, column=11, value=f"=carico_comune*$B{r}+scarto_proprio*$F{r}")
+            # Sull'evento di morosità la mescolanza non può essere additiva, perché
+            # l'estrazione è una probabilità e non uno scarto: si passa alla normale con
+            # l'inversa, si mescola là, e si torna alla probabilità con la cumulata.
+            ws.cell(row=r, column=12,
+                    value=f"=NORMSDIST(carico_comune*$B{r}+scarto_proprio*NORMSINV($G{r}))")
+
+            ws.cell(row=r, column=13, value=f"=MAX(0,canone_mese*(1+$H{r}*vol_canone))*12")
+            ws.cell(row=r, column=14, value=f"=MEDIAN(0,mesi_sfitto+$I{r}*vol_sfitto,12)")
+            ws.cell(row=r, column=15, value=f"=MAX(0,tasso+$J{r}*vol_tasso)")
             # La rivalutazione si compone su tutto l'orizzonte, quindi l'estrazione
             # non è la variazione di un anno ma la media dell'intero periodo, e la
             # sua dispersione scende con la radice del numero di anni. Senza questa
             # correzione un'estrazione verrebbe trattata come un regime permanente e
             # la coda alta produrrebbe patrimoni finali fuori scala.
-            ws.cell(row=r, column=10, value=f"=riv_immobile+$E{r}*vol_rivalutazione/SQRT(MAX(orizzonte,1))")
+            ws.cell(row=r, column=16, value=f"=riv_immobile+$K{r}*vol_rivalutazione/SQRT(MAX(orizzonte,1))")
             # L'evento di morosità grave toglie i mesi di canone impostati.
-            ws.cell(
-                row=r, column=11,
-                value=(
-                    f"=MAX(0,($G{r}-$G{r}/12*$H{r})*(1-morosita_pct)"
-                    f"-IF($F{r}<prob_morosita_grave,$G{r}/12*mesi_persi_morosita,0))"
-                ),
-            )
-            ws.cell(row=r, column=12, value=f"=$K{r}-(ricavo_effettivo-noi_annuo)")
-            ws.cell(row=r, column=13, value=f"=$L{r}-$K{r}*ced_libero")
-            ws.cell(row=r, column=14, value=f"=IF(mutuo_importo>0,PMT($I{r}/12,durata*12,-mutuo_importo)*12,0)")
-            ws.cell(row=r, column=15, value=f"=$M{r}-$N{r}")
-            ws.cell(row=r, column=16, value=f"=prezzo*(1+$J{r})^orizzonte")
             ws.cell(
                 row=r, column=17,
                 value=(
-                    f"=IF(mutuo_importo>0,mutuo_importo*((1+$I{r}/12)^(durata*12)"
-                    f"-(1+$I{r}/12)^(MIN(orizzonte,durata)*12))/((1+$I{r}/12)^(durata*12)-1),0)"
+                    f"=MAX(0,($M{r}-$M{r}/12*$N{r})*(1-morosita_pct)"
+                    f"-IF($L{r}<prob_morosita_grave,$M{r}/12*mesi_persi_morosita,0))"
                 ),
             )
-            ws.cell(row=r, column=18, value=f"=$P{r}*(1-costi_vendita)-$Q{r}")
+            ws.cell(row=r, column=18, value=f"=$Q{r}-(ricavo_effettivo-noi_annuo)")
+            ws.cell(row=r, column=19, value=f"=$R{r}-$Q{r}*ced_libero")
+            ws.cell(row=r, column=20, value=f"=IF(mutuo_importo>0,PMT($O{r}/12,durata*12,-mutuo_importo)*12,0)")
+            ws.cell(row=r, column=21, value=f"=$S{r}-$T{r}")
+            ws.cell(row=r, column=22, value=f"=prezzo*(1+$P{r})^orizzonte")
+            ws.cell(
+                row=r, column=23,
+                value=(
+                    f"=IF(mutuo_importo>0,mutuo_importo*((1+$O{r}/12)^(durata*12)"
+                    f"-(1+$O{r}/12)^(MIN(orizzonte,durata)*12))/((1+$O{r}/12)^(durata*12)-1),0)"
+                ),
+            )
+            ws.cell(row=r, column=24, value=f"=$V{r}*(1-costi_vendita)-$W{r}")
             # Il montante confronta due strade che partono dallo stesso esborso. Chi
             # compra, se il flusso di cassa è negativo, deve versare quella somma ogni
             # anno prendendola da altrove, e quel denaro ha un costo opportunità: i
@@ -2090,15 +2117,15 @@ class Costruttore:
             # alternativo, non sommati a valore nominale. Con flusso positivo vale il
             # simmetrico, cioè la cassa incassata si reinveste.
             ws.cell(
-                row=r, column=19,
-                value=f"=$R{r}+IF(rend_port=0,$O{r}*orizzonte,$O{r}*((1+rend_port)^orizzonte-1)/rend_port)",
+                row=r, column=25,
+                value=f"=$X{r}+IF(rend_port=0,$U{r}*orizzonte,$U{r}*((1+rend_port)^orizzonte-1)/rend_port)",
             )
-            ws.cell(row=r, column=20, value=f"=IF(costo_totale>0,$M{r}/costo_totale,0)")
+            ws.cell(row=r, column=26, value=f"=IF(costo_totale>0,$S{r}/costo_totale,0)")
 
         ultima = prima + ESTRAZIONI - 1
-        for nome, colonna in (("sim_cash_flow", "O"), ("sim_patrimonio", "R"),
-                              ("sim_montante", "S"), ("sim_rendimento", "T"),
-                              ("sim_utile", "M")):
+        for nome, colonna in (("sim_cash_flow", "U"), ("sim_patrimonio", "X"),
+                              ("sim_montante", "Y"), ("sim_rendimento", "Z"),
+                              ("sim_utile", "S")):
             self.nome_intervallo(nome, ws, f"${colonna}${prima}:${colonna}${ultima}")
 
     # ---------------------------------------------------------------- rischio
@@ -2145,6 +2172,29 @@ class Costruttore:
             riga = r
             r = S.campo(ws, r, etichetta, valore, formato, input_utente=True, nota=nota)
             self.nome(chiave, ws, f"B{riga}")
+
+        riga_corr = r
+        r = S.campo(
+            ws, r, "Correlazione fra le variabili di scenario", 0.30, S.PERC, input_utente=True,
+            nota=("Quanto le variabili si muovono insieme invece che ognuna per conto proprio. A zero la "
+                  "simulazione le tratta indipendenti, come faceva fino al 4 settembre 2026, e ne sottostima "
+                  "le code: nella realtà quando i tassi salgono i prezzi scendono, e quando il lavoro peggiora "
+                  "crescono insieme sfitto e morosità. Il trenta per cento è una convenzione dichiarata e non "
+                  "una stima, perché una matrice di correlazione vera su questi dati nessuno la ha: va mosso "
+                  "per vedere se la decisione tiene, che è l'uso corretto di questo foglio."))
+        self.nome("corr_scenario", ws, f"B{riga_corr}")
+
+        riga_carico = r
+        r = S.campo(ws, r, "Peso del fattore comune", "=SQRT(corr_scenario)", S.NUMERO_DEC,
+                    nota=("Radice della correlazione. Le due righe che seguono non si impostano: sono i pesi con "
+                          "cui ogni estrazione mescola lo scenario comune e la propria componente."))
+        self.nome("carico_comune", ws, f"B{riga_carico}")
+
+        riga_proprio = r
+        r = S.campo(ws, r, "Peso della componente propria", "=SQRT(1-corr_scenario)", S.NUMERO_DEC,
+                    nota=("Radice del complemento. La somma dei quadrati dei due pesi fa uno, ed è la ragione per "
+                          "cui introdurre la correlazione non altera di nulla le incertezze dichiarate sopra."))
+        self.nome("scarto_proprio", ws, f"B{riga_proprio}")
         r += 1
 
         r = S.sezione(ws, r, "Come vanno a finire i mille scenari", 5, secondaria=True)
@@ -2236,7 +2286,7 @@ class Costruttore:
         r = S.campo(ws, r, "Cash flow di riferimento", "=" + base_cf, S.EURO, nota="Il valore centrale rispetto a cui si misurano gli scostamenti.")
         r += 1
         for testo in [
-            "Una precisazione sulla simulazione, per non farle dire più di quello che sa. Le estrazioni assumono che le variabili siano indipendenti fra loro, e nella realtà non lo sono: quando i tassi salgono i prezzi tendono a scendere, e quando il mercato del lavoro peggiora aumentano insieme sfitto e morosità. La distribuzione va quindi letta come una misura della dispersione degli esiti, non come una probabilità oggettiva.",
+            "Una precisazione sulla simulazione, per non farle dire più di quello che sa. Fino al 4 settembre 2026 le estrazioni assumevano le variabili indipendenti fra loro, il che sottostimava le code, perché nella realtà quando i tassi salgono i prezzi tendono a scendere e quando il mercato del lavoro peggiora aumentano insieme sfitto e morosità. Ora un fattore comune le muove insieme, con l'intensità impostata in cima al foglio. Resta un'assunzione dichiarata e non una stima: il valore predefinito è una convenzione, non una correlazione misurata, e la distribuzione va letta come misura della dispersione degli esiti e non come probabilità oggettiva.",
             "L'incertezza dichiarata in cima al foglio è l'unica cosa che si sceglie, ed è anche l'unica che non si può verificare: nessuno conosce la volatilità vera del proprio canone. Il modo onesto di usarla è provare valori diversi e guardare se la decisione cambia. Se cambia, la decisione non era solida.",
         ]:
             r = S.nota_riga(ws, r, testo, 5)

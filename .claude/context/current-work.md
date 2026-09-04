@@ -84,6 +84,8 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'è una feature ap
 - [x] Cinque fonti nuove registrate in [`fonti.md`](../../docs/fonti.md), tutte aperte e verificate, nessuna citata di seconda mano
 - [x] Fornitura OMI ripulita dalle righe del Piemonte, e il filtro trasformato in opzione `omi importa --regione`
 - [x] Importazione resa atomica, con il rifiuto di un filtro che non tiene nessuna riga
+- [x] Fattore comune nella simulazione del rischio, con la riduzione esatta al caso indipendente verificata in Excel
+- [x] Studio dello stack per portare lo strumento in rete, con le fasce gratuite misurate e le piattaforme escluse
 - [ ] Commit della tracciatura del 4 settembre, che spetta all'utente
 
 ## Riconciliazione
@@ -99,8 +101,6 @@ Restano aperte le questioni che non hanno una correzione delimitata, e per ciasc
 La fornitura OMI aggiornata richiede autenticazione personale ai servizi telematici e non è automatizzabile, per ADR-011. La scelta è accettare il download manuale semestrale, normalizzato da `omi.importa_fornitura`.
 
 La tabella sul prezzo del foglio Scenari, cioè quella che fa variare il prezzo in sette scaglioni, calcola le imposte in modo esatto in colonna ma propaga al resto della riga l'assunzione che l'incidenza degli altri costi accessori resti quella dello scenario base. È l'ultimo residuo dell'approssimazione corretta il 1 settembre nel prezzo massimo sostenibile, e la correzione sarebbe la stessa: scomporre in parte proporzionale e parte fissa. Non è stata fatta perché quella tabella si legge come sensibilità e non come numero di decisione, ma è la prima cosa da prendere se qualcuno la usa per trattare.
-
-La simulazione del foglio Rischio assume le variabili indipendenti, mentre nella realtà tassi, prezzi, sfitto e morosità si muovono insieme. Introdurre una struttura di correlazione richiederebbe di stimare una matrice che nessuno ha, e sostituirebbe un'assunzione dichiarata con una nascosta: si è scelto di restare indipendenti e dirlo nel foglio.
 
 Il piano del Simulatore mutuo si ferma a quarant'anni di rate, e sotto la modalità che riduce la durata un rialzo forte può non chiudere il piano entro la tabella. Dal 1 settembre il foglio lo dichiara con due righe di esito, ma non lo risolve: risolverlo richiederebbe una tabella più lunga di quanto abbia senso per un mutuo residenziale.
 

@@ -121,7 +121,7 @@ Dieci accettano input, dieci si leggono. Ma dei dieci che accettano input solo t
 | Ammortamento | si legge | Il piano rata per rata, fino a quarant'anni. |
 | Cash flow | si legge | La proiezione anno per anno, con l'uscita finale. |
 | Confronto affitto | si legge | Solo se è casa propria: comprare oppure affittare e investire la differenza. |
-| Rischio | si legge | Mille scenari, e la probabilità che il cash flow sia negativo. |
+| Rischio | si compila e si legge | Mille scenari, e la probabilità che il cash flow sia negativo. In cima si dichiara quanto ci si sbaglia nel prevedere le variabili, e quanto quelle variabili si muovono insieme. |
 | Confronto immobili | si legge | Tutti gli annunci in fila con lo stesso modello. Si popola da sé. |
 | Parametri | si consulta | Ogni aliquota con la fonte accanto. Si tocca solo all'aggiornamento fiscale. |
 | Fonti | si consulta | Da dove viene ogni dato, con il collegamento all'istituzione. |
@@ -248,6 +248,8 @@ Se compri senza mutuo, in quella scheda compare da sola una riga di avvertenza, 
 Nella scheda **Scenari** trovi anche tre colonne affiancate, pessimistico, base e ottimistico, con canone, sfitto, morosità, tasso e rivalutazione impostabili uno per uno. È lì che si risponde alla domanda vera: non quanto rende se tutto va bene, ma **quanto ci rimetto ogni mese se va male**. Guarda la riga del cash flow annuo, dividila per dodici, e chiediti se quella cifra te la puoi permettere per anni.
 
 **Scenari** è forse la scheda più utile di tutte, perché non ti dà un numero ma ti dice di quanto quel numero cambia se le cose vanno diversamente. C'è anche una riga che calcola il canone minimo sotto il quale l'immobile ti toglie cassa invece di dartene.
+
+La scheda **Rischio** fa una cosa che Scenari non fa: invece di tre casi scelti a mano, mille casi estratti, da cui esce la probabilità di ciascun esito. Ha due gruppi di celle da compilare in cima, e sono le uniche. Il primo dice quanto ci si sbaglia nel prevedere ciascuna variabile, che è diverso da quanto vale: il dieci per cento sul canone significa che due volte su tre il canone vero sta fra il novanta e il centodieci per cento di quello ipotizzato. Il secondo è una cella sola, la correlazione fra le variabili di scenario, e vale la pena capirla perché è quella che governa la coda cattiva. A zero il foglio tratta ogni variabile per conto proprio, e sottostima gli scenari brutti: nella realtà quando i tassi salgono i prezzi scendono, e quando il lavoro peggiora crescono insieme sfitto e morosità, quindi le cose cattive arrivano in gruppo. Al trenta per cento predefinito la mediana non si muove e la coda bassa peggiora, che è il comportamento giusto. Quel trenta per cento è una convenzione dichiarata, non una misura: muovilo fra zero e cinquanta e guarda se la decisione cambia, perché se cambia non era una decisione solida.
 
 Nella stessa scheda, in fondo, c'è il numero che serve in trattativa: il **prezzo massimo** che l'immobile giustifica al rendimento che hai dichiarato accettabile, e lo scarto rispetto al prezzo di cui si sta parlando. Se lo scarto è negativo, quella è la cifra di sconto da ottenere perché l'operazione stia in piedi ai tuoi criteri. Sotto trovi una riga di verifica che ricalcola il rendimento a quel prezzo e mostra lo scarto dalla soglia: deve essere zero, e se non lo è significa che sei finito in un caso particolare, tipicamente un prezzo così basso che l'imposta di registro scatta al minimo di legge invece di essere proporzionale.
 
@@ -494,7 +496,7 @@ Non pesa il rischio. Un immobile è un singolo bene, in una singola via, di un s
 
 Non prezza il lavoro, oltre alla voce del tempo che si può compilare a mano. Nella locazione breve la componente di lavoro è tale che l'operazione somiglia più a un mestiere che a un investimento.
 
-Assume le variabili indipendenti nella simulazione, mentre nella realtà tassi, prezzi, sfitto e morosità si muovono insieme. Introdurre una correlazione richiederebbe di stimare una matrice che nessuno ha, e sostituirebbe un'assunzione dichiarata con una nascosta.
+Non conosce la vera correlazione fra le variabili di scenario. Dal 4 settembre 2026 non le tratta più come indipendenti, che sottostimava le code, ma le muove insieme con un fattore comune la cui intensità si imposta nel foglio Rischio: il valore predefinito del trenta per cento è una convenzione dichiarata e non una misura, perché una matrice di correlazione stimata su questi dati nessuno la ha. Va mossa per vedere se la decisione tiene.
 
 Non modella la ristrutturazione come progetto, per scelta di perimetro. Resta dentro il solo accantonamento per il rifacimento di fine ciclo, perché un immobile che si tiene quarant'anni va rifatto almeno una volta e ignorarlo falsa il rendimento.
 

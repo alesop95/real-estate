@@ -1062,6 +1062,62 @@ def test_omi_importa_col_filtro_non_lascia_la_cache_a_meta():
     assert precedente.read_text(encoding="utf-8") == "fornitura precedente"
 
 
+def test_fattore_comune_non_altera_le_incertezze_dichiarate():
+    """La correlazione fra le variabili di scenario si introduce senza toccarne la dispersione.
+
+    Il foglio Rischio mescola, per ogni estrazione, un fattore comune di scenario con la
+    componente propria di ciascuna variabile, con pesi pari alla radice della correlazione
+    impostata e alla radice del suo complemento. La scelta di quei due pesi non e' estetica
+    ed e' la ragione per cui la modifica e' accettabile: la somma dei loro quadrati fa uno,
+    quindi ogni estrazione efficace resta una normale standard e le incertezze dichiarate in
+    cima al foglio, che sono l'unica cosa che l'utente sceglie, continuano a valere
+    esattamente quelle. Se invece si sommassero i due contributi con peso uno, introdurre la
+    correlazione gonfierebbe di nascosto tutte le volatilita', e il foglio direbbe una cosa
+    diversa da quella scritta nelle sue etichette.
+
+    La seconda proprieta' verificata e' che il parametro sia leggibile come correlazione e
+    non come un coefficiente astratto: fra due variabili che reagiscono nello stesso verso la
+    correlazione risultante e' esattamente il valore impostato, e fra due di verso opposto e'
+    lo stesso valore con il segno cambiato.
+
+    Il terzo controllo riguarda l'evento di morosita', dove la mescolanza non puo' essere
+    additiva perche' l'estrazione e' una probabilita': si passa alla normale, si mescola, e si
+    torna indietro con la cumulata. La trasformazione deve restituire una distribuzione ancora
+    uniforme, altrimenti la probabilita' annua di morosita' impostata non sarebbe piu' quella.
+    """
+    import math
+    import random
+    import statistics
+
+    normale = statistics.NormalDist()
+    c = 0.30
+    carico = math.sqrt(c)
+    proprio = math.sqrt(1 - c)
+    generatore = random.Random(20260904)
+
+    canone, sfitto, rivalutazione, uniformi = [], [], [], []
+    for _ in range(100_000):
+        comune = generatore.gauss(0, 1)
+        canone.append(carico * comune + proprio * generatore.gauss(0, 1))
+        sfitto.append(-carico * comune + proprio * generatore.gauss(0, 1))
+        rivalutazione.append(carico * comune + proprio * generatore.gauss(0, 1))
+        uniformi.append(normale.cdf(carico * comune + proprio * generatore.gauss(0, 1)))
+
+    # Le marginali restano normali standard: media zero e scarto uno.
+    for serie in (canone, sfitto, rivalutazione):
+        assert abs(statistics.fmean(serie)) < 0.02
+        assert abs(statistics.stdev(serie) - 1.0) < 0.02
+
+    # Il parametro si legge come correlazione, con il segno del verso di reazione.
+    assert abs(statistics.correlation(canone, rivalutazione) - c) < 0.02
+    assert abs(statistics.correlation(canone, sfitto) + c) < 0.02
+
+    # L'estrazione dell'evento resta uniforme, quindi la probabilita' impostata resta quella.
+    assert abs(statistics.fmean(uniformi) - 0.5) < 0.01
+    sotto_cinque = sum(1 for u in uniformi if u < 0.05) / len(uniformi)
+    assert abs(sotto_cinque - 0.05) < 0.005
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []
