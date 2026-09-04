@@ -70,7 +70,7 @@ Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spie
 
 ```
 docs/README.md               indice della documentazione: i quattro percorsi di lettura,
-                              i quindici documenti per tipo di domanda, le sovrapposizioni note
+                              i sedici documenti per tipo di domanda, le sovrapposizioni note
 docs/da-zero.md              avvio da zero: cosa installare, quali documenti procurarsi,
                               la prima valutazione completa in sette passi
 docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
@@ -106,8 +106,10 @@ docs/manuale-operativo.md    guida d'uso completa: installazione, ogni comando c
 docs/guida-tecnica(catena-calcolo-e-normativa).md
                               architettura, catena di calcolo, riferimento di ogni voce con
                               formula e norma, punti di intervento, verifica
-docs/vault-obsidian.md       prova di organizzazione in un vault Obsidian: struttura, hub,
-                              frontmatter, che cosa si rompe, configurazione minima
+docs/vault-obsidian.md       il vault Obsidian aperto sulla radice: struttura, hub, frontmatter,
+                              che cosa si rompe, e la forma del grafo misurata
+docs/architettura-web.md     studio dello stack per portare lo strumento in rete: fasce gratuite
+                              misurate, stack scelto, dove vive il motore, sorte dei cinque limiti
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
                               atterra nel codice o nel workbook, stato di verifica, lacune
 ```

@@ -156,7 +156,7 @@ tools/                    gli eseguibili, che si lanciano
 
 scripts/                  build e setup dell'ambiente LaTeX
 tests/                    settantaquattro test in due file
-docs/                     quindici documenti, con l'indice in docs/README.md
+docs/                     sedici documenti, con l'indice in docs/README.md
 data/                     registro annunci e cache OMI non versionati; il registro
                           delle verifiche comunali sì, perché non ha nulla di privato
 output/                   il workbook e le cartelle per immobile, non versionati

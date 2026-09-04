@@ -20,7 +20,7 @@ Tenerli separati è una scelta e non un accumulo: la stessa cosa spiegata in due
 
 **Devo intervenire sul codice, o verificare un calcolo.** [`guida-tecnica(catena-calcolo-e-normativa).md`](<guida-tecnica(catena-calcolo-e-normativa).md>) per l'architettura e il riferimento di ogni voce, `matematica/matematica-finanziaria.tex` per le derivazioni, [`metodo-e-metriche.md`](metodo-e-metriche.md) per le scelte metodologiche.
 
-## I quindici documenti
+## I sedici documenti
 
 ### Guide d'uso, per chi usa lo strumento
 
@@ -52,6 +52,7 @@ Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. Si
 | [`guida-tecnica(catena-calcolo-e-normativa).md`](<guida-tecnica(catena-calcolo-e-normativa).md>) | Architettura, catena di calcolo, riferimento di ogni voce con formula, nome definito e norma. Più i punti di intervento e come si verifica. Si apre prima di toccare il codice. |
 | `matematica/matematica-finanziaria.tex` | La trattazione completa: ogni formula derivata da zero, con un capitolo iniziale che spiega la notazione a chi non è abituato alle formule e una lettura a parole di ogni formula. Si compila in un PDF di trentadue pagine. |
 | [`vault-obsidian.md`](vault-obsidian.md) | Come questa cartella si dispone in un vault Obsidian: la struttura, i due hub, il frontmatter già presente, che cosa si rompe e la configurazione minima. Si legge se si valuta di aprire il progetto in Obsidian. |
+| [`architettura-web.md`](architettura-web.md) | Lo studio dello stack per portare lo strumento in rete: che cosa cambia nel vincolo di riservatezza, le fasce gratuite misurate con le due piattaforme escluse e il perché, lo stack scelto con le alternative rifiutate, dove vive il motore di calcolo, e che fine fanno i cinque limiti dichiarati. Si apre prima di scrivere una riga dell'applicazione, e quando una di quelle scelte viene rimessa in discussione. |
 | [`fonti.md`](fonti.md) | Da dove viene ogni dato: cosa fornisce ciascuna fonte, dove atterra nel codice o nel workbook, con quale grado di verifica, e le lacune dichiarate. Si apre prima di fidarsi di un numero, e obbligatoriamente prima di modificare un parametro fiscale. |
 
 ## Che cosa non sta qui
