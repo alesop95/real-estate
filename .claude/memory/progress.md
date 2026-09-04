@@ -2,6 +2,30 @@
 
 > Append-only, in ordine cronologico inverso. Ogni voce riporta data, file toccati, motivo.
 
+## 2026-09-04, parametri comunali, pulizia della fornitura OMI e filtro all'importazione
+
+File toccati: nuovi [`src/immobiliare/comuni.py`](../../src/immobiliare/comuni.py) e `data/comuni-verifiche.csv`; modificati [`src/immobiliare/omi.py`](../../src/immobiliare/omi.py), `tools/valuta.py`, [`tests/test_calcoli.py`](../../tests/test_calcoli.py), [`docs/fonti.md`](../../docs/fonti.md), [`docs/manuale-operativo.md`](../../docs/manuale-operativo.md), [`docs/fiscalita-acquisto.md`](../../docs/fiscalita-acquisto.md), [`docs/fiscalita-locazione.md`](../../docs/fiscalita-locazione.md), [`docs/da-zero.md`](../../docs/da-zero.md), [`docs/guida-al-workbook.md`](../../docs/guida-al-workbook.md), [`docs/raccolta-annunci.md`](../../docs/raccolta-annunci.md), [`README.md`](../../README.md), [`CLAUDE.md`](../../CLAUDE.md), [`STACK.md`](../context/STACK.md), [`deployment.md`](../context/deployment.md). Nuove ADR: 021 e 022. Test da 74 a 76.
+
+Il comando `comune`. Nasce da una domanda sull'opportunità di una tabella di valori per città, e la risposta è ADR-021: il collegamento agli atti IMU si calcola dal codice catastale e dalla sigla di provincia, che stanno già nella fornitura OMI, mentre il valore letto si conserva con la data. Verificata a mano la forma dell'indirizzo su due Comuni di due regioni, C770 con MC e C757 con VC. Registrate cinque fonti nuove in `fonti.md`, fra cui la pagina degli adempimenti da cui viene il termine del 28 ottobre tradotto in codice da `stato_verifica`.
+
+Chiusa la lacuna dell'imposta di soggiorno di Civitanova, per la parte che si poteva chiudere: un euro a notte per persona sulle locazioni brevi, un euro e cinquanta sui cinque stelle, dal primo giugno 2023, con dichiarazione mensile entro il quindici e modello annuale entro il 31 gennaio. La fonte è la pagina del concessionario che gestisce il tributo, non la delibera di giunta che lo fissa: la distinzione resta scritta fra le lacune finché quel PDF non è aperto.
+
+La fornitura OMI conteneva anche il Piemonte. Scoperto per caso, perché il comando nuovo risolveva Civiasco, in provincia di Vercelli, cercando un Comune vicino a Civitanova. Erano 15.254 quotazioni su 1.180 Comuni estranei, su un totale di 22.347: rimosse dai due CSV e dall'archivio in cache, che scende da 2,6 MB a 813 KB, e restano 7.093 quotazioni su 225 Comuni tutti marchigiani. La scheda di stato riportava il totale come se fosse tutto delle Marche, ed è stata corretta.
+
+Il filtro è poi diventato un'opzione, per ADR-022, perché una pulizia a mano non è riproducibile: `omi importa --regione`, con l'importazione resa atomica. La prima versione filtrava dopo aver copiato in cache e in caso di rifiuto affermava il falso, dicendo che la cache non era stata toccata mentre conteneva i file non filtrati; ora l'estrazione avviene in transito e lo spostamento è l'ultimo passo. Un filtro che non tiene nessuna riga rifiuta ed elenca le regioni presenti, perché il caso probabile è il nome scritto in una forma diversa da quella della fornitura.
+
+Un difetto trovato scrivendo il registro delle verifiche e congelato in un test: la nota conteneva un punto e virgola, che è il delimitatore del CSV, e il campo si troncava a metà senza sollevare errori.
+
+## 2026-09-03, vault Obsidian sulla radice, e i riferimenti diventano collegamenti
+
+File toccati: nuovi `.obsidian/` non versionato, [`docs/vault-obsidian.md`](../../docs/vault-obsidian.md) e [`tools/collega-riferimenti.py`](../../tools/collega-riferimenti.py); modificati trentaquattro file fra documentazione, memoria, contesto e regole; rimossa la cartella `_notes/dossier/conversazioni/`.
+
+Il vault è aperto sulla radice del progetto e non accanto, quindi nessuna copia dei documenti esiste e i percorsi relativi continuano a valere su GitHub. La configurazione è scritta nei file invece che cliccata: collegamenti in Markdown standard, esclusione delle cartelle di codice e di artefatti, sincronizzazione e visualizzatore web spenti per il vincolo di riservatezza. Allineati i tre plugin degli altri due vault della macchina, alle stesse versioni, copiati e non riscaricati.
+
+Il grafo ha smentito la previsione che la scheda del vault conteneva, e la smentita è la parte istruttiva. Prevedeva due hub e tre grappoli; la misura diceva quarantanove note e quindici archi, un solo hub, trentatré nodi isolati. La causa era un carattere: gli indici citavano i file fra apici inversi e non come collegamenti, quindi per Obsidian erano testo. Convertiti con uno strumento nuovo, che tiene il nome in monospazio dentro il testo del collegamento e si rifiuta di indovinare un nome ambiguo, gli archi sono passati a centottantasei. Lo strumento ha attraversato due difetti prima di essere corretto, un nome nudo risolto sul file sbagliato e la non idempotenza, e la convenzione è ora scritta in [`interaction-style.md`](../rules/interaction-style.md).
+
+Assorbito e poi cancellato l'unico nodo isolato rimasto, la trascrizione ChatGPT di aprile 2025 segnata "DA METTERE": il progetto l'aveva superata, tranne l'imposta di soggiorno fra gli adempimenti della locazione breve, che è stata portata in `fiscalita-locazione.md`. La cancellazione è registrata in `_notes/INDICE-MATERIALE.md`, che dice dove è finito ciascun contenuto.
+
 ## 2026-09-03, tipografia italiana su tutto il progetto, fusione delle guide, README pubblico
 
 File toccati: quarantatré file fra documentazione, memoria e codice. Nuovi: [`docs/guida-al-workbook.md`](../../docs/guida-al-workbook.md), [`docs/vault-obsidian.md`](../../docs/vault-obsidian.md), `tools/fix-accents.py`, `tools/fix-missing-accents.py`, `tools/fix-dashes.py`, `tools/dashes-exclude.txt`. Rimossi: `docs/guida-non-tecnica.md` e `docs/guida-per-il-socio.md`, il cui contenuto vive interamente nella guida fusa. Test invariati a settantuno.

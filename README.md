@@ -123,7 +123,7 @@ Tutti nella forma `python tools/valuta.py <comando>`, e ognuno accetta `--help`.
 | `annunci omi` | Aggancia a un immobile la quotazione della sua zona. |
 | `comune` | Gli atti IMU e l'imposta di soggiorno di un Comune: costruisce il collegamento agli atti e dice che cosa risulta già letto e se vale ancora per l'anno chiesto. |
 | `omi zone`, `omi cerca` | Zone omogenee di un Comune, e quotazioni di una zona. |
-| `omi importa`, `omi scarica` | Ingerisce la fornitura ufficiale scaricata a mano, oppure il mirror open data per la serie storica. |
+| `omi importa`, `omi scarica` | Ingerisce la fornitura ufficiale scaricata a mano, con `--regione` per tenere le sole regioni chieste, oppure il mirror open data per la serie storica. |
 | `tassi` | Tassi correnti sulle nuove erogazioni, la catena che scompone il tasso di un mutuo, il confronto con un preventivo. `--risalita` misura le peggiori risalite storiche dell'Euribor. |
 | `indicatori` | Euro short-term rate e inflazione, per tarare le assunzioni. |
 | `scheda --id ID` | La scheda di trattativa in LaTeX. |

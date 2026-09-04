@@ -815,19 +815,37 @@ def cmd_omi(args) -> int:
             print("Serve --file con l'archivio zip o il CSV scaricato dall'area riservata.")
             print(f"Percorso a video: {O.FORNITURA_UFFICIALE}")
             return 2
+        esiti: list = []
         try:
             # Il percorso di destinazione va ancorato alla radice del progetto:
             # il valore predefinito del modulo è relativo, e lanciando il comando
             # da un'altra cartella l'archivio finirebbe in un `data/omi` diverso da
             # quello che gli altri sottocomandi leggono, con l'effetto di
             # un'importazione riuscita e una ricerca che non trova nulla.
-            estratti = O.importa_fornitura(args.file, RADICE / "data" / "omi")
+            estratti = O.importa_fornitura(args.file, RADICE / "data" / "omi",
+                                           regioni=args.regione, esiti=esiti)
         except (FileNotFoundError, ValueError) as e:
             print(f"Importazione fallita: {e}")
+            if args.regione:
+                print()
+                print("La cache non è stata toccata: il filtro agisce prima che i file vi entrino.")
+                print("Il nome della regione va scritto come lo scrive la fornitura.")
             return 1
         print(f"Importati {len(estratti)} file in {RADICE / 'data' / 'omi'}:")
         for f in estratti:
             print(f"  {f.name}")
+        if esiti:
+            print()
+            print(f"Filtro per regione: {', '.join(args.regione)}")
+            volute = {x.strip().upper() for x in args.regione}
+            for esito in esiti:
+                altre = sorted(r for r in esito.regioni_trovate if r and r not in volute)
+                plurale = "riga" if esito.scartate == 1 else "righe"
+                scarto = (f", scartata {esito.scartate} {plurale} di {', '.join(altre)}"
+                          if altre and esito.scartate == 1
+                          else f", scartate {esito.scartate} {plurale} di {', '.join(altre)}"
+                          if altre else "")
+                print(f"  {esito.file.name}: tenute {esito.tenute} righe{scarto}")
         print()
         print("Ora sono interrogabili con: python tools/valuta.py omi cerca --comune \"...\"")
         return 0
@@ -1212,6 +1230,8 @@ def principale(argomenti=None) -> int:
     p = sub.add_parser("omi", help="quotazioni dell'Osservatorio del mercato immobiliare")
     p.add_argument("azione", choices=["scarica", "importa", "zone", "cerca"])
     p.add_argument("--file", help="archivio zip o CSV della fornitura ufficiale, per importa")
+    p.add_argument("--regione", action="append", default=[],
+                   help="tiene le sole righe di questa regione, ripetibile; per importa")
     p.add_argument("--semestre", default="2018-2")
     p.add_argument("--comune", default="")
     p.add_argument("--zona", default="")

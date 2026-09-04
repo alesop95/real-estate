@@ -281,7 +281,83 @@ def scarica_dal_mirror(semestre: str, cartella: str | Path = "data/omi") -> tupl
     return percorsi[0], percorsi[1]
 
 
-def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi") -> list[Path]:
+@dataclass
+class Filtro:
+    """Esito di un filtro per regione su un file di fornitura."""
+
+    file: Path
+    tenute: int
+    scartate: int
+    regioni_trovate: dict
+
+
+def filtra_per_regione(percorso: str | Path, regioni) -> Filtro:
+    """Riscrive un CSV di fornitura tenendo le sole regioni chieste.
+
+    Serve perché la fornitura dell'area riservata non contiene sempre soltanto l'ambito
+    territoriale richiesto: quella scaricata per le Marche nell'agosto 2026 portava con sé
+    anche il Piemonte, cioè quindicimila quotazioni su millecentottanta Comuni che non
+    c'entravano nulla con la valutazione, e per giorni la scheda di stato ha riportato il
+    totale come se fosse tutto marchigiano. Il difetto non è il peso del file: è che
+    `comuni` e le ricerche per nome rispondono su Comuni di un'altra regione senza che
+    nulla segnali l'anomalia.
+
+    Il filtro rifiuta di scrivere un file vuoto e dice quali regioni ha trovato. È la
+    protezione dal caso più probabile, cioè il nome di regione scritto in modo diverso da
+    come lo scrive la fornitura: senza il rifiuto si otterrebbe un'importazione riuscita e
+    una cache senza quotazioni, che è un silenzio plausibile e quindi ingannevole.
+
+    Il file riscritto è in UTF-8 anche quando l'originale era nella codifica ANSI di
+    Windows, perché il lettore riconosce entrambe e la riscrittura è comunque una copia
+    derivata: l'archivio scaricato non viene toccato.
+    """
+    percorso = Path(percorso)
+    volute = {str(r).strip().upper() for r in regioni if str(r).strip()}
+    if not volute:
+        raise ValueError("nessuna regione indicata")
+
+    righe = _leggi_testo(percorso).splitlines()
+    indice = 0
+    for i, riga in enumerate(righe[:5]):
+        if "Comune_descrizione" in riga or "Comune_amm" in riga:
+            indice = i
+            break
+    intestazione = righe[indice]
+    delimitatore = ";" if intestazione.count(";") > intestazione.count(",") else ","
+    colonne = [c.strip() for c in intestazione.split(delimitatore)]
+    if "Regione" not in colonne:
+        raise ValueError(f"{percorso.name} non ha la colonna Regione: non è filtrabile per regione")
+    posizione = colonne.index("Regione")
+
+    tenute: list[str] = []
+    scartate = 0
+    trovate: dict = {}
+    for riga in righe[indice + 1:]:
+        if not riga.strip():
+            continue
+        campi = riga.split(delimitatore)
+        regione = campi[posizione].strip().upper() if len(campi) > posizione else ""
+        trovate[regione] = trovate.get(regione, 0) + 1
+        if regione in volute:
+            tenute.append(riga)
+        else:
+            scartate += 1
+
+    if not tenute:
+        elenco = ", ".join(sorted(r for r in trovate if r)) or "nessuna"
+        raise ValueError(
+            f"il filtro {sorted(volute)} non tiene nessuna riga di {percorso.name}. "
+            f"Regioni presenti nel file: {elenco}"
+        )
+
+    fine_riga = chr(10)
+    testo = fine_riga.join(righe[:indice + 1] + tenute) + fine_riga
+    percorso.write_text(testo, encoding="utf-8", newline="")
+    return Filtro(file=percorso, tenute=len(tenute), scartate=scartate, regioni_trovate=trovate)
+
+
+def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi",
+                      regioni=None, esiti: list | None = None) -> list[Path]:
     """Ingerisce la fornitura ufficiale scaricata a mano dall'area riservata.
 
     È la via corretta e l'unica aggiornata. La fornitura si ottiene autenticandosi
@@ -298,6 +374,15 @@ def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi") -
     servizi telematici dell'Agenzia, area riservata, Servizi ipotecari e catastali
     e Osservatorio del mercato immobiliare, Forniture OMI, Quotazioni immobiliari,
     scelta del semestre e dell'ambito territoriale, poi scarico del prodotto.
+
+    Con `regioni` si tengono le sole righe delle regioni indicate, ed è la risposta al
+    fatto che l'ambito territoriale scelto a video non garantisce il contenuto del file:
+    quello chiesto per le Marche nell'agosto 2026 conteneva anche il Piemonte. Il filtro
+    agisce prima che i file entrino nella cache, su una copia temporanea, così che un
+    filtro sbagliato non lasci a metà l'importazione: se non tiene nessuna riga, la cache
+    non viene toccata affatto e l'errore dice quali regioni il file contiene davvero.
+    L'archivio scaricato non viene modificato in nessun caso. Se `esiti` è una lista, vi
+    si accodano gli oggetti `Filtro` di ciascun file, per chi vuole riferirne a video.
     """
     import shutil
     import zipfile
@@ -308,24 +393,45 @@ def importa_fornitura(percorso: str | Path, cartella: str | Path = "data/omi") -
     if not percorso.exists():
         raise FileNotFoundError(f"non trovo {percorso}")
 
-    estratti: list[Path] = []
-    if percorso.suffix.lower() == ".zip":
-        with zipfile.ZipFile(percorso) as z:
-            for nome in z.namelist():
-                if nome.lower().endswith(".csv"):
-                    destinazione = cartella / Path(nome).name
-                    with z.open(nome) as sorgente, destinazione.open("wb") as uscita:
-                        shutil.copyfileobj(sorgente, uscita)
-                    estratti.append(destinazione)
-    elif percorso.suffix.lower() == ".csv":
-        destinazione = cartella / percorso.name
-        shutil.copyfile(percorso, destinazione)
-        estratti.append(destinazione)
-    else:
-        raise ValueError(f"formato non riconosciuto: {percorso.suffix}. Attesi .zip o .csv")
+    import tempfile
 
-    if not estratti:
-        raise ValueError("nessun CSV trovato nell'archivio")
+    # Si estrae in una cartella di transito e si sposta solo alla fine: se il filtro
+    # rifiuta, la cache non ha visto nulla e resta quella di prima.
+    transito = Path(tempfile.mkdtemp(prefix="omi-import-"))
+    provvisori: list[Path] = []
+    try:
+        if percorso.suffix.lower() == ".zip":
+            with zipfile.ZipFile(percorso) as z:
+                for nome in z.namelist():
+                    if nome.lower().endswith(".csv"):
+                        destinazione = transito / Path(nome).name
+                        with z.open(nome) as sorgente, destinazione.open("wb") as uscita:
+                            shutil.copyfileobj(sorgente, uscita)
+                        provvisori.append(destinazione)
+        elif percorso.suffix.lower() == ".csv":
+            destinazione = transito / percorso.name
+            shutil.copyfile(percorso, destinazione)
+            provvisori.append(destinazione)
+        else:
+            raise ValueError(f"formato non riconosciuto: {percorso.suffix}. Attesi .zip o .csv")
+
+        if not provvisori:
+            raise ValueError("nessun CSV trovato nell'archivio")
+
+        if regioni:
+            for f in provvisori:
+                esito = filtra_per_regione(f, regioni)
+                if esiti is not None:
+                    esiti.append(esito)
+
+        estratti: list[Path] = []
+        for f in provvisori:
+            definitivo = cartella / f.name
+            shutil.move(str(f), str(definitivo))
+            estratti.append(definitivo)
+    finally:
+        shutil.rmtree(transito, ignore_errors=True)
+
     return estratti
 
 

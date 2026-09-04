@@ -223,6 +223,8 @@ python tools/valuta.py omi scarica --semestre 2018-2
 
 `importa` ingerisce la fornitura ufficiale scaricata a mano, e accetta l'archivio zip così come arriva oppure i CSV già estratti. È la sola via per i dati correnti, perché la fornitura vive dietro un'autenticazione personale con SPID, CIE, Entratel o Fisconline, che uno script non può e non deve simulare.
 
+L'opzione `--regione`, ripetibile, tiene le sole righe delle regioni indicate e scarta il resto. Serve perché l'ambito territoriale scelto a video non garantisce il contenuto del file: quello chiesto per le Marche nell'agosto 2026 conteneva anche il Piemonte, cioè quindicimila quotazioni su millecentottanta Comuni che le ricerche per nome trovavano senza che nulla segnalasse l'anomalia. Il filtro agisce su una copia in transito, prima che i file entrino nella cache, quindi un filtro sbagliato non lascia l'importazione a metà: se non tiene nessuna riga, l'importazione fallisce, la cache resta quella di prima e il messaggio elenca le regioni che il file contiene davvero, che è l'informazione che serve quando il nome è scritto in una forma diversa. Il comando riferisce per ciascun file quante righe ha tenuto e quante ne ha scartate, perché una riduzione silenziosa sarebbe indistinguibile da una fornitura incompleta. L'archivio scaricato non viene modificato in nessun caso.
+
 `scarica` prende i dati dal mirror open data su GitHub, che si ferma al secondo semestre 2018 ed è quindi utile per la serie storica e non per il valore corrente.
 
 Sui nomi dei Comuni: il confronto è tollerante, perché nella fornitura ufficiale gli apostrofi e i prefissi agiografici sono scritti in modi diversi, quindi non serve indovinare la grafia esatta.
@@ -415,7 +417,7 @@ Le scadenze sono quattro e nessuna è automatica.
 
 Una volta l'anno, dopo la legge di bilancio, l'aggiornamento fiscale: si aggiornano i valori in `src/immobiliare/parametri.py` verificandoli sulle fonti di `fonti.md`, si sposta la costante `REVISIONE`, si aggiornano le schede di dominio impattate, si eseguono i test e la verifica del workbook, e si rigenera. I test congelano gli scaglioni IRPEF, il minimo di legge dell'imposta di registro e i moltiplicatori catastali, che sono le tre cose che cambiano più spesso e che passerebbero inosservate.
 
-Due volte l'anno, a semestre chiuso, le quotazioni OMI: si scarica a mano la fornitura ufficiale dall'area riservata dell'Agenzia delle Entrate e la si ingerisce con `omi importa --file`. Sono cinque minuti e vanno messi in calendario, perché altrimenti non si fanno.
+Due volte l'anno, a semestre chiuso, le quotazioni OMI: si scarica a mano la fornitura ufficiale dall'area riservata dell'Agenzia delle Entrate e la si ingerisce con `omi importa --file`, aggiungendo `--regione` con la regione che interessa, perché il file può contenerne altre. Sono cinque minuti e vanno messi in calendario, perché altrimenti non si fanno.
 
 Una volta l'anno, dopo il 28 ottobre, i parametri comunali: superato quel termine gli atti del Comune per l'anno non cambiano più, quindi è il momento in cui una lettura diventa definitiva. Si esegue `comune --nome "..."` per il Comune dell'immobile, si aprono gli atti dal collegamento, e si riporta in `data/comuni-verifiche.csv` l'aliquota IMU con la data di lettura. Il comando dice da solo quando una lettura è da rifare.
 

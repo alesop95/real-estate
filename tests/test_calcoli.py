@@ -978,6 +978,90 @@ def test_comuni_registro_tiene_separato_il_collegamento_dal_valore():
     assert civitanova.note.rstrip().endswith(".")
 
 
+def _archivio_di_prova(cartella, righe_regioni):
+    """Un archivio zip di fornitura con le regioni indicate, una riga per regione."""
+    import zipfile
+
+    intestazione = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Sez;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;LinkZona;Cod_Tip;Descr_Tipologia;Stato;"
+        "Stato_prev;Compr_min;Compr_max;Loc_min;Loc_max"
+    )
+    corpo = []
+    for regione, sigla, comune, codice in righe_regioni:
+        corpo.append(
+            "CENTRO;" + regione + ";" + sigla + ";11043013;K3AN; ;" + codice + ";" + comune
+            + ";B;B1;L;20;Abitazioni civili;NORMALE;N;1.100;1.600;4,0;6,0"
+        )
+    testo = chr(10).join(["QUOTAZIONI IMMOBILIARI", intestazione] + corpo) + chr(10)
+    percorso = cartella / "FORNITURA.zip"
+    with zipfile.ZipFile(percorso, "w") as z:
+        z.writestr("QI_1_1_20252_VALORI.csv", testo)
+        z.writestr("QI_1_1_20252_ZONE.csv", testo)
+    return percorso
+
+
+def test_omi_importa_tiene_le_sole_regioni_richieste():
+    """L'ambito territoriale scelto a video non garantisce il contenuto del file.
+
+    La fornitura chiesta per le Marche nell'agosto 2026 conteneva anche il Piemonte:
+    millecentottanta Comuni di un'altra regione, che la ricerca per nome trovava senza che
+    nulla segnalasse l'anomalia. Il filtro all'importazione taglia quelle righe prima che
+    entrino in cache, e riferisce quante ne ha tenute e quante scartate, perché una
+    riduzione silenziosa sarebbe indistinguibile da una fornitura incompleta.
+    """
+    import tempfile
+
+    from immobiliare import omi as O
+
+    lavoro = Path(tempfile.mkdtemp())
+    cache = Path(tempfile.mkdtemp())
+    archivio = _archivio_di_prova(lavoro, [
+        ("MARCHE", "MC", "CIVITANOVA MARCHE", "C770"),
+        ("PIEMONTE", "VC", "CIVIASCO", "C757"),
+    ])
+
+    esiti: list = []
+    O.importa_fornitura(archivio, cache, regioni=["Marche"], esiti=esiti)
+
+    quotazioni, _ = O.carica_cartella(cache)
+    assert {q.comune for q in quotazioni} == {"CIVITANOVA MARCHE"}
+    assert O.cerca(quotazioni, "Civiasco") == []
+    assert len(esiti) == 2
+    assert all(e.tenute == 1 and e.scartate == 1 for e in esiti)
+    assert esiti[0].regioni_trovate == {"MARCHE": 1, "PIEMONTE": 1}
+
+
+def test_omi_importa_col_filtro_non_lascia_la_cache_a_meta():
+    """Un filtro che non tiene nulla non deve svuotare la cache che c'era.
+
+    Il caso probabile e' il nome di regione scritto in modo diverso da come lo scrive la
+    fornitura. Se l'importazione avesse gia' copiato i file prima di filtrarli, la cache
+    resterebbe con i dati non filtrati e il messaggio di errore sarebbe una bugia; se li
+    avesse copiati e poi svuotati, si perderebbe la fornitura precedente. Per questo
+    l'estrazione avviene in transito e lo spostamento e' l'ultimo passo.
+    """
+    import tempfile
+
+    from immobiliare import omi as O
+
+    lavoro = Path(tempfile.mkdtemp())
+    cache = Path(tempfile.mkdtemp())
+    precedente = cache / "QI_0_1_20241_VALORI.csv"
+    precedente.write_text("fornitura precedente", encoding="utf-8")
+    archivio = _archivio_di_prova(lavoro, [("MARCHE", "MC", "CIVITANOVA MARCHE", "C770")])
+
+    try:
+        O.importa_fornitura(archivio, cache, regioni=["Lazio"])
+        raise AssertionError("il filtro avrebbe dovuto rifiutare")
+    except ValueError as e:
+        # L'errore dice quali regioni il file contiene davvero, che e' l'informazione utile.
+        assert "MARCHE" in str(e)
+
+    assert sorted(f.name for f in cache.glob("*.csv")) == ["QI_0_1_20241_VALORI.csv"]
+    assert precedente.read_text(encoding="utf-8") == "fornitura precedente"
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

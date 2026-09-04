@@ -7,7 +7,7 @@ covers-paths:
   - tools/**
   - docs/**
 last-verified-commit: a0b3420
-stato: strumento completo e verificato; nessuna feature attiva, nessun lavoro pendente
+stato: strumento completo e verificato; nessuna feature attiva. Il lavoro del 3 e 4 settembre riguarda navigabilità della documentazione e accesso agli atti comunali, non il modello di calcolo
 ---
 
 # Lavoro in corso
@@ -73,7 +73,18 @@ Stato al 1 settembre 2026, seconda parte della giornata: non c'è una feature ap
 - [x] Fusione delle due guide d'uso in [`guida-al-workbook.md`](../../docs/guida-al-workbook.md), senza perdita di contenuto
 - [x] README pubblico completo, con architettura, modello, fonti e collegamenti verificati
 - [x] Indice della documentazione, e prova di organizzazione in un vault Obsidian
-- [ ] Commit del lavoro dal 1 al 3 settembre, che spetta all'utente
+- [x] Vault Obsidian aperto sulla radice, con la configurazione scritta nei file e non cliccata
+- [x] Plugin allineati agli altri vault della macchina, alle stesse versioni
+- [x] Forma del grafo misurata invece che prevista, e la previsione sbagliata conservata come lezione
+- [x] Riferimenti fra documenti convertiti in collegamenti veri, da 15 a 186 archi, con lo strumento che mantiene la convenzione
+- [x] Convenzione dei collegamenti dichiarata in [`interaction-style.md`](../rules/interaction-style.md), perché uno strumento senza regola è conoscenza che si perde
+- [x] Trascrizione ChatGPT assorbita e cancellata, con l'imposta di soggiorno portata in [`fiscalita-locazione.md`](../../docs/fiscalita-locazione.md)
+- [x] Comando `comune`: collegamento calcolato agli atti IMU, registro delle verifiche con la data, quattro esiti di scadenza
+- [x] Tariffa dell'imposta di soggiorno di Civitanova letta e registrata, con la distinzione fra fonte operativa e atto
+- [x] Cinque fonti nuove registrate in [`fonti.md`](../../docs/fonti.md), tutte aperte e verificate, nessuna citata di seconda mano
+- [x] Fornitura OMI ripulita dalle righe del Piemonte, e il filtro trasformato in opzione `omi importa --regione`
+- [x] Importazione resa atomica, con il rifiuto di un filtro che non tiene nessuna riga
+- [ ] Commit della tracciatura del 4 settembre, che spetta all'utente
 
 ## Riconciliazione
 
@@ -97,4 +108,6 @@ Nel foglio Confronto immobili restano globali l'opzione prezzo-valore e la quali
 
 ## Prossima azione concreta
 
-Sullo strumento non c'è una prossima azione: il lavoro utile è passato all'uso dello strumento. Riempire il foglio Immobile con l'immobile reale scelto fra i dodici a registro, verificare l'aliquota IMU nella delibera del Comune e le spese nel consuntivo condominiale, chiedere la rendita catastale che nessuno dei dodici annunci indica, e leggere Cruscotto, coda bassa del foglio Rischio e prezzo massimo sostenibile con il suo scarto sul prezzo trattato. Se il mutuo in valutazione è a tasso variabile, prima di firmare va compilato il percorso del tasso con il rialzo storico e letta la rata massima raggiunta.
+Sullo strumento non c'è una prossima azione, e i due giorni scorsi non l'hanno cambiato: hanno reso navigabile la documentazione e chiuso l'attrito di ritrovare gli atti comunali, senza toccare il modello. Il lavoro utile resta l'uso. Riempire il foglio Immobile con l'immobile reale scelto fra i quattordici a registro, chiedere la rendita catastale che nessuno indica, leggere le spese nel consuntivo condominiale, e leggere l'aliquota IMU aprendo il collegamento che `valuta.py comune --nome "Civitanova Marche"` costruisce, annotandola in `data/comuni-verifiche.csv` con la data. Poi Cruscotto, coda bassa del foglio Rischio, prezzo massimo sostenibile con il suo scarto. Se il mutuo in valutazione è a tasso variabile, prima di firmare va compilato il percorso del tasso con il rialzo storico e letta la rata massima raggiunta.
+
+L'unica cosa delimitata che resta aperta sui dati è la delibera di giunta 7/2023 di Civitanova, il PDF che fissa le tariffe dell'imposta di soggiorno lette per ora sulla pagina del concessionario.

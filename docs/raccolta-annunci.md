@@ -59,7 +59,7 @@ Il modulo riconosce da solo il formato del file, perché il mirror usa la virgol
 La fornitura si scarica due volte l'anno e la procedura è sempre la stessa. Si accede ai servizi telematici dell'Agenzia con SPID o CIE, si entra nell'area riservata alla voce dei servizi ipotecari e catastali e dell'Osservatorio del mercato immobiliare, si sceglie Forniture dati OMI e poi Quotazioni immobiliari, si indicano semestre e ambito territoriale e si scarica il prodotto. L'archivio ottenuto si passa al programma senza estrarlo. Sull'ambito conviene ragionare una volta sola: la fornitura si chiede per Comune, provincia, area metropolitana, regione o intero territorio nazionale, e un raggio di ricerca realistico attraversa quasi sempre più province, perché quaranta chilometri da un capoluogo di costa ne toccano tre o quattro. Scaricare l'intera regione costa un solo giro e un solo file, e il programma filtra per Comune a costo nullo: il file nazionale del mirror porta centosessantunomila quotazioni su quasi ottomila Comuni e si interroga in un istante.
 
 ```
-python tools/valuta.py omi importa --file "<percorso dello zip scaricato>"
+python tools/valuta.py omi importa --file "<percorso dello zip scaricato>" --regione "<Regione>"
 python tools/valuta.py omi cerca --comune "<Comune>"
 ```
 
