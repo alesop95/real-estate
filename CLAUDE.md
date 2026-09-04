@@ -48,6 +48,7 @@ python tools/valuta.py tassi --tasso 0.032        tassi correnti di mercato e co
 python tools/valuta.py tassi --risalita             peggiori risalite storiche dell'Euribor
 python tools/valuta.py indicatori                  euro short-term rate e inflazione ISTAT
 python tools/valuta.py omi cerca --comune ...      quotazioni OMI della zona
+python tools/valuta.py comune --nome ...           atti IMU e imposta di soggiorno del Comune
 python tools/valuta.py llm stato                   raggiungibilita' del modello locale
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```

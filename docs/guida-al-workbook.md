@@ -389,7 +389,7 @@ Le prime due sono le celle da non lasciare mai al valore predefinito.
 | Cella | Che cosa scrivere | Perché serve |
 |---|---|---|
 | Spese condominiali annue totali (gialla) | Dal consuntivo, non dalla stima dell'agenzia. | Chiedere anche il verbale dell'ultima assemblea: i lavori già deliberati e non ancora fatti sono un costo tuo che arriva dopo il rogito, e non compare in nessun annuncio. |
-| Aliquota IMU deliberata dal Comune (gialla) | Dalla delibera comunale dell'anno in corso. | Non dal valore base di legge. I Comuni possono azzerarla o portarla all'1,06 per cento: sul valore base l'IMU stimata può sbagliare di un quarto, ogni anno per tutta la durata del possesso. |
+| Aliquota IMU deliberata dal Comune (gialla) | Dalla delibera comunale dell'anno in corso, che `valuta.py comune --nome "..."` raggiunge con un collegamento diretto. | Non dal valore base di legge. I Comuni possono azzerarla o portarla all'1,06 per cento: sul valore base l'IMU stimata può sbagliare di un quarto, ogni anno per tutta la durata del possesso. |
 | Quota a carico del proprietario (gialla) | Quaranta per cento è un riferimento. | La ripartizione fra proprietario e inquilino segue la tabella degli oneri accessori: la straordinaria al proprietario, l'ordinaria all'inquilino. |
 | Manutenzione ordinaria, quota del valore (gialla) | Un per cento del valore l'anno. | È la regola empirica, e copre caldaia, infissi, elettrodomestici e tinteggiature fra un inquilino e l'altro. |
 | Assicurazione fabbricato (gialla) | Il premio annuo. | Esiste anche senza mutuo, e a zero il conto economico è ottimistico. |

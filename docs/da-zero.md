@@ -48,7 +48,7 @@ La **visura catastale** dell'immobile, da cui si leggono la categoria e soprattu
 
 Il **consuntivo condominiale** degli ultimi due esercizi, non la stima a voce dell'agenzia, e i **verbali delle ultime assemblee**, perché i lavori già deliberati e non ancora eseguiti sono un costo certo che arriva dopo il rogito.
 
-La **delibera comunale sull'aliquota IMU** dell'anno in corso. La legge fissa una base dello 0,86 per cento ma i Comuni possono arrivare all'1,06, e su vent'anni la differenza non è piccola. Si trova sul sito del Comune o sul portale del federalismo fiscale.
+La **delibera comunale sull'aliquota IMU** dell'anno in corso. La legge fissa una base dello 0,86 per cento ma i Comuni possono arrivare all'1,06, e su vent'anni la differenza non è piccola. Il comando `python tools/valuta.py comune --nome "..."` costruisce il collegamento diretto agli atti di quel Comune sul portale del Dipartimento delle finanze, così non si naviga per regione e provincia ogni volta.
 
 Le **quotazioni OMI** della zona, che sono l'unico riferimento pubblico e gratuito per capire se un prezzo al metro quadro sta dentro o fuori il mercato di zona. Si consultano gratis sul servizio a video dell'Agenzia delle Entrate.
 

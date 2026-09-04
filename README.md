@@ -121,6 +121,7 @@ Tutti nella forma `python tools/valuta.py <comando>`, e ognuno accetta `--help`.
 | `annunci aggiungi`, `modifica`, `rimuovi` | Scrittura sul registro, con ventidue campi passabili da opzione. |
 | `annunci importa` | Struttura il testo di un annuncio con il modello locale, da file o da link. |
 | `annunci omi` | Aggancia a un immobile la quotazione della sua zona. |
+| `comune` | Gli atti IMU e l'imposta di soggiorno di un Comune: costruisce il collegamento agli atti e dice che cosa risulta già letto e se vale ancora per l'anno chiesto. |
 | `omi zone`, `omi cerca` | Zone omogenee di un Comune, e quotazioni di una zona. |
 | `omi importa`, `omi scarica` | Ingerisce la fornitura ufficiale scaricata a mano, oppure il mirror open data per la serie storica. |
 | `tassi` | Tassi correnti sulle nuove erogazioni, la catena che scompone il tasso di un mutuo, il confronto con un preventivo. `--risalita` misura le peggiori risalite storiche dell'Euribor. |
@@ -140,21 +141,24 @@ src/immobiliare/          la libreria, che si importa e non si esegue
   stile.py        (250)   stili, colori, helper delle celle e dei collegamenti
   annunci.py      (810)   registro, acquisizione, riversamento nel workbook
   omi.py          (472)   quotazioni dell'Osservatorio del mercato immobiliare
+  comuni.py       (259)   atti IMU e imposta di soggiorno, per Comune
   tassi.py        (398)   tassi bancari e serie storiche dalla BCE
   indicatori.py   (219)   euro short-term rate e prezzi al consumo ISTAT
   scheda.py       (431)   la scheda di trattativa in LaTeX
   llm_locale.py   (103)   cliente Ollama, opzionale
 
 tools/                    gli eseguibili, che si lanciano
-  valuta.py       (1147)  la riga di comando, unica interfaccia
+  valuta.py       (1242)  la riga di comando, unica interfaccia
   verifica-excel.ps1      apre il workbook con Excel e cerca le celle in errore
   md-unwrap.py            attua la convenzione Markdown del progetto
+  collega-riferimenti.py  converte in collegamenti i nomi di file citati nella prosa
   fix-accents.py, fix-missing-accents.py, fix-dashes.py   tipografia italiana
 
 scripts/                  build e setup dell'ambiente LaTeX
-tests/                    settantuno test in due file
+tests/                    settantaquattro test in due file
 docs/                     quindici documenti, con l'indice in docs/README.md
-data/                     registro annunci e cache OMI, non versionati
+data/                     registro annunci e cache OMI non versionati; il registro
+                          delle verifiche comunali sì, perché non ha nulla di privato
 output/                   il workbook e le cartelle per immobile, non versionati
 ```
 

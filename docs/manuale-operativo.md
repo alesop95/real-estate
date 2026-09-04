@@ -227,6 +227,24 @@ python tools/valuta.py omi scarica --semestre 2018-2
 
 Sui nomi dei Comuni: il confronto è tollerante, perché nella fornitura ufficiale gli apostrofi e i prefissi agiografici sono scritti in modi diversi, quindi non serve indovinare la grafia esatta.
 
+### comune, i due parametri che nessuna fonte nazionale fornisce
+
+```
+python tools/valuta.py comune --nome "Civitanova Marche"
+python tools/valuta.py comune --nome "Civitanova Marche" --anno 2025
+python tools/valuta.py comune --elenca --provincia MC
+```
+
+Due voci del modello non hanno un valore nazionale: l'aliquota IMU e l'imposta di soggiorno. Il comando non le inventa e non le scarica, perché nessuna delle due è disponibile in forma interrogabile: fa la cosa che serviva davvero, cioè portare in un colpo solo all'atto giusto e dire che cosa risulta già letto e quando.
+
+Sull'IMU il collegamento è costruito e non conservato. Il Dipartimento delle finanze pubblica regolamenti e delibere di tutti i Comuni in un'applicazione che accetta due parametri, il codice catastale del Comune e la sigla della provincia, ed entrambi stanno già nella fornitura OMI in cache: il collegamento vale quindi per ogni Comune della regione importata, senza che nessuno lo scriva a mano. La pagina che si apre è quella del Comune giusto e chiede soltanto l'anno, che quell'applicazione seleziona con un modulo e non con un parametro nell'indirizzo. Sull'imposta di soggiorno un registro nazionale non esiste, e il comando lo dice invece di far finta: il collegamento all'atto del singolo Comune si conserva nel registro delle verifiche.
+
+Quel registro è `data/comuni-verifiche.csv`, una riga per Comune, dieci colonne, e tiene separate due cose che si confondono facilmente: sapere dove sta il dato e sapere il dato. Una riga può portare il collegamento verificato e nessun valore, ed è il caso di Civitanova Marche, dove la pagina dell'imposta di soggiorno è stata raggiunta ma le tariffe stanno in allegati PDF che nessuno ha ancora aperto. Il comando in quel caso continua a dichiarare la voce mancante, che è la risposta corretta.
+
+Il valore letto si annota con la data, e la data non è un ornamento. Un atto comunale ha efficacia per l'anno se pubblicato entro il 28 ottobre di quell'anno, e in mancanza resta in vigore quello dell'anno prima. Da qui i quattro esiti che il comando stampa accanto a un valore registrato: definitiva, se la lettura è successiva al termine dell'anno chiesto; provvisoria, se è dello stesso anno ma anteriore al termine, perché il Comune può ancora deliberare; da rileggere, se era provvisoria e il termine è nel frattempo passato; scaduta, se la lettura è di un anno precedente a quello chiesto. L'opzione `--anno` serve a chiedere di un anno d'imposta diverso da quello corrente, per esempio quando si ricostruisce una spesa già sostenuta.
+
+L'opzione `--elenca` stampa i Comuni presenti in cache con il loro codice catastale e la sigla di provincia, e `--provincia` la restringe. Serve a due cose: verificare che la fornitura della propria regione sia stata importata, e leggere il codice di un Comune quando lo si vuole usare altrove.
+
 ### tassi, il mercato e la sua storia
 
 ```
@@ -381,7 +399,7 @@ I colori dicono cosa toccare. Il giallo è un input da compilare, il grigio è u
 
 I riferimenti fra fogli passano per nomi definiti e non per coordinate di cella. La conseguenza pratica per chi usa il file è che inserire o cancellare righe nei fogli di input è più sicuro di quanto sarebbe altrimenti, ma resta sconsigliato: le tabelle lunghe, come il piano di ammortamento e le estrazioni, hanno intervalli nominati che coprono un numero fisso di righe.
 
-Le due voci da non lasciare mai al valore predefinito sono l'aliquota IMU, che va letta nella delibera del Comune per l'anno in corso, e le spese condominiali, che vanno prese dal consuntivo degli ultimi due esercizi e non dalla stima dell'agenzia. Insieme al consuntivo vanno letti i verbali delle assemblee, perché i lavori deliberati e non ancora fatti sono un costo che arriva dopo il rogito.
+Le due voci da non lasciare mai al valore predefinito sono l'aliquota IMU, che va letta nella delibera del Comune per l'anno in corso e che il comando `comune` aiuta a raggiungere, e le spese condominiali, che vanno prese dal consuntivo degli ultimi due esercizi e non dalla stima dell'agenzia. Insieme al consuntivo vanno letti i verbali delle assemblee, perché i lavori deliberati e non ancora fatti sono un costo che arriva dopo il rogito.
 
 ## Le due cartelle sotto data, e cosa ci si fa
 
@@ -393,11 +411,13 @@ L'aggiornamento è manuale per una ragione che non è tecnica: la fornitura vive
 
 ## Manutenzione ricorrente
 
-Le scadenze sono tre e nessuna è automatica.
+Le scadenze sono quattro e nessuna è automatica.
 
 Una volta l'anno, dopo la legge di bilancio, l'aggiornamento fiscale: si aggiornano i valori in `src/immobiliare/parametri.py` verificandoli sulle fonti di `fonti.md`, si sposta la costante `REVISIONE`, si aggiornano le schede di dominio impattate, si eseguono i test e la verifica del workbook, e si rigenera. I test congelano gli scaglioni IRPEF, il minimo di legge dell'imposta di registro e i moltiplicatori catastali, che sono le tre cose che cambiano più spesso e che passerebbero inosservate.
 
 Due volte l'anno, a semestre chiuso, le quotazioni OMI: si scarica a mano la fornitura ufficiale dall'area riservata dell'Agenzia delle Entrate e la si ingerisce con `omi importa --file`. Sono cinque minuti e vanno messi in calendario, perché altrimenti non si fanno.
+
+Una volta l'anno, dopo il 28 ottobre, i parametri comunali: superato quel termine gli atti del Comune per l'anno non cambiano più, quindi è il momento in cui una lettura diventa definitiva. Si esegue `comune --nome "..."` per il Comune dell'immobile, si aprono gli atti dal collegamento, e si riporta in `data/comuni-verifiche.csv` l'aliquota IMU con la data di lettura. Il comando dice da solo quando una lettura è da rifare.
 
 Quando i tassi si sono mossi, le risalite dell'Euribor: si esegue `tassi --risalita` e si guarda se i valori congelati nel codice sono ancora quelli. Se una finestra peggiore è comparsa, si aggiorna `RISALITE_EURIBOR` in `parametri.py`, si sposta il suo campo `verificato_il`, che è indipendente dalla revisione fiscale, e si rigenera il workbook, perché le note del foglio Simulatore mutuo citano quei numeri.
 

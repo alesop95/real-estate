@@ -59,11 +59,13 @@ I test sono la rete di sicurezza di questo passaggio: congelano il caso di rifer
 
 ## Manutenzione ricorrente, il promemoria
 
-Le scadenze di questo progetto sono tre. Le prime due non sono automatizzabili perché passano da una fonte che richiede una persona; la terza lo sarebbe, ed è tenuta manuale per la ragione detta sopra, cioè che il generatore non deve dipendere dalla rete.
+Le scadenze di questo progetto sono quattro. Le prime due non sono automatizzabili perché passano da una fonte che richiede una persona; la terza lo sarebbe, ed è tenuta manuale per la ragione detta sopra, cioè che il generatore non deve dipendere dalla rete.
 
 **Una volta l'anno, dopo la legge di bilancio: aggiornamento fiscale.** È la procedura della sezione precedente. Va fatta a gennaio o febbraio, quando la legge di bilancio è in vigore e le circolari dell'Agenzia sono uscite.
 
 **Due volte l'anno, a semestre chiuso: quotazioni OMI.** Cinque minuti, e vanno messi in calendario perché altrimenti non si fanno. Il mirror open data che il modulo scarica da solo si ferma al secondo semestre 2018 ed è utile solo per la serie storica; il dato corrente sta nella fornitura ufficiale, che è gratuita ma vive dietro un'autenticazione personale con SPID, CIE, Entratel o Fisconline, che uno script non può e non deve simulare.
+
+**Una volta l'anno, dopo il 28 ottobre: parametri comunali.** Superato quel termine gli atti del Comune per l'anno non cambiano più, quindi è il momento in cui una lettura diventa definitiva invece che provvisoria. `python tools/valuta.py comune --nome "..."` porta agli atti IMU del Comune e ricorda che cosa risulta già letto; l'aliquota si riporta in `data/comuni-verifiche.csv` con la data. Non è automatizzabile per la stessa ragione delle prime due: il valore sta in un PDF deliberato, non in un servizio.
 
 **Quando la BCE pubblica un semestre nuovo, o dopo un ciclo di rialzi: risalite dell'Euribor.** Un comando e due minuti. `python tools/valuta.py tassi --risalita` ricalcola sulla serie corrente le peggiori risalite su dodici, ventiquattro e trentasei mesi, le confronta con i valori congelati in `parametri.RISALITE_EURIBOR` e dichiara se sono ancora quelli. Se una finestra peggiore è comparsa, si aggiorna la costante, si sposta il suo campo `verificato_il`, che è separato dalla `REVISIONE` fiscale perché le due scadenze sono indipendenti, e si rigenera il workbook, perché tre note del foglio Simulatore mutuo sono interpolate da quei campi. Non è una scadenza di calendario: è una verifica da fare quando i tassi si sono mossi, ed è anche il momento in cui serve, perché è allora che qualcuno rimette in discussione un mutuo variabile.
 

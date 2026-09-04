@@ -844,6 +844,114 @@ def test_scheda_sfugge_i_dati_e_non_inventa_il_prezzo_massimo():
     assert S.CAMPI_BLOCCANTI is A.CAMPI_BLOCCANTI
 
 
+def _cache_omi_finta(nome_comune: str = "CIVITANOVA MARCHE", codice: str = "C770",
+                     provincia: str = "MC"):
+    """Una cache OMI minima con la coppia valori e zone, come la produce la fornitura."""
+    import tempfile
+
+    cartella = Path(tempfile.mkdtemp())
+    intestazione_valori = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona;Cod_tip;Descr_Tipologia;Stato;"
+        "Compr_min;Compr_max;Loc_min;Loc_max"
+    )
+    intestazione_zone = (
+        "Area_territoriale;Regione;Prov;Comune_ISTAT;Comune_cat;Sez;Comune_amm;"
+        "Comune_descrizione;Fascia;Zona_Descr;Zona;LinkZona;Cod_tip_prev;"
+        "Descr_tip_prev;Stato_prev;Microzona"
+    )
+    valori = [
+        "QUOTAZIONI IMMOBILIARI",
+        intestazione_valori,
+        "CENTRO;MARCHE;" + provincia + ";11043013;K3AN;" + codice + ";" + nome_comune
+        + ";B;B1;20;Abitazioni civili;NORMALE;1.100;1.600;4,0;6,0",
+    ]
+    zone = [
+        "QUOTAZIONI IMMOBILIARI : Informazioni di Zona OMI",
+        intestazione_zone,
+        "CENTRO;MARCHE;" + provincia + ";11043013;K3AN; ;" + codice + ";" + nome_comune
+        + ";B;'SEZIONE PORTO';B1;MC00000339;20;Abitazioni civili;N;1;",
+    ]
+    (cartella / "QI_1_1_20252_VALORI.csv").write_text(chr(10).join(valori), encoding="utf-8")
+    (cartella / "QI_1_1_20252_ZONE.csv").write_text(chr(10).join(zone), encoding="utf-8")
+    return cartella
+
+
+def test_comuni_costruisce_il_collegamento_agli_atti_dal_codice_della_fornitura():
+    """Il collegamento agli atti IMU si costruisce, non si conserva.
+
+    Una tabella di collegamenti per Comune invecchierebbe come invecchia una tabella di
+    aliquote, e per giunta andrebbe compilata ottomila volte. L'applicazione del
+    Dipartimento delle finanze accetta due parametri, il codice catastale del Comune e la
+    sigla della provincia, ed entrambi stanno gia' nella fornitura OMI in cache: il
+    collegamento e' quindi una funzione dei dati che il progetto ha, e vale per ogni Comune
+    della regione importata senza che nessuno lo scriva a mano.
+    """
+    from immobiliare import comuni as M
+
+    cartella = _cache_omi_finta()
+    comune = M.trova("Civitanova Marche", cartella)
+
+    assert comune is not None
+    assert comune.codice_catastale == "C770"
+    assert comune.provincia == "MC"
+    # La forma esatta e' quella verificata a mano sul portale il 3 settembre 2026.
+    assert comune.link_delibere_imu.endswith("sceltaanno.htm?cc=C770&pr=MC")
+    # E il nome si cerca come lo scrive una persona, non come lo scrive la fornitura.
+    assert M.trova("CIVITANOVA MARCHE", cartella) == comune
+    assert M.trova("Comune inesistente", cartella) is None
+
+
+def test_comuni_stato_verifica_segue_il_termine_del_28_ottobre():
+    """Una lettura non e' valida per sempre, e la scadenza ha una data precisa.
+
+    L'atto comunale ha efficacia per l'anno se pubblicato entro il 28 ottobre di
+    quell'anno. Ne discende che una lettura fatta prima di quel termine e' provvisoria,
+    perche' il Comune puo' ancora deliberare, e che una lettura dell'anno prima non vale,
+    perche' o e' stata superata o e' stata prorogata per silenzio e le due cose non si
+    distinguono senza aprire l'atto. Senza questa distinzione un valore letto a marzo
+    verrebbe usato a dicembre come se fosse definitivo.
+    """
+    import datetime as dt
+
+    from immobiliare import comuni as M
+
+    marzo = dt.date(2026, 3, 10)
+    novembre = dt.date(2026, 11, 5)
+
+    assert M.stato_verifica(None, 2026, marzo)[0] == "assente"
+    assert M.stato_verifica(marzo, 2026, marzo)[0] == "provvisoria"
+    assert M.stato_verifica(novembre, 2026, novembre)[0] == "definitiva"
+    # Letta prima del termine, ma consultata quando il termine e' passato: va riletta.
+    assert M.stato_verifica(marzo, 2026, novembre)[0] == "da rileggere"
+    # Letta l'anno prima: non vale per l'anno chiesto.
+    assert M.stato_verifica(dt.date(2025, 11, 5), 2026, marzo)[0] == "scaduta"
+
+
+def test_comuni_registro_non_promuove_a_valore_cio_che_nessuno_ha_letto():
+    """Il registro tiene separato il collegamento verificato dal valore verificato.
+
+    Per Civitanova il collegamento all'imposta di soggiorno e' stato raggiunto e letto, ma
+    le tariffe stanno in allegati PDF che nessuno ha aperto: la riga porta quindi il
+    collegamento e nessun numero, e il comando continua a dichiarare mancante la voce.
+    E' la differenza fra sapere dove sta il dato e sapere il dato, e confonderle sarebbe
+    il difetto che questo registro esiste per evitare.
+    """
+    from immobiliare import comuni as M
+
+    radice = Path(__file__).resolve().parent.parent
+    registro = M.leggi_registro(radice / M.REGISTRO_PREDEFINITO)
+    verifica = M.verifica_di("Civitanova Marche", registro)
+
+    assert verifica is not None
+    assert verifica.link_imposta_soggiorno.startswith("https://www.comune.civitanova.mc.it/")
+    assert verifica.imposta_soggiorno_notte is None
+    assert verifica.aliquota_imu_altri is None
+    assert len(M.cosa_manca(verifica)) == 2
+    # Un Comune assente dal registro non e' un errore: e' semplicemente tutto da leggere.
+    assert len(M.cosa_manca(None)) == 2
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

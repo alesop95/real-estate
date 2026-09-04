@@ -25,6 +25,7 @@ Esempi:
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import sys
 from pathlib import Path
 
@@ -33,6 +34,7 @@ sys.path.insert(0, str(RADICE / "src"))
 
 from immobiliare import annunci as A  # noqa: E402
 from immobiliare import calcoli as C  # noqa: E402
+from immobiliare import comuni as M  # noqa: E402
 from immobiliare import excel_builder as E  # noqa: E402
 from immobiliare import indicatori as N  # noqa: E402
 from immobiliare import omi as O  # noqa: E402
@@ -712,6 +714,92 @@ def cmd_annunci(args) -> int:
     return 2
 
 
+def cmd_comune(args) -> int:
+    """Dove leggere i due parametri che nessuna fonte nazionale fornisce, e cosa risulta letto."""
+    cartella = RADICE / "data" / "omi"
+    anno = args.anno or _dt.date.today().year
+
+    if args.elenca:
+        conosciuti = M.elenca(cartella)
+        righe = [c for c in conosciuti.values()
+                 if not args.provincia or c.provincia.upper() == args.provincia.upper()]
+        if not righe:
+            print("Nessun Comune in cache" + (f" per la provincia {args.provincia}." if args.provincia else "."))
+            print("La fornitura OMI si importa con: python tools/valuta.py omi importa --file ...")
+            return 1
+        for c in sorted(righe, key=lambda x: x.nome):
+            print(f"  {c.codice_catastale:<6} {c.provincia:<3} {c.nome}")
+        print()
+        print(f"{len(righe)} Comuni, dai file OMI in cache.")
+        return 0
+
+    if not args.nome:
+        print("Serve --nome con il Comune, oppure --elenca.")
+        return 2
+
+    comune = M.trova(args.nome, cartella)
+    if comune is None:
+        print(f"Comune non trovato in cache: {args.nome}")
+        vicini = M.simili(args.nome, cartella)
+        if vicini:
+            print("Forse cerchi uno di questi:")
+            for nome in vicini:
+                print(f"  {nome}")
+        else:
+            print("La fornitura OMI della sua regione non è in cache: importarla con")
+            print("  python tools/valuta.py omi importa --file \"QI_xxxxx.zip\"")
+        return 1
+
+    registro = M.leggi_registro(RADICE / M.REGISTRO_PREDEFINITO)
+    verifica = M.verifica_di(comune.nome, registro)
+
+    print(f"{comune.nome} ({comune.provincia}), {comune.regione.title()}")
+    print(f"  codice catastale {comune.codice_catastale}, ISTAT {comune.codice_istat}")
+    print()
+    print(f"Aliquote IMU {anno}, atti del Comune sul portale del Dipartimento delle finanze:")
+    print(f"  {comune.link_delibere_imu}")
+    print(f"  la pagina apre sul Comune giusto e chiede solo l'anno, che è un modulo e non un")
+    print(f"  parametro dell'indirizzo. Un atto vale per l'anno se pubblicato entro il 28 ottobre.")
+    print()
+
+    if verifica and verifica.aliquota_imu_altri is not None:
+        stato, perche = M.stato_verifica(verifica.verificato_il, anno)
+        print(f"Aliquota registrata per gli altri immobili: {verifica.aliquota_imu_altri:.3%}")
+        if verifica.aliquota_imu_principale is not None:
+            print(f"Aliquota registrata per l'abitazione principale: {verifica.aliquota_imu_principale:.3%}")
+        print(f"  verifica {stato}: {perche}")
+    else:
+        print("Aliquota IMU: nessun valore registrato, va letta nell'atto e poi annotata.")
+    print()
+
+    print("Imposta di soggiorno: non esiste un registro nazionale, la fonte è l'atto del Comune.")
+    if verifica and verifica.link_imposta_soggiorno:
+        print(f"  {verifica.link_imposta_soggiorno}")
+    if verifica and verifica.imposta_soggiorno_notte is not None:
+        stato, perche = M.stato_verifica(verifica.verificato_il, anno)
+        print(f"  registrata a {verifica.imposta_soggiorno_notte:.2f} euro a notte per persona")
+        print(f"  verifica {stato}: {perche}")
+    elif not (verifica and verifica.link_imposta_soggiorno):
+        print("  nessun collegamento registrato per questo Comune: si cerca sul sito del Comune")
+        print("  il regolamento e la delibera delle tariffe, e si annota qui il collegamento.")
+    print()
+
+    mancanti = M.cosa_manca(verifica)
+    if mancanti:
+        print("Manca ancora:")
+        for voce in mancanti:
+            print(f"  {voce}")
+        print(f"Si annotano in {M.REGISTRO_PREDEFINITO.as_posix()}, una riga per Comune, con la data di lettura.")
+    else:
+        print("Nulla da procurarsi: entrambe le voci risultano lette.")
+    if verifica and verifica.note:
+        print()
+        print(f"Nota: {verifica.note}")
+    print()
+    print(f"Fonte dei codici: {O.ATTRIBUZIONE}. Atti IMU: {M.ATTRIBUZIONE_MEF}.")
+    return 0
+
+
 def cmd_omi(args) -> int:
     if args.azione == "scarica":
         try:
@@ -1113,6 +1201,13 @@ def principale(argomenti=None) -> int:
     p.add_argument("--quotazione-max", dest="quotazione_omi_max", type=float, help="quotazione OMI massima")
     p.add_argument("--tipologia-omi", dest="tipologia_omi", default="", help="tipologia edilizia OMI, per l'azione omi")
     p.set_defaults(funzione=cmd_annunci)
+
+    p = sub.add_parser("comune", help="parametri comunali: dove si leggono e cosa risulta letto")
+    p.add_argument("--nome", default="", help="nome del Comune, come nella fornitura OMI")
+    p.add_argument("--anno", type=int, default=0, help="anno d'imposta, predefinito l'anno corrente")
+    p.add_argument("--elenca", action="store_true", help="elenca i Comuni in cache con i loro codici")
+    p.add_argument("--provincia", default="", help="sigla della provincia, per restringere --elenca")
+    p.set_defaults(funzione=cmd_comune)
 
     p = sub.add_parser("omi", help="quotazioni dell'Osservatorio del mercato immobiliare")
     p.add_argument("azione", choices=["scarica", "importa", "zone", "cerca"])
