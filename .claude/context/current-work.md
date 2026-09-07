@@ -7,12 +7,35 @@ covers-paths:
   - tools/**
   - docs/**
 last-verified-commit: a0b3420
-stato: strumento completo e verificato; nessuna feature attiva. Il lavoro del 3 e 4 settembre riguarda navigabilità della documentazione e accesso agli atti comunali, non il modello di calcolo
+stato: lo strumento locale è completo e verificato; dal 4 settembre è attiva una feature nuova, cioè il passaggio ad applicazione web autenticata su Cloudflare, con il doppio scopo di uso proprio e vendita a un'agenzia. Vive sul branch web
 ---
 
 # Lavoro in corso
 
-## Feature: strumento di valutazione completo
+## Feature attiva: l'applicazione web da vendere
+
+Cosa fa. Sposta lo strumento da workbook Excel generato in locale ad applicazione web autenticata, con i dati per organizzazione, in modo che si usi dal browser e si possa vendere a un'agenzia immobiliare. Il motore di calcolo resta lo stesso modello, riscritto in TypeScript per girare nel browser, con il motore Python come implementazione di riferimento da cui si generano i vettori di riscontro.
+
+Dove vive. Branch `web`, allineato a `main`. La direzione, le piattaforme misurate, le alternative scartate, il funzionamento senza codice lato server e il piano in fasi stanno in [`docs/architettura-web.md`](../../docs/architettura-web.md). Le decisioni sono ADR-024 per la piattaforma e ADR-025 per la scelta di prodotto. La voce didattica è la 13 dello studio didattico.
+
+Stato al 7 settembre 2026. Nessuna riga di codice dell'applicazione è stata scritta. È fatto tutto il lavoro che precede: lo studio, la scelta della piattaforma con i limiti verificati sulle fonti primarie, la riscrittura del vincolo di riservatezza, e la chiusura del quarto dei cinque limiti dichiarati, che era l'unico a non sciogliersi con il passaggio.
+
+### Definizione di completamento della feature web
+
+- [x] Studio dello stack, con gli assi derivati dalle capacità del programma e non dal listino
+- [x] Limiti delle fasce gratuite letti sulle pagine dei fornitori, datati e registrati fra le fonti
+- [x] Scelta della piattaforma con il prezzo dichiarato, e alternative scartate con la ragione
+- [x] Vincolo di riservatezza riscritto: che cosa può stare in rete e che cosa no
+- [x] Voce didattica sul metodo di misura di una fascia gratuita
+- [ ] Fase uno: motore in TypeScript, generatore di vettori dal motore Python, suite che li verifica. Chiusa quando tutti i vettori passano entro la tolleranza dichiarata
+- [ ] Fase due: scheletro autenticato su Cloudflare, D1 con lo schema iniziale, Access davanti all'indirizzo, tre rotte. Chiusa quando due utenti di organizzazioni diverse non si vedono e i test lo dimostrano rotta per rotta
+- [ ] Fase due, presidio: controllo automatico che fallisce se la configurazione introduce un servizio a pagamento o supera i limiti del piano gratuito
+- [ ] Fase tre: le sei aree dell'interfaccia, una per volta
+- [ ] Fase quattro: migrazione del registro immobili e delle verifiche comunali, ed esportazione del workbook come ponte
+- [ ] Fase cinque: una voce didattica per ogni passo che introduce un pattern, con il codice reale prima e dopo
+- [ ] Licenza rivista, perché MIT permette a chiunque di rivendere lo stesso codice
+
+## Feature chiusa: strumento di valutazione completo
 
 Cosa fa. Genera un workbook Excel interattivo di ventun fogli che valuta l'acquisto di un immobile residenziale in Italia nelle tre destinazioni possibili, con i parametri fiscali 2026, la simulazione probabilistica del rischio e la ripartizione fra comproprietari, e tiene un registro degli immobili in valutazione con acquisizione dei dati rispettosa delle regole dei portali.
 
@@ -108,6 +131,8 @@ Nel foglio Confronto immobili restano globali l'opzione prezzo-valore e la quali
 
 ## Prossima azione concreta
 
-Sullo strumento non c'è una prossima azione, e i due giorni scorsi non l'hanno cambiato: hanno reso navigabile la documentazione e chiuso l'attrito di ritrovare gli atti comunali, senza toccare il modello. Il lavoro utile resta l'uso. Riempire il foglio Immobile con l'immobile reale scelto fra i quattordici a registro, chiedere la rendita catastale che nessuno indica, leggere le spese nel consuntivo condominiale, e leggere l'aliquota IMU aprendo il collegamento che `valuta.py comune --nome "Civitanova Marche"` costruisce, annotandola in `data/comuni-verifiche.csv` con la data. Poi Cruscotto, coda bassa del foglio Rischio, prezzo massimo sostenibile con il suo scarto. Se il mutuo in valutazione è a tasso variabile, prima di firmare va compilato il percorso del tasso con il rialzo storico e letta la rata massima raggiunta.
+La fase uno, che è indipendente dalla piattaforma e non richiede che alcun account sia stato aperto: il motore di calcolo in TypeScript sul branch `web`, con il generatore che dal motore Python produce i casi di riscontro e la suite che li verifica a ogni build. Va per prima perché se è sbagliata invalida tutto il resto, e perché è la sola parte che sopravvive a un eventuale cambio di piattaforma.
 
-L'unica cosa delimitata che resta aperta sui dati è la delibera di giunta 7/2023 di Civitanova, il PDF che fissa le tariffe dell'imposta di soggiorno lette per ora sulla pagina del concessionario.
+In parallelo, quando l'utente apre l'account: i sette passi elencati in [`docs/architettura-web.md`](../../docs/architettura-web.md), di cui il secondo, cioè non collegare mai un metodo di pagamento, è quello che protegge la gratuità.
+
+Sull'uso dello strumento di oggi, che resta il banco di prova, non è cambiato niente: manca la rendita catastale su tutti i quattordici immobili a registro, e l'aliquota IMU di Civitanova si legge dal collegamento che `valuta.py comune` costruisce e si annota con la data.

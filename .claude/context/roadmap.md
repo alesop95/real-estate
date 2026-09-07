@@ -13,6 +13,12 @@ last-verified-commit: a0b3420
 
 Ogni aggiunta deve rispondere a una domanda che oggi resta senza risposta, non aggiungere una funzione perché è possibile. Lo strumento vale finché resta leggibile: un modello che nessuno riesce più a verificare produce numeri che nessuno dovrebbe usare.
 
+## In corso: l'applicazione web da vendere
+
+Dal 4 settembre 2026 la direzione principale non è più un'aggiunta al workbook ma il passaggio a un'applicazione web autenticata, con il doppio scopo di usare lo strumento dal browser e di venderlo a un'agenzia immobiliare. Lo studio con le piattaforme misurate, le alternative scartate e il piano in cinque fasi sta in [`docs/architettura-web.md`](../../docs/architettura-web.md); la piattaforma è Cloudflare per ADR-024 e la scelta di prodotto è ADR-025. Il lavoro vive sul branch `web` e la prima fase, indipendente dalla piattaforma, è il motore di calcolo in TypeScript con i vettori di riscontro generati da quello Python.
+
+La voce che stava sotto "più avanti" e prevedeva una versione parallela per l'agente immobiliare non è più una direzione facoltativa: è diventata lo scopo, e in questa forma la sostituisce.
+
 ## Prossimo, se serve
 
 Le tre voci che stavano qui sono chiuse al 1 settembre 2026, e restano registrate perché la roadmap serve anche a ricordare cosa si è deciso di fare e non solo cosa manca. La suite di test automatici esiste e conta sessantuno test in due file. Il confronto fra più immobili è il foglio Confronto immobili, alimentato dal registro annunci, che dal 1 settembre porta il blocco delle quotazioni OMI di zona e il regime di acquisto dichiarato per riga. Il tasso variabile con scenario di risalita è il percorso a gradini del foglio Simulatore mutuo, con la misura del rialzo presa dalla serie storica dell'Euribor invece che dall'intuizione, secondo ADR-015 e la voce 11 dello studio didattico.
