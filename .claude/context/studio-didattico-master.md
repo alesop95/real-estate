@@ -153,3 +153,17 @@ Il salto senior e perché è meglio. Il metodo che ha sostituito il confronto ge
 Il prezzo del salto è dichiarato invece di nascosto, e sta nel modo in cui si sbaglia. Con regole dichiarative una regola dimenticata nega l'accesso, quindi sbaglia rumorosamente; con un'interfaccia di programmazione una rotta che dimentica il controllo concede l'accesso, quindi sbaglia in silenzio, ed è il dato di un cliente visto da un altro. È lo stesso genere di difetto delle voci 6 e 8, e la contromisura è la stessa: rendere impossibile la forma sbagliata invece di raccomandare quella giusta.
 
 Dove leggere il dettaglio: [`refactor-13-fasce-gratuite-misurate.md`](refactor-13-fasce-gratuite-misurate.md).
+
+## 14. Due implementazioni dello stesso modello, e il presidio che le tiene insieme
+
+Contesto. L'applicazione web calcola nel browser, quindi il motore deve esistere anche in TypeScript, mentre in Python esiste già ed è il riferimento verificato del progetto.
+
+Com'era e perché era fragile. Il rischio non è la traduzione, che è meccanica: è il terzo mese, quando la legge di bilancio cambia un'aliquota e la si aggiorna in un posto solo, oppure quando un difetto si corregge su un lato e non sull'altro. Due implementazioni dello stesso modello finanziario non divergono con un errore, divergono con due numeri plausibili, e chi guarda uno dei due non ha modo di sapere che l'altro dice diversamente. Il progetto conosceva già questa forma di rischio fra motore Python e formule del workbook, e la teneva con test scritti a mano su un caso solo.
+
+Il salto senior e perché è meglio. Il presidio ha tre pezzi. I parametri non si traducono: il generatore li legge per introspezione dalle dataclass di `parametri.py` e li riemette in TypeScript, così l'aggiornamento fiscale resta un file solo. I casi non sono casuali: sono il prodotto cartesiano delle sei decisioni che nel codice cambiano ramo, più sedici limiti aggiunti uno per uno con il nome di ciò che rompono, per duecentoundici casi che coprono i rami invece di coprire il volume. La tolleranza si dichiara prima di guardare gli scarti, ed è severa, 1e-9 relativo: le due implementazioni fanno le stesse operazioni nello stesso ordine, quindi devono coincidere quasi all'ultimo bit. Perché quella severità regga, la traduzione conserva l'ordine dei termini nelle somme e lo dichiara con un commento dove lo fa per questa ragione, perché la somma in virgola mobile non è associativa.
+
+Il presidio ha ripagato prima di essere finito. Alla prima corsa il generatore è morto con una divisione per zero dentro il tasso interno di rendimento: un difetto del motore Python, presente da sempre e mai visto, perché `taeg_approssimato` non era chiamato da nessuno e nessun test lo copriva. Sui flussi mensili di un mutuo il fattore di sconto esce dai numeri rappresentabili ai due capi dell'intervallo di bisezione, e la divisione fallisce. Corretto trattando i due estremi per quello che sono, cioè un infinito col segno del flusso da una parte e un contributo nullo dall'altra, con l'aritmetica ordinaria invariata e un test di regressione sulle tre durate che attraversano le soglie.
+
+La suite contiene infine un caso che deve fallire, cioè un vettore alterato di poco più della tolleranza, perché duecentoundici casi verdi alla prima esecuzione vanno sospettati prima di essere creduti: se il confronto scivolasse in un ramo sbagliato, il verde sarebbe indistinguibile da quello vero.
+
+Dove leggere il dettaglio: [`refactor-14-vettori-di-riscontro.md`](refactor-14-vettori-di-riscontro.md).

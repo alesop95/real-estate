@@ -537,6 +537,43 @@ def conto_economico(immobile: Immobile, gestione: Gestione, reddito_altro: float
 # Metriche di rendimento
 # ---------------------------------------------------------------------------
 
+def _valore_attuale(flussi: Sequence[float], tasso: float) -> float:
+    """Somma dei flussi attualizzati, con il termine che sfonda la precisione trattato.
+
+    L'aritmetica è la stessa della somma diretta, termine per termine e nello stesso
+    ordine, quindi sui tassi ordinari il risultato è identico all'ultimo bit. Cambia
+    un caso solo, ed è quello che serviva: quando il tasso si avvicina a meno uno il
+    fattore di sconto `(1+tasso)**k` scende sotto il minimo rappresentabile e diventa
+    zero esatto, e la divisione solleva un errore invece di restituire un numero
+    grande. Accade dal termine ottantunesimo circa in giù con il tasso più basso
+    dell'intervallo di bisezione, quindi su qualunque piano mensile dai sette anni in
+    su, ed è il difetto che ha fatto fallire il generatore dei vettori di riscontro:
+    `taeg_approssimato` su un mutuo venticinquennale non arrivava a un risultato.
+
+    Il valore matematicamente corretto in quel punto è un infinito, non uno zero, e il
+    segno è quello del flusso che lo produce: attualizzare un incasso a un tasso che
+    tende a meno uno lo fa esplodere. Restituire l'infinito con il segno giusto è
+    quindi corretto e basta alla bisezione, che di quel capo dell'intervallo usa solo
+    il segno. L'assunzione dichiarata è che i flussi oltre quella soglia abbiano segno
+    omogeneo, vera per costruzione su un piano di ammortamento e su una serie di canoni.
+    """
+    totale = 0.0
+    for k, f in enumerate(flussi):
+        try:
+            fattore = (1 + tasso) ** k
+        except OverflowError:
+            # Fattore oltre il massimo rappresentabile: il flusso attualizzato e'
+            # indistinguibile da zero e il termine non contribuisce. Accade all'estremo
+            # alto dell'intervallo di bisezione, dieci, dal termine trecentesimo in su.
+            continue
+        if fattore == 0.0:
+            if f == 0.0:
+                continue
+            return float("inf") if f > 0 else float("-inf")
+        totale += f / fattore
+    return totale
+
+
 def tir(flussi: Sequence[float], tolleranza: float = 1e-7, iterazioni: int = 200) -> float:
     """Tasso interno di rendimento, per bisezione su un intervallo ampio.
 
@@ -545,7 +582,7 @@ def tir(flussi: Sequence[float], tolleranza: float = 1e-7, iterazioni: int = 200
     costante. Restituisce zero se non esiste un cambio di segno nell'intervallo.
     """
     def van(tasso: float) -> float:
-        return sum(f / (1 + tasso) ** k for k, f in enumerate(flussi))
+        return _valore_attuale(flussi, tasso)
 
     basso, alto = -0.9999, 10.0
     v_basso, v_alto = van(basso), van(alto)
@@ -565,7 +602,7 @@ def tir(flussi: Sequence[float], tolleranza: float = 1e-7, iterazioni: int = 200
 
 def van(flussi: Sequence[float], tasso: float) -> float:
     """Valore attuale netto della serie di flussi al tasso indicato."""
-    return sum(f / (1 + tasso) ** k for k, f in enumerate(flussi))
+    return _valore_attuale(flussi, tasso)
 
 
 @dataclass

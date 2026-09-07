@@ -50,7 +50,11 @@ from pathlib import Path
 # `dossier` porta trascrizioni verbatim di conversazioni esterne, che per la regola di stile
 # conservano la formattazione della fonte e non si riscrivono.
 SKIP_DIRS = {'src', 'tools', 'tests', 'scripts', 'output', 'data',
-             '.pytest_cache', '.obsidian', '.git', '__pycache__', 'dossier'}
+             '.pytest_cache', '.obsidian', '.git', '__pycache__', 'dossier',
+             # Dipendenze e artefatti dell'applicazione web: contengono migliaia di file
+             # Markdown di terze parti, che non sono documentazione di questo progetto e
+             # non vanno ne' letti ne' riscritti.
+             'node_modules', 'dist', '.wrangler', 'coverage'}
 
 # La scheda del vault cita i nomi come oggetto di discussione, non come navigazione: convertirli le
 # darebbe il grado di un hub e distorcerebbe il grafo che quella scheda descrive.

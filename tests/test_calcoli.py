@@ -1118,6 +1118,36 @@ def test_fattore_comune_non_altera_le_incertezze_dichiarate():
     assert abs(sotto_cinque - 0.05) < 0.005
 
 
+def test_tir_regge_i_flussi_mensili_di_un_mutuo_lungo():
+    """La bisezione del TIR non deve rompersi sui piani mensili, e si rompeva.
+
+    Il difetto e' stato trovato dal generatore dei vettori di riscontro per il motore
+    TypeScript, cioe' dal primo strumento che ha chiamato `taeg_approssimato` su un caso
+    realistico: nessun altro lo chiamava, perche' il workbook calcola il TAEG con una
+    formula di Excel e nessun test lo copriva. Su un mutuo venticinquennale i flussi sono
+    trecentouno, e ai due capi dell'intervallo di bisezione il fattore di sconto esce dai
+    numeri rappresentabili: a meno 0,9999 scende sotto il minimo e diventa zero esatto,
+    quindi la divisione solleva un errore; a dieci supera il massimo e l'elevamento a
+    potenza solleva l'altro. Entrambi i capi servono solo per il segno, quindi il valore
+    corretto e' l'infinito da una parte e zero dall'altra, non un'eccezione.
+
+    Il test copre le tre durate che attraversano le due soglie e verifica che il risultato
+    resti finito e plausibile, cioe' maggiore del tasso nominale, perche' il TAEG include
+    costi che il TAN non ha.
+    """
+    for durata in (6, 25, 40):
+        taeg = C.taeg_approssimato(96_000, 0.032, durata, 1_300, 180)
+        assert taeg > 0.032, durata
+        assert taeg < 0.10, durata
+
+    # Il valore attuale resta quello di prima sui tassi ordinari: la correzione tocca
+    # solo i due capi fuori scala, non l'aritmetica normale.
+    assert abs(C.van([-1000, 300, 300, 300, 300], 0.05) - 63.785151248708075) < 1e-9
+    assert abs(C.tir([-1000, 300, 300, 300, 300]) - 0.07713847296504965) < 1e-12
+    # Senza cambio di segno il TIR non esiste e la funzione lo dichiara con uno zero.
+    assert C.tir([100, 100]) == 0.0
+
+
 if __name__ == "__main__":
     superati = 0
     falliti = []

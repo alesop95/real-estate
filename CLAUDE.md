@@ -52,6 +52,9 @@ python tools/valuta.py indicatori                  euro short-term rate e inflaz
 python tools/valuta.py omi cerca --comune ...      quotazioni OMI della zona
 python tools/valuta.py comune --nome ...           atti IMU e imposta di soggiorno del Comune
 python tools/valuta.py llm stato                   raggiungibilita' del modello locale
+python tools/genera-motore.py                      parametri TypeScript e vettori di riscontro
+python tools/genera-motore.py --check              dice se i vettori sono scaduti
+cd app && npm test                                 verifica il motore TypeScript sui vettori
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```
 
@@ -154,6 +157,8 @@ refactor-11-scenario-misurato.md            il rialzo del tasso preso dalla seri
 refactor-12-indice-navigabile.md            l'indice del workbook e i collegamenti interni
 refactor-13-fasce-gratuite-misurate.md      come si misura una fascia gratuita, e perche' la
                                             misura ha cambiato l'architettura
+refactor-14-vettori-di-riscontro.md         due implementazioni dello stesso modello, e il
+                                            presidio che le tiene insieme
 ```
 
 Regole modulari sotto `.claude/rules/`, che sono cinque e che questo indice elencava soltanto come cartella. [`.claude/rules/interaction-style.md`](.claude/rules/interaction-style.md) fissa lo stile di ogni file scritto qui dentro, dal registro al paragrafo su riga unica alla tipografia italiana. [`.claude/rules/git-identity-and-repo.md`](.claude/rules/git-identity-and-repo.md) dice con quale identità si firma e con quale alias SSH si parla al remoto, e [`.claude/rules/git-commands-format.md`](.claude/rules/git-commands-format.md) come si consegnano all'utente i comandi, perché restino copiabili su qualunque terminale. [`.claude/rules/security-permissions.md`](.claude/rules/security-permissions.md) descrive le modalità di permesso e i limiti del sandbox su questa piattaforma. [`.claude/rules/token-economy.md`](.claude/rules/token-economy.md) raccoglie le pratiche di risparmio del contesto. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.

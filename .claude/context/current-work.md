@@ -27,7 +27,8 @@ Stato al 7 settembre 2026. Nessuna riga di codice dell'applicazione è stata scr
 - [x] Scelta della piattaforma con il prezzo dichiarato, e alternative scartate con la ragione
 - [x] Vincolo di riservatezza riscritto: che cosa può stare in rete e che cosa no
 - [x] Voce didattica sul metodo di misura di una fascia gratuita
-- [ ] Fase uno: motore in TypeScript, generatore di vettori dal motore Python, suite che li verifica. Chiusa quando tutti i vettori passano entro la tolleranza dichiarata
+- [x] Fase uno: motore in TypeScript, generatore di vettori dal motore Python, suite che li verifica. Duecentoundici casi, tolleranza 1e-9 relativo dichiarata prima, tutti passati, piu' un caso che deve fallire
+- [x] Fase uno, ricaduta: corretto il difetto del motore Python che il generatore ha fatto emergere, cioe' la divisione per zero nel tasso interno sui flussi mensili
 - [ ] Fase due: scheletro autenticato su Cloudflare, D1 con lo schema iniziale, Access davanti all'indirizzo, tre rotte. Chiusa quando due utenti di organizzazioni diverse non si vedono e i test lo dimostrano rotta per rotta
 - [ ] Fase due, presidio: controllo automatico che fallisce se la configurazione introduce un servizio a pagamento o supera i limiti del piano gratuito
 - [ ] Fase tre: le sei aree dell'interfaccia, una per volta

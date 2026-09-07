@@ -52,3 +52,11 @@ desktop.ini
 # recenti, che non sono contenuto del progetto. Il vault non copia e non sposta nulla,
 # quindi ignorare questa cartella non perde niente. Vedi docs/vault-obsidian.md.
 .obsidian/
+
+# Dipendenze e artefatti dell'applicazione web sotto app/. Il codice e i vettori di
+# riscontro si versionano, le dipendenze scaricate e le cache no: si ricostruiscono con
+# npm install dentro app/.
+app/node_modules/
+app/dist/
+app/.wrangler/
+app/coverage/

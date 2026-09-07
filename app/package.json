@@ -1,0 +1,15 @@
+{
+  "name": "valutazione-immobili",
+  "private": true,
+  "type": "module",
+  "description": "Applicazione web di valutazione immobiliare: fase uno, il solo motore di calcolo",
+  "scripts": {
+    "test": "vitest run",
+    "test:guarda": "vitest",
+    "tipi": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

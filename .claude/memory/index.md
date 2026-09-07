@@ -5,22 +5,23 @@
 ## Snapshot
 
 ```
-Branch attivo:         main
-Commit di riferimento: 5b77739, cache OMI alle sole Marche e fonti registrate
-Ultimo aggiornamento:  2026-09-04
+Branch attivo:         web
+Commit di riferimento: 8a6e50d, studio dello stack web
+Ultimo aggiornamento:  2026-09-07
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
 Trattazione LaTeX:     32 pagine, compilata senza avvisi il 2026-09-02
 Registro annunci:      14 immobili, non versionato
 Pronti alla valutazione: 0 su 14, manca la rendita catastale su tutti
-Test:                  77 verdi, 51 sul motore e sui moduli, 26 sulla struttura
+Test:                  78 in Python, 52 sul motore e sui moduli e 26 sulla struttura
+Motore TypeScript:     211 vettori di riscontro dal motore Python, tutti passati
 Vault Obsidian:        aperto sulla radice, 48 note e 186 collegamenti, nessun orfano
 Parametri comunali:    imposta di soggiorno di Civitanova letta il 2026-09-04, IMU da leggere
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
 Simulazione rischio:   fattore comune al 30%, riduzione a indipendenza verificata
 Direzione:             applicazione web autenticata su Cloudflare, per ADR-024
 Scopo:                 uso proprio piu' vendita a un'agenzia immobiliare, per ADR-025
-Branch di lavoro:      web, allineato a main
+Branch di lavoro:      web; fase uno del piano chiusa il 7 settembre
 ```
 
 Committato fino a `5b77739`. I quattro commit del 3 e 4 settembre portano, in ordine: il vault Obsidian aperto sulla radice con la sua configurazione versionata in `docs/`, la conversione dei riferimenti in collegamenti veri con lo strumento che la mantiene, il comando `comune` con il registro delle verifiche comunali, e la pulizia della fornitura OMI dalle righe del Piemonte. Resta da committare il lavoro di tracciatura di questa sessione, cioè le due voci di work-log, le ADR 021 e 022, questa scheda, [`current-work.md`](../context/current-work.md) e il filtro `--regione` all'importazione con i suoi test e la sua documentazione. Non committato il riordino delle cartelle e l'ampliamento della trattazione: `output/` diventa una cartella per immobile sotto `output/immobili/<id>/`, il LaTeX passa sotto `docs/matematica/`, il workbook precompilato non sovrascrive più il file-modello, la trattazione sale a trentadue pagine con il capitolo sulla notazione e ventisette letture a parole, più due sezioni nuove nel manuale operativo e la voce di work-log.
