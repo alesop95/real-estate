@@ -15,6 +15,7 @@ Registro annunci:      14 immobili, non versionato
 Pronti alla valutazione: 0 su 14, manca la rendita catastale su tutti
 Test:                  78 in Python, 52 sul motore e sui moduli e 26 sulla struttura
 Motore TypeScript:     211 vettori di riscontro dal motore Python, tutti passati
+Applicazione web:      35 prove verdi in due ambienti, schema e cinque rotte, niente di remoto
 Vault Obsidian:        aperto sulla radice, 48 note e 186 collegamenti, nessun orfano
 Parametri comunali:    imposta di soggiorno di Civitanova letta il 2026-09-04, IMU da leggere
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore

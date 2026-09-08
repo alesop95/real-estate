@@ -29,8 +29,10 @@ Stato al 7 settembre 2026. Nessuna riga di codice dell'applicazione è stata scr
 - [x] Voce didattica sul metodo di misura di una fascia gratuita
 - [x] Fase uno: motore in TypeScript, generatore di vettori dal motore Python, suite che li verifica. Duecentoundici casi, tolleranza 1e-9 relativo dichiarata prima, tutti passati, piu' un caso che deve fallire
 - [x] Fase uno, ricaduta: corretto il difetto del motore Python che il generatore ha fatto emergere, cioe' la divisione per zero nel tasso interno sui flussi mensili
-- [ ] Fase due: scheletro autenticato su Cloudflare, D1 con lo schema iniziale, Access davanti all'indirizzo, tre rotte. Chiusa quando due utenti di organizzazioni diverse non si vedono e i test lo dimostrano rotta per rotta
-- [ ] Fase due, presidio: controllo automatico che fallisce se la configurazione introduce un servizio a pagamento o supera i limiti del piano gratuito
+- [x] Fase due, parte locale: schema del database, verifica del token di Access, autorizzazione dichiarata, cinque rotte, trentacinque prove contro un D1 vero dentro il runtime di Cloudflare
+- [x] Fase due, presidio: il test che fallisce se la configurazione esce dal piano gratuito
+- [x] Fase due, struttura: [`docs/struttura-del-progetto.md`](../../docs/struttura-del-progetto.md) e la voce didattica 15 sull'autorizzazione
+- [ ] Fase due, parte remota: account aperto, D1 creato, Access configurato, prima distribuzione. Chiusa quando l'applicazione risponde all'indirizzo e le prove girano anche contro il database vero
 - [ ] Fase tre: le sei aree dell'interfaccia, una per volta
 - [ ] Fase quattro: migrazione del registro immobili e delle verifiche comunali, ed esportazione del workbook come ponte
 - [ ] Fase cinque: una voce didattica per ogni passo che introduce un pattern, con il codice reale prima e dopo

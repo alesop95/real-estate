@@ -54,7 +54,8 @@ python tools/valuta.py comune --nome ...           atti IMU e imposta di soggior
 python tools/valuta.py llm stato                   raggiungibilita' del modello locale
 python tools/genera-motore.py                      parametri TypeScript e vettori di riscontro
 python tools/genera-motore.py --check              dice se i vettori sono scaduti
-cd app && npm test                                 verifica il motore TypeScript sui vettori
+cd app && npm test                                 motore, rotte, identita' e limiti del piano
+cd app && npm run tipi                             controllo dei tipi dell'applicazione
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```
 
@@ -75,7 +76,7 @@ Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spie
 
 ```
 docs/README.md               indice della documentazione: i quattro percorsi di lettura,
-                              i sedici documenti per tipo di domanda, le sovrapposizioni note
+                              i diciassette documenti per tipo di domanda, le sovrapposizioni note
 docs/da-zero.md              avvio da zero: cosa installare, quali documenti procurarsi,
                               la prima valutazione completa in sette passi
 docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
@@ -115,6 +116,9 @@ docs/vault-obsidian.md       il vault Obsidian aperto sulla radice: struttura, h
                               che cosa si rompe, e la forma del grafo misurata
 docs/architettura-web.md     studio dello stack per portare lo strumento in rete: fasce gratuite
                               misurate, stack scelto, dove vive il motore, sorte dei cinque limiti
+docs/struttura-del-progetto.md
+                              mappa di dove vive ogni cosa e perche': le due basi di codice e il
+                              presidio che le lega, le tre decisioni di architettura, come si prova
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
                               atterra nel codice o nel workbook, stato di verifica, lacune
 ```
@@ -142,7 +146,7 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 Pacchetto `studio-didattico`, sotto `.claude/context/`. È il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perché era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perché una scelta è fatta così, prima di rifarla diversamente.
 
 ```
-studio-didattico-master.md                  indice narrativo, tredici voci numerate
+studio-didattico-master.md                  indice narrativo, quindici voci numerate
 refactor-01-formule-vive.md                 workbook come modello, non come rapporto
 refactor-02-denominatore.md                 il denominatore dei rendimenti
 refactor-03-verifica-con-excel.md           automazione COM e locale italiano
@@ -159,6 +163,9 @@ refactor-13-fasce-gratuite-misurate.md      come si misura una fascia gratuita, 
                                             misura ha cambiato l'architettura
 refactor-14-vettori-di-riscontro.md         due implementazioni dello stesso modello, e il
                                             presidio che le tiene insieme
+refactor-15-autorizzazione-in-un-posto-solo.md
+                                            l'autorizzazione dichiarata invece che ripetuta,
+                                            e la forma sbagliata resa impossibile
 ```
 
 Regole modulari sotto `.claude/rules/`, che sono cinque e che questo indice elencava soltanto come cartella. [`.claude/rules/interaction-style.md`](.claude/rules/interaction-style.md) fissa lo stile di ogni file scritto qui dentro, dal registro al paragrafo su riga unica alla tipografia italiana. [`.claude/rules/git-identity-and-repo.md`](.claude/rules/git-identity-and-repo.md) dice con quale identità si firma e con quale alias SSH si parla al remoto, e [`.claude/rules/git-commands-format.md`](.claude/rules/git-commands-format.md) come si consegnano all'utente i comandi, perché restino copiabili su qualunque terminale. [`.claude/rules/security-permissions.md`](.claude/rules/security-permissions.md) descrive le modalità di permesso e i limiti del sandbox su questa piattaforma. [`.claude/rules/token-economy.md`](.claude/rules/token-economy.md) raccoglie le pratiche di risparmio del contesto. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.

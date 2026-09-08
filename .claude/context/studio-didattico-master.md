@@ -167,3 +167,17 @@ Il presidio ha ripagato prima di essere finito. Alla prima corsa il generatore �
 La suite contiene infine un caso che deve fallire, cioè un vettore alterato di poco più della tolleranza, perché duecentoundici casi verdi alla prima esecuzione vanno sospettati prima di essere creduti: se il confronto scivolasse in un ramo sbagliato, il verde sarebbe indistinguibile da quello vero.
 
 Dove leggere il dettaglio: [`refactor-14-vettori-di-riscontro.md`](refactor-14-vettori-di-riscontro.md).
+
+## 15. L'autorizzazione in un posto solo, e la forma sbagliata resa impossibile
+
+Contesto. Con la fase due dell'applicazione web nascono le prime rotte che leggono e scrivono dati di un'organizzazione, quindi il primo codice del progetto in cui un errore non produce un numero sbagliato ma il dato di un cliente visto da un altro.
+
+Com'era e perché era fragile. La forma naturale, quella di ogni esempio, mette in ogni rotta le cinque righe che risolvono identità, appartenenza e ruolo. Non sono righe sbagliate: sono righe da ricopiare, e la ventesima rotta sarà scritta di fretta partendo da un copia e incolla in cui il controllo del ruolo si perde perché quella "tanto è solo una lettura". C'è anche un difetto più sottile, cioè che il gestore riceve il contesto grezzo e può leggersi da solo l'organizzazione chiesta dal chiamante: verifica e uso restano separati, e ogni volta che lo sono qualcuno prima o poi userà senza verificare. La differenza rispetto a un database con regole dichiarative è il verso dell'errore: là una regola dimenticata nega e rompe visibilmente, qui una rotta dimenticata concede e non rompe niente.
+
+Il salto senior e perché è meglio. Una rotta non si registra chiamando il router, si dichiara passando da una funzione che pretende il ruolo minimo come parametro obbligatorio e consegna al gestore un contesto già autorizzato. Il ruolo non può mancare perché TypeScript non compila senza; il gestore non ha un percorso alternativo per ottenere l'organizzazione non verificata; e scrivere una rotta fuori dal registro richiede un gesto visibile in revisione, non una dimenticanza. È lo stesso principio delle voci 6 e 8, cioè rendere impossibile la forma sbagliata invece di raccomandare quella giusta, applicato per la prima volta a codice di rete. Il file che monta l'applicazione diventa una mappa di dieci righe dove il ruolo minimo di ogni rotta si legge senza aprire nient'altro.
+
+Due dettagli della stessa voce meritano di essere ricordati. La gerarchia dei ruoli sta in una tabella sola, perché la forma sbagliata più comune è confrontare per uguaglianza e negare all'amministratore ciò che si concede al membro. E il codice di rifiuto è una decisione di sicurezza travestita da dettaglio: a chi non è membro si risponde non trovato e non vietato, perché un divieto esplicito confermerebbe l'esistenza di quell'organizzazione, e su un prodotto venduto a più agenzie l'esistenza di un cliente è già un'informazione che non ci appartiene.
+
+Resta infine la difesa che non sta nel codice. Chiavi esterne, controllo sui valori ammessi del ruolo e cancellazione a cascata vivono nello schema, dove nessuna rotta distratta può aggirarli, e tre prove li verificano scrivendo direttamente sul database e pretendendo un rifiuto.
+
+Dove leggere il dettaglio: [`refactor-15-autorizzazione-in-un-posto-solo.md`](refactor-15-autorizzazione-in-un-posto-solo.md).

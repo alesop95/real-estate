@@ -154,9 +154,11 @@ tools/                    gli eseguibili, che si lanciano
   collega-riferimenti.py  converte in collegamenti i nomi di file citati nella prosa
   fix-accents.py, fix-missing-accents.py, fix-dashes.py   tipografia italiana
 
+app/                      l'applicazione web: motore TypeScript, Worker, migrazioni, prove
+                          Vive sul branch web. Vedi docs/struttura-del-progetto.md
 scripts/                  build e setup dell'ambiente LaTeX
-tests/                    settantaquattro test in due file
-docs/                     sedici documenti, con l'indice in docs/README.md
+tests/                    settantotto test dello strumento locale, in due file
+docs/                     diciassette documenti, con l'indice in docs/README.md
 data/                     registro annunci e cache OMI non versionati; il registro
                           delle verifiche comunali sì, perché non ha nulla di privato
 output/                   il workbook e le cartelle per immobile, non versionati

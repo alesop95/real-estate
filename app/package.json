@@ -6,10 +6,19 @@
   "scripts": {
     "test": "vitest run",
     "test:guarda": "vitest",
-    "tipi": "tsc --noEmit"
+    "test:motore": "vitest run --config vitest.config.ts",
+    "test:server": "vitest run --config vitest.workers.config.ts",
+    "tipi": "tsc --noEmit",
+    "migra:locale": "wrangler d1 migrations apply valutazione-immobili --local"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.5.35",
+    "@cloudflare/workers-types": "^4.20260702.1",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "3.99.0"
+  },
+  "dependencies": {
+    "hono": "4.6.14"
   }
 }

@@ -1,0 +1,34 @@
+# Configurazione del Worker. Vale per lo sviluppo locale e per la distribuzione, e in
+# questa fase soltanto per il primo: nessun account e' stato ancora aperto, quindi
+# l'identificativo del database e' un segnaposto che si sostituira' con quello vero.
+#
+# Nota deliberata sui limiti del piano gratuito, per ADR-024: qui non compaiono ne'
+# code, ne' bucket R2, ne' Durable Objects, ne' cron oltre i cinque consentiti. Il
+# controllo automatico in test/limiti.test.ts fallisce se qualcuno ne aggiunge.
+
+name = "valutazione-immobili"
+main = "src/server/indice.ts"
+# La data si tiene a quella che il runtime installato supporta davvero: chiederne una piu'
+# avanti non e' un errore, ma fa girare le prove su un runtime diverso da quello dichiarato,
+# e la differenza si scopre in esercizio. Si sposta avanti quando si aggiorna wrangler.
+compatibility_date = "2024-12-05"
+# Richiesto dalla catena di prova locale, che esegue i test dentro il runtime vero e ha
+# bisogno delle interfacce di Node per il proprio ponte con vitest.
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+MODALITA = "esercizio"
+# Dominio dell'organizzazione Zero Trust, da compilare quando l'account esiste.
+ACCESS_TEAM = ""
+# Identificativo dell'applicazione in Access, cioe' il destinatario atteso del token.
+ACCESS_AUD = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "valutazione-immobili"
+database_id = "da-compilare-alla-creazione"
+migrations_dir = "migrazioni"
+
+# La sezione delle risorse statiche arrivera' con la fase tre, quando esistera' qualcosa da
+# costruire: dichiararla adesso, puntando a una cartella che non c'e', farebbe fallire ogni
+# comando locale per un motivo che non ha niente a che vedere con quello che si sta provando.
