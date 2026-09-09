@@ -8,6 +8,12 @@
 
 name = "valutazione-immobili"
 main = "src/server/indice.ts"
+# L'identificativo dell'account resta commentato di proposito, e vale dire perche'. Con
+# l'accesso interattivo, o con un token che raggiunge un solo account, wrangler lo ricava
+# da se'; serve dichiararlo soltanto quando l'account e' ambiguo, e allora si scompone
+# questa riga con il valore che "npx wrangler whoami" stampa. Non e' un segreto: e'
+# configurazione, e per questo starebbe qui e non fra i segreti del repository.
+# account_id = ""
 # La data si tiene a quella che il runtime installato supporta davvero: chiederne una piu'
 # avanti non e' un errore, ma fa girare le prove su un runtime diverso da quello dichiarato,
 # e la differenza si scopre in esercizio. Si sposta avanti quando si aggiorna wrangler.

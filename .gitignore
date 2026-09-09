@@ -60,3 +60,5 @@ app/node_modules/
 app/dist/
 app/.wrangler/
 app/coverage/
+# Le variabili dello sviluppo locale: il modello e' app/.dev.vars.example, versionato.
+app/.dev.vars

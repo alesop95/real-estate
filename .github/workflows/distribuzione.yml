@@ -1,0 +1,100 @@
+# Prove e distribuzione dell'applicazione web.
+#
+# Il flusso ha due lavori e un vincolo fra loro: non si distribuisce cio' che non ha
+# superato le prove. Il vincolo e' scritto qui e non affidato alla disciplina di chi
+# spinge, perche' distribuire a mano dalla propria macchina funziona finche' lo fa la
+# stessa persona, e smette di funzionare esattamente quando serve. Il passo 9 di
+# docs/messa-in-rete.md e' la procedura che accende questo flusso.
+#
+# Il segreto atteso e' CLOUDFLARE_API_TOKEN, e vive fra i segreti del repository su
+# GitHub. E' il solo valore segreto di tutta la catena: l'identificativo dell'account e
+# quello del database stanno in app/wrangler.toml, versionati, perche' sono
+# configurazione e non credenziali.
+
+name: Prove e distribuzione
+
+on:
+  push:
+    branches: [main, web]
+  pull_request:
+    branches: [main]
+  # Permette di distribuire a comando da un branch qualsiasi, che serve la prima volta,
+  # quando il codice e' ancora sul branch di lavoro e l'account e' appena stato aperto.
+  workflow_dispatch:
+
+jobs:
+  prove:
+    name: Prove del motore, delle rotte e dei limiti
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Installazione delle dipendenze
+        working-directory: app
+        run: npm ci
+
+      - name: Controllo dei tipi
+        working-directory: app
+        run: npm run tipi
+
+      # Trentacinque prove in due ambienti: motore e limiti del piano gratuito in Node,
+      # rotte e identita' dentro il runtime di Cloudflare con un D1 vero. Non servono
+      # account ne' rete, ed e' la ragione per cui girano qui senza alcun segreto.
+      - name: Prove
+        working-directory: app
+        run: npm test
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # Il presidio della doppia implementazione. I vettori di riscontro sono generati dal
+      # motore Python, e scadono appena si tocca parametri.py o calcoli.py: se questo passo
+      # fallisce, le prove qui sopra hanno confrontato il motore TypeScript con un modello
+      # che non esiste piu'. Non ha dipendenze da installare, perche' il generatore legge
+      # solo la libreria standard.
+      - name: Vettori di riscontro non scaduti
+        run: python tools/genera-motore.py --check
+
+  distribuzione:
+    name: Distribuzione su Cloudflare
+    needs: prove
+    runs-on: ubuntu-latest
+    # Non si distribuisce da una richiesta di modifica, perche' distribuirebbe codice non
+    # ancora accettato, e su un repository pubblico una richiesta da un fork non vede
+    # comunque i segreti. Il branch main e' la versione in esercizio; il comando manuale
+    # resta per la prima volta.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Installazione delle dipendenze
+        working-directory: app
+        run: npm ci
+
+      # Le migrazioni si applicano prima di distribuire, e non dopo: uno schema vecchio
+      # sotto codice nuovo rompe alla prima richiesta, mentre uno schema nuovo sotto codice
+      # vecchio di norma non rompe niente. L'ordine e' quindi quello che sbaglia meno.
+      - name: Migrazioni sul database di esercizio
+        working-directory: app
+        run: npx wrangler d1 migrations apply valutazione-immobili --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Distribuzione
+        working-directory: app
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

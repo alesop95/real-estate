@@ -33,6 +33,7 @@ real-estate/
     wrangler.toml       la configurazione del Worker
   docs/                 la conoscenza del dominio e le decisioni tecniche
   .claude/              memoria di progetto, schede di contesto, regole, studio didattico
+  .github/workflows/    prove a ogni spinta, e distribuzione da main dopo che sono passate
   data/                 registro annunci e cache OMI, non versionati
   output/               il workbook generato, non versionato
   _notes/               materiale personale, non versionato

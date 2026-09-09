@@ -110,15 +110,11 @@ Il limite che va sorvegliato non è nessuno di questi: sono i cinquanta utenti d
 
 ## I passi da compiere, una volta sola
 
-Sono sette e li compie chi possiede l'account, perché il progetto nasce da lì e non da un file di questo repository.
+Il disegno di questo studio si traduce in una procedura eseguibile, e la procedura non sta qui: sta in [`messa-in-rete.md`](messa-in-rete.md), in nove passi, ciascuno con la ragione tecnologica per cui esiste, l'azione esatta, che cosa va riportato all'ambiente di sviluppo e come si verifica, più il registro di ciò che è stato fatto con le date. La separazione è deliberata e segue il criterio di questa cartella: questo documento è la scelta con le sue alternative, quello è l'esecuzione con il suo stato di avanzamento, e tenere l'esecuzione qui dentro significherebbe modificare uno studio ogni volta che si chiude un passo.
 
-1. Registrare un account su Cloudflare, che non chiede un metodo di pagamento. Non aggiungerne uno neppure dopo: è la garanzia che la spesa resti impossibile.
-2. Dalla sezione Workers e Pages, creare l'applicazione, che a quel punto è raggiungibile a un indirizzo del tipo `valutazione-immobili.<account>.workers.dev`, con certificato incluso. Un dominio proprio si aggiunge dopo e non cambia nulla.
-3. Creare il database D1 e annotarne l'identificativo, che serve al file di configurazione del progetto.
-4. Attivare Zero Trust sul piano gratuito, creare l'organizzazione, e scegliere come metodo di accesso il codice monouso per posta, che non richiede alcun fornitore esterno.
-5. Definire in Access un'applicazione che protegge l'indirizzo, con una politica che elenca le poste elettroniche ammesse. Sono gli utenti dello strumento, e finché sono pochi si aggiungono da lì.
-6. Creare un token di interfaccia per la distribuzione automatica da GitHub, con i soli permessi di modifica dei Workers, e conservarlo fra i segreti del repository.
-7. Consegnare all'ambiente di sviluppo l'identificativo dell'account, quello del database e il nome dell'organizzazione Zero Trust. Nessuno dei tre è un segreto, e ciò che protegge i dati non sono quei nomi ma la politica di Access e i controlli scritti nel Worker.
+Sette dei nove passi erano elencati in questa sezione fino all'8 settembre 2026, e sono cresciuti a nove scrivendoli per esteso: il primo si è sdoppiato, perché verificare che un account preesistente non abbia un metodo di pagamento è un'azione diversa dal registrarne uno nuovo, e si è aggiunta la prima distribuzione prima di configurare l'accesso, che non è un passo di comodo ma la sola prova possibile in esercizio che il rifiuto predefinito funzioni davvero.
+
+Di quei nove, sette li compie chi possiede l'account, perché richiedono un'identità e una volontà che appartengono a una persona oppure un token di accesso che vive sulla sua macchina, e due, cioè la configurazione dell'applicazione con i valori di Access e la creazione della prima organizzazione, sono dell'ambiente di sviluppo. L'invariante che li attraversa tutti è uno e non ha eccezioni: non si collega mai un metodo di pagamento all'account, perché è ciò che rende la gratuità una proprietà del sistema invece di una promessa da sorvegliare. Ciò che l'ambiente di sviluppo si fa consegnare, cioè l'identificativo del database, il nome dell'organizzazione Zero Trust e l'etichetta del destinatario di Access, non è segreto: quello che protegge i dati non sono quei nomi ma la politica di Access e i controlli scritti nel Worker.
 
 ## Il nodo vero: dove vive il motore di calcolo
 

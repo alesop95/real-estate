@@ -6,8 +6,8 @@
 
 ```
 Branch attivo:         web
-Commit di riferimento: 8a6e50d, studio dello stack web
-Ultimo aggiornamento:  2026-09-07
+Commit di riferimento: 0d4f4c2, fase due in locale
+Ultimo aggiornamento:  2026-09-08
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
 Trattazione LaTeX:     32 pagine, compilata senza avvisi il 2026-09-02
@@ -16,16 +16,17 @@ Pronti alla valutazione: 0 su 14, manca la rendita catastale su tutti
 Test:                  78 in Python, 52 sul motore e sui moduli e 26 sulla struttura
 Motore TypeScript:     211 vettori di riscontro dal motore Python, tutti passati
 Applicazione web:      35 prove verdi in due ambienti, schema e cinque rotte, niente di remoto
+Messa in rete:         procedura in nove passi scritta, flusso di distribuzione scritto, zero passi eseguiti
 Vault Obsidian:        aperto sulla radice, 48 note e 186 collegamenti, nessun orfano
 Parametri comunali:    imposta di soggiorno di Civitanova letta il 2026-09-04, IMU da leggere
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
 Simulazione rischio:   fattore comune al 30%, riduzione a indipendenza verificata
 Direzione:             applicazione web autenticata su Cloudflare, per ADR-024
 Scopo:                 uso proprio piu' vendita a un'agenzia immobiliare, per ADR-025
-Branch di lavoro:      web; fase uno del piano chiusa il 7 settembre
+Branch di lavoro:      web; fase uno e parte locale della fase due chiuse il 7 settembre
 ```
 
-Committato fino a `5b77739`. I quattro commit del 3 e 4 settembre portano, in ordine: il vault Obsidian aperto sulla radice con la sua configurazione versionata in `docs/`, la conversione dei riferimenti in collegamenti veri con lo strumento che la mantiene, il comando `comune` con il registro delle verifiche comunali, e la pulizia della fornitura OMI dalle righe del Piemonte. Resta da committare il lavoro di tracciatura di questa sessione, cioè le due voci di work-log, le ADR 021 e 022, questa scheda, [`current-work.md`](../context/current-work.md) e il filtro `--regione` all'importazione con i suoi test e la sua documentazione. Non committato il riordino delle cartelle e l'ampliamento della trattazione: `output/` diventa una cartella per immobile sotto `output/immobili/<id>/`, il LaTeX passa sotto `docs/matematica/`, il workbook precompilato non sovrascrive più il file-modello, la trattazione sale a trentadue pagine con il capitolo sulla notazione e ventisette letture a parole, più due sezioni nuove nel manuale operativo e la voce di work-log.
+Committato fino a `0d4f4c2`. I tre commit del 7 settembre portano, in ordine: lo scopo commerciale con la piattaforma Cloudflare e la voce didattica 13, la fase uno cioè il motore TypeScript con i duecentoundici vettori e la correzione del difetto del tasso interno, e la fase due in locale cioè schema, Worker, rotte autorizzate e le loro trentacinque prove. Resta da committare il lavoro dell'8 settembre, che è la procedura di messa in rete e il flusso che distribuisce: nuovi [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md), `.github/workflows/distribuzione.yml` e `app/.dev.vars.example`, più le modifiche a `app/wrangler.toml`, `.gitignore`, [`CLAUDE.md`](../../CLAUDE.md), [`README.md`](../../README.md), [`docs/README.md`](../../docs/README.md), [`docs/architettura-web.md`](../../docs/architettura-web.md), [`docs/struttura-del-progetto.md`](../../docs/struttura-del-progetto.md), questa scheda, [`progress.md`](progress.md) e [`current-work.md`](../context/current-work.md).
 
 I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il commit del codice di calcolo che descrivono: nulla di quanto è seguito ha cambiato il modello.
 
@@ -39,7 +40,7 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il 
 | [`.claude/context/dev-testing.md`](../context/dev-testing.md) | `tools/verifica-excel.ps1`, `tests/**` | aggiornata al 1 settembre, da ancorare al commit |
 | [`.claude/context/current-work.md`](../context/current-work.md) | feature attiva | aggiornata al 1 settembre |
 | [`.claude/context/roadmap.md`](../context/roadmap.md) | direzione | aggiornata al 1 settembre, sezione "Prossimo" chiusa |
-| [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md) e i tredici `refactor-NN` | evoluzioni strutturali del progetto | tredici voci; la tredicesima è la prima che non nasce da una riga di codice, e riguarda il metodo con cui si misura una fascia gratuita |
+| [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md) e i quindici `refactor-NN` | evoluzioni strutturali del progetto | quindici voci; la tredicesima è la prima che non nasce da una riga di codice e riguarda il metodo con cui si misura una fascia gratuita, la quattordicesima è il presidio fra le due implementazioni del motore, la quindicesima è l'autorizzazione dichiarata in un posto solo |
 | [`docs/manuale-operativo.md`](../../docs/manuale-operativo.md) | `tools/valuta.py`, registro, workbook | ogni comando, ogni campo, ogni foglio, diagnostica; include la catena dei tassi e la build LaTeX |
 | `docs/matematica/matematica-finanziaria.tex` | tutte le formule del modello | 32 pagine: capitolo sulla notazione per chi parte da zero, 27 paragrafi In parole, derivazioni, tavola simbolo-cella-funzione, caso svolto |
 | [`docs/da-zero.md`](../../docs/da-zero.md) | avvio, `tools/valuta.py` | allineata, include `tassi --risalita` e l'indice navigabile |
@@ -53,8 +54,11 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il 
 | [`docs/comprare-in-piu-persone.md`](../../docs/comprare-in-piu-persone.md) | foglio Comproprietà | allineata |
 | [`docs/guida-al-workbook.md`](../../docs/guida-al-workbook.md) | workbook, tutti i fogli | nata il 3 settembre dalla fusione delle due guide d'uso, in tre parti |
 | [`docs/guida-tecnica(catena-calcolo-e-normativa).md`](<../../docs/guida-tecnica(catena-calcolo-e-normativa).md>) | workbook e `src/**` | allineata a ventun fogli |
-| [`docs/README.md`](../../docs/README.md) | indice della documentazione | i quattro percorsi di lettura e i quindici documenti per tipo di domanda; dal 3 settembre ogni nome citato è un collegamento vero |
+| [`docs/README.md`](../../docs/README.md) | indice della documentazione | i quattro percorsi di lettura e i diciotto documenti per tipo di domanda; dal 3 settembre ogni nome citato è un collegamento vero |
 | [`docs/vault-obsidian.md`](../../docs/vault-obsidian.md) | il vault Obsidian aperto sulla radice | configurazione applicata, forma del grafo misurata invece che prevista, e la conversione dei riferimenti con i suoi limiti |
+| [`docs/architettura-web.md`](../../docs/architettura-web.md) | la scelta della piattaforma | lo studio con le fasce gratuite misurate e le alternative escluse; dall'8 settembre non tiene più la propria lista di passi e rimanda alla procedura |
+| [`docs/struttura-del-progetto.md`](../../docs/struttura-del-progetto.md) | `app/**`, la mappa del repository | scritta il 7 settembre, aggiornata l'8 con la cartella dei flussi di lavoro |
+| [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md) | la procedura verso l'esercizio | nove passi, ciascuno con ragione, azione, che cosa riportare e verifica; il registro in fondo dice zero passi eseguiti |
 | [`docs/fonti.md`](../../docs/fonti.md) | tutte | allineata, include l'uso della serie storica Euribor |
 
 ## Che cosa esiste e funziona
@@ -85,7 +89,9 @@ Il progetto ha due stati e conviene tenerli distinti. Lo strumento locale è com
 
 Lo stato nuovo è la feature attiva, cioè il passaggio ad applicazione web autenticata su Cloudflare, con il doppio scopo di uso proprio e vendita a un'agenzia immobiliare. Vive sul branch `web`, allineato a `main`. È fatto tutto il lavoro che precede il codice: lo studio con le piattaforme misurate sulle fonti primarie, la scelta con il suo prezzo dichiarato in ADR-024, la scelta di prodotto in ADR-025, la riscrittura del vincolo di riservatezza, e la voce 13 dello studio didattico sul metodo di misura di una fascia gratuita. Nessuna riga dell'applicazione esiste ancora.
 
-La prossima azione è la fase uno del piano, che è indipendente dalla piattaforma e non richiede alcun account aperto: il motore di calcolo in TypeScript, il generatore che dal motore Python produce i casi di riscontro, e la suite che li verifica a ogni build. Va per prima perché se sbagliata invalida tutto il resto. In parallelo, quando l'utente apre l'account Cloudflare, valgono i sette passi elencati in [`docs/architettura-web.md`](../../docs/architettura-web.md), di cui il secondo, cioè non collegare mai un metodo di pagamento, è quello che protegge la gratuità.
+La prossima azione non è più scrivere codice ed è aprire l'account, perché tutto ciò che si poteva fare senza è fatto. La fase uno è chiusa, cioè il motore TypeScript con i duecentoundici vettori generati dal motore Python, e la parte locale della fase due è chiusa, cioè lo schema, il Worker con le cinque rotte autorizzate e le trentacinque prove che girano dentro il runtime di Cloudflare con un D1 vero, senza account e senza rete. L'8 settembre si è aggiunto ciò che serve al passaggio successivo: la procedura in nove passi di [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md), che porta per ogni passo la ragione, l'azione, che cosa riportare e come si verifica, e il flusso `.github/workflows/distribuzione.yml`, che prova a ogni spinta e distribuisce da `main` soltanto dopo che le prove sono passate. Il registro in fondo alla procedura dice che nessuno dei nove passi è stato eseguito, e quel registro è la fonte dello stato di avanzamento.
+
+Dei nove passi, sette li compie chi possiede l'account e due sono dell'ambiente di sviluppo, cioè la configurazione dell'applicazione con i valori di Access e la creazione della prima organizzazione. Il passo che protegge tutto è il primo, ed è verificare che l'account non abbia e non prenda un metodo di pagamento, perché è ciò che rende la gratuità una proprietà del sistema invece di una promessa da sorvegliare. Dopo il passo tre e il passo sei servono all'ambiente di sviluppo tre valori, nessuno dei quali è un segreto: l'identificativo del database, il nome dell'organizzazione Zero Trust e l'etichetta del destinatario di Access. Il solo segreto è il token di interfaccia del passo nove, che sta fra i segreti del repository con il nome `CLOUDFLARE_API_TOKEN` e in nessun altro posto.
 
 Le schede di `context/` restano ancorate ad `a0b3420`, che è il commit del codice di calcolo che descrivono. [`STACK.md`](../context/STACK.md) e [`deployment.md`](../context/deployment.md) sono state aggiornate il 4 settembre per il modulo `comuni.py` e per il filtro all'importazione; [`current-work.md`](../context/current-work.md) è stata riscritta il 7 settembre attorno alla feature web. Il modello di calcolo non è stato toccato da nulla di quanto è seguito, quindi non vanno riancorate.
 

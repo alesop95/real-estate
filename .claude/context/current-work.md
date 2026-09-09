@@ -18,7 +18,7 @@ Cosa fa. Sposta lo strumento da workbook Excel generato in locale ad applicazion
 
 Dove vive. Branch `web`, allineato a `main`. La direzione, le piattaforme misurate, le alternative scartate, il funzionamento senza codice lato server e il piano in fasi stanno in [`docs/architettura-web.md`](../../docs/architettura-web.md). Le decisioni sono ADR-024 per la piattaforma e ADR-025 per la scelta di prodotto. La voce didattica è la 13 dello studio didattico.
 
-Stato al 7 settembre 2026. Nessuna riga di codice dell'applicazione è stata scritta. È fatto tutto il lavoro che precede: lo studio, la scelta della piattaforma con i limiti verificati sulle fonti primarie, la riscrittura del vincolo di riservatezza, e la chiusura del quarto dei cinque limiti dichiarati, che era l'unico a non sciogliersi con il passaggio.
+Stato all'8 settembre 2026. È scritto e provato tutto ciò che non richiede un account. La fase uno è chiusa, cioè il motore in TypeScript con i duecentoundici vettori generati dal motore Python. La parte locale della fase due è chiusa, cioè lo schema del database, il Worker con le cinque rotte autorizzate e le trentacinque prove che girano dentro il runtime di Cloudflare con un D1 vero, senza account e senza rete. L'8 settembre si è aggiunto ciò che il passaggio successivo richiede: la procedura in nove passi di [`messa-in-rete.md`](../../docs/messa-in-rete.md), con il registro che ne segue l'avanzamento, e il flusso `.github/workflows/distribuzione.yml`, che prova a ogni spinta e distribuisce da `main` soltanto dopo che le prove sono passate. Da qui in avanti la palla è dell'utente, perché il passo che segue è aprire l'account.
 
 ### Definizione di completamento della feature web
 
@@ -32,7 +32,9 @@ Stato al 7 settembre 2026. Nessuna riga di codice dell'applicazione è stata scr
 - [x] Fase due, parte locale: schema del database, verifica del token di Access, autorizzazione dichiarata, cinque rotte, trentacinque prove contro un D1 vero dentro il runtime di Cloudflare
 - [x] Fase due, presidio: il test che fallisce se la configurazione esce dal piano gratuito
 - [x] Fase due, struttura: [`docs/struttura-del-progetto.md`](../../docs/struttura-del-progetto.md) e la voce didattica 15 sull'autorizzazione
-- [ ] Fase due, parte remota: account aperto, D1 creato, Access configurato, prima distribuzione. Chiusa quando l'applicazione risponde all'indirizzo e le prove girano anche contro il database vero
+- [x] Fase due, procedura: [`messa-in-rete.md`](../../docs/messa-in-rete.md) in nove passi, ciascuno con la ragione, l'azione esatta, che cosa riportare e come si verifica, piu' il registro dell'avanzamento con le date
+- [x] Fase due, distribuzione automatica: `.github/workflows/distribuzione.yml`, con le prove su ogni spinta, la distribuzione dal solo `main` dopo che sono passate, le migrazioni applicate prima del codice e il controllo che i vettori di riscontro non siano scaduti
+- [ ] Fase due, parte remota: account aperto, D1 creato, Access configurato, prima distribuzione. Chiusa quando l'applicazione risponde all'indirizzo e le prove girano anche contro il database vero. È l'unica voce che l'ambiente di sviluppo non può chiudere da solo
 - [ ] Fase tre: le sei aree dell'interfaccia, una per volta
 - [ ] Fase quattro: migrazione del registro immobili e delle verifiche comunali, ed esportazione del workbook come ponte
 - [ ] Fase cinque: una voce didattica per ogni passo che introduce un pattern, con il codice reale prima e dopo
@@ -134,8 +136,8 @@ Nel foglio Confronto immobili restano globali l'opzione prezzo-valore e la quali
 
 ## Prossima azione concreta
 
-La fase uno, che è indipendente dalla piattaforma e non richiede che alcun account sia stato aperto: il motore di calcolo in TypeScript sul branch `web`, con il generatore che dal motore Python produce i casi di riscontro e la suite che li verifica a ogni build. Va per prima perché se è sbagliata invalida tutto il resto, e perché è la sola parte che sopravvive a un eventuale cambio di piattaforma.
+Aprire l'account Cloudflare ed eseguire i primi passi della procedura, perché tutto ciò che si poteva scrivere senza account è scritto e provato. Le fasi uno e due-in-locale sono chiuse, la procedura e il flusso di distribuzione esistono, e nessuno dei nove passi è stato eseguito: il registro in fondo a [`messa-in-rete.md`](../../docs/messa-in-rete.md) lo dice riga per riga e va aggiornato appena uno si chiude. All'ambiente di sviluppo servono poi tre valori, nessuno segreto, cioè l'identificativo del database, il nome dell'organizzazione Zero Trust e l'etichetta del destinatario di Access; il solo segreto della catena è il token di interfaccia, che sta fra i segreti del repository con il nome `CLOUDFLARE_API_TOKEN`.
 
-In parallelo, quando l'utente apre l'account: i sette passi elencati in [`docs/architettura-web.md`](../../docs/architettura-web.md), di cui il secondo, cioè non collegare mai un metodo di pagamento, è quello che protegge la gratuità.
+In parallelo, quando l'utente apre l'account: i nove passi di [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md), di cui il primo, cioè verificare che l'account non abbia e non prenda un metodo di pagamento, è quello che protegge la gratuità. Sette li compie chi possiede l'account, due sono dell'ambiente di sviluppo, e il registro in fondo a quel documento è la fonte dello stato di avanzamento.
 
 Sull'uso dello strumento di oggi, che resta il banco di prova, non è cambiato niente: manca la rendita catastale su tutti i quattordici immobili a registro, e l'aliquota IMU di Civitanova si legge dal collegamento che `valuta.py comune` costruisce e si annota con la data.

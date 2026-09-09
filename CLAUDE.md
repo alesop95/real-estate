@@ -76,7 +76,7 @@ Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spie
 
 ```
 docs/README.md               indice della documentazione: i quattro percorsi di lettura,
-                              i diciassette documenti per tipo di domanda, le sovrapposizioni note
+                              i diciotto documenti per tipo di domanda, le sovrapposizioni note
 docs/da-zero.md              avvio da zero: cosa installare, quali documenti procurarsi,
                               la prima valutazione completa in sette passi
 docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
@@ -119,6 +119,8 @@ docs/architettura-web.md     studio dello stack per portare lo strumento in rete
 docs/struttura-del-progetto.md
                               mappa di dove vive ogni cosa e perche': le due basi di codice e il
                               presidio che le lega, le tre decisioni di architettura, come si prova
+docs/messa-in-rete.md        procedura passo per passo per portare l'applicazione in rete, con la
+                              ragione di ogni passo e il registro di cio' che e' stato fatto
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
                               atterra nel codice o nel workbook, stato di verifica, lacune
 ```

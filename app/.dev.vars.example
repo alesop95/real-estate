@@ -1,0 +1,13 @@
+# Modello delle variabili dello sviluppo locale. Si copia in .dev.vars, che non e' versionato.
+#
+# La modalita' e' la sola variabile che conta davvero, e vale la pena capire perche'. In
+# sviluppo l'applicazione accetta l'identita' da un'intestazione della richiesta, perche'
+# Access non c'e' e senza una scorciatoia non si potrebbe provare niente in locale. In
+# esercizio quella intestazione non viene nemmeno letta: il valore predefinito nel codice e'
+# esercizio, quindi dimenticare questo file rende l'applicazione prudente, non aperta.
+MODALITA = "sviluppo"
+
+# Questi due restano vuoti in locale: servono in esercizio e stanno in wrangler.toml, non
+# qui, perche' non sono segreti ma configurazione da versionare.
+ACCESS_TEAM = ""
+ACCESS_AUD = ""
