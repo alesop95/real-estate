@@ -8,6 +8,8 @@ La prima domanda che un lettore si fa è perché ci siano due implementazioni de
 
 La risposta lunga è che le due non sono paritarie. Il motore Python è l'implementazione di riferimento: è quello verificato dai test di dominio, quello che il generatore del workbook usa, e quello che decide chi ha ragione quando i numeri divergono. Il motore TypeScript è un porto, e vive solo finché un presidio automatico dimostra che dice le stesse cose. Il presidio è `tools/genera-motore.py`, che dal motore Python emette i parametri fiscali in TypeScript e duecentoundici casi di riscontro con il loro esito completo; la suite in `app/test/motore.test.ts` li ricalcola e confronta ogni valore entro un miliardesimo relativo. Il racconto della scelta, con il difetto che ha fatto emergere, sta nella voce 14 dello studio didattico.
 
+Dal 9 settembre 2026 il presidio ha una seconda famiglia di vettori, quella della simulazione del rischio, e sta in un file a parte per una ragione di sostanza: la simulazione non dipende dai soli input ma anche dalle estrazioni, che due linguaggi non possono generare uguali. I vettori portano percio' anche il campione di estrazioni con cui sono stati prodotti, la suite lo passa come ingresso, e le estrazioni per l'uso interattivo restano una funzione separata e dichiaratamente fuori dal confronto. La voce 16 dello studio didattico racconta il pattern e i due difetti che ha fatto emergere.
+
 Ne segue una regola operativa che vale sempre: dopo aver toccato `src/immobiliare/calcoli.py` o `src/immobiliare/parametri.py`, i vettori sul disco sono scaduti. Il comando `python tools/genera-motore.py --check` lo dice senza scrivere niente, e la suite TypeScript si rifiuta di partire se la revisione dei parametri non coincide con quella dei vettori.
 
 ## La mappa
@@ -18,6 +20,7 @@ real-estate/
     parametri.py        aliquote, soglie e moltiplicatori, con fonte e data
     calcoli.py          il modello: imposte, mutuo, locazione, metriche, inflazione
     excel_builder.py    i ventun fogli con le formule vive
+    rischio.py          la simulazione probabilistica e il tornado, riferimento del porto
     annunci.py omi.py tassi.py indicatori.py comuni.py llm_locale.py
   tools/                gli eseguibili, che si lanciano a mano
     valuta.py           la riga di comando dello strumento locale
@@ -26,7 +29,7 @@ real-estate/
     md-unwrap.py collega-riferimenti.py fix-*.py   convenzioni della documentazione
   tests/                le prove dello strumento locale, in Python
   app/                  l'applicazione web
-    src/motore/         il porto TypeScript del modello, piu' esitoCompleto
+    src/motore/         il porto TypeScript del modello, piu' esitoCompleto e il rischio
     src/server/         il Worker: identita', autorizzazione, rotte
     migrazioni/         lo schema del database, un file per passo
     test/               le prove: motore in Node, rotte e identita' in workerd
@@ -75,9 +78,9 @@ Il giorno in cui l'elenco diventasse abbastanza grande da rendere il ricalcolo p
 
 ## Come si prova, e perché in due modi
 
-Le prove sono trentacinque e girano in due ambienti diversi, ed è deliberato.
+Le prove sono cinquantadue e girano in due ambienti diversi, ed è deliberato.
 
-Il motore e i controlli sulla configurazione girano in Node, perché sono aritmetica e lettura di file. Le rotte e l'identità girano dentro workerd, cioè il runtime che Cloudflare esegue davvero, con un database D1 locale creato per l'occasione. Provare le rotte contro un finto database darebbe una suite verde che non dice niente sul comportamento reale, e in particolare non direbbe nulla sui vincoli di integrità, che sono metà della difesa: nella suite ci sono tre prove che verificano che il database rifiuti un'appartenenza a un'organizzazione inesistente, un ruolo inventato, e che cancellando un'organizzazione spariscano i suoi immobili.
+Il motore, la simulazione del rischio e i controlli sulla configurazione girano in Node, perché sono aritmetica e lettura di file. Le rotte e l'identità girano dentro workerd, cioè il runtime che Cloudflare esegue davvero, con un database D1 locale creato per l'occasione. Provare le rotte contro un finto database darebbe una suite verde che non dice niente sul comportamento reale, e in particolare non direbbe nulla sui vincoli di integrità, che sono metà della difesa: nella suite ci sono tre prove che verificano che il database rifiuti un'appartenenza a un'organizzazione inesistente, un ruolo inventato, e che cancellando un'organizzazione spariscano i suoi immobili.
 
 Niente di tutto questo richiede un account o una connessione. Il comando è `npm test` dentro `app/`.
 
@@ -94,4 +97,4 @@ cd app && npm run migra:locale                  applica le migrazioni al D1 loca
 
 ## Dove guardare quando si cambia qualcosa
 
-Se cambia un'aliquota si tocca `parametri.py`, si rigenerano i vettori e si esegue tutto. Se cambia una formula si tocca `calcoli.py`, si aggiorna il porto in `app/src/motore/motore.ts`, si rigenerano i vettori: la suite dirà se il porto è rimasto indietro. Se cambia la forma dei dati si aggiunge una migrazione in `app/migrazioni/`, mai modificando quelle già applicate. Se si aggiunge una rotta si passa da `rotta()` in `autorizzazione.ts`, che pretende il ruolo minimo, e si scrivono le due prove, quella del permesso e quella del rifiuto.
+Se cambia un'aliquota si tocca `parametri.py`, si rigenerano i vettori e si esegue tutto. Se cambia una formula si tocca `calcoli.py`, si aggiorna il porto in `app/src/motore/motore.ts`, si rigenerano i vettori: la suite dirà se il porto è rimasto indietro. Se si tocca la simulazione del rischio si toccano due file, `src/immobiliare/rischio.py` e `app/src/motore/rischio.ts`, si rigenerano i vettori e si guarda che i valori congelati in `tests/test_rischio.py`, che sono quelli letti da Excel, non si siano mossi: se si muovono, si è cambiato il modello e non il codice, e il foglio va cambiato con esso. Se cambia la forma dei dati si aggiunge una migrazione in `app/migrazioni/`, mai modificando quelle già applicate. Se si aggiunge una rotta si passa da `rotta()` in `autorizzazione.ts`, che pretende il ruolo minimo, e si scrivono le due prove, quella del permesso e quella del rifiuto.

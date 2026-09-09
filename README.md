@@ -137,6 +137,7 @@ Python 3.13 con `openpyxl` come unica dipendenza obbligatoria: tutto il resto è
 src/immobiliare/          la libreria, che si importa e non si esegue
   parametri.py    (454)   valori normativi in dataclass congelate, ciascuno con la fonte
   calcoli.py      (858)   il motore: imposte, mutuo, locazione, metriche, inflazione
+  rischio.py      (579)   la simulazione probabilistica su estrazioni date, e il tornado
   excel_builder.py (3445) il generatore del workbook
   stile.py        (250)   stili, colori, helper delle celle e dei collegamenti
   annunci.py      (810)   registro, acquisizione, riversamento nel workbook
@@ -157,7 +158,7 @@ tools/                    gli eseguibili, che si lanciano
 app/                      l'applicazione web: motore TypeScript, Worker, migrazioni, prove
                           Vive sul branch web. Vedi docs/struttura-del-progetto.md
 scripts/                  build e setup dell'ambiente LaTeX
-tests/                    settantotto test dello strumento locale, in due file
+tests/                    centosette test dello strumento locale, in tre file
 docs/                     diciotto documenti, con l'indice in docs/README.md
 data/                     registro annunci e cache OMI non versionati; il registro
                           delle verifiche comunali sì, perché non ha nulla di privato
@@ -220,7 +221,7 @@ Quattro livelli, descritti in [`.claude/context/dev-testing.md`](.claude/context
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verifica-excel.ps1
 ```
 
-**I test automatici,** settantuno in due file: quarantacinque sul motore di calcolo e sui moduli di dominio, ventisei sulla struttura del workbook e sull'acquisizione.
+**I test automatici,** centosette in tre file: cinquantadue sul motore di calcolo e sui moduli di dominio, ventisei sulla struttura del workbook e sull'acquisizione, ventinove sulla simulazione del rischio, di cui gli ultimi congelano i numeri che Excel calcola sul foglio Rischio perché le due implementazioni non divergano in silenzio.
 
 ```
 python -m pytest tests

@@ -148,7 +148,7 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 Pacchetto `studio-didattico`, sotto `.claude/context/`. È il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perché era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perché una scelta è fatta così, prima di rifarla diversamente.
 
 ```
-studio-didattico-master.md                  indice narrativo, quindici voci numerate
+studio-didattico-master.md                  indice narrativo, sedici voci numerate
 refactor-01-formule-vive.md                 workbook come modello, non come rapporto
 refactor-02-denominatore.md                 il denominatore dei rendimenti
 refactor-03-verifica-con-excel.md           automazione COM e locale italiano
@@ -168,6 +168,8 @@ refactor-14-vettori-di-riscontro.md         due implementazioni dello stesso mod
 refactor-15-autorizzazione-in-un-posto-solo.md
                                             l'autorizzazione dichiarata invece che ripetuta,
                                             e la forma sbagliata resa impossibile
+refactor-16-estrazioni-come-ingresso.md     la casualita' si passa invece di contenerla, e
+                                            cosi' una simulazione diventa confrontabile
 ```
 
 Regole modulari sotto `.claude/rules/`, che sono cinque e che questo indice elencava soltanto come cartella. [`.claude/rules/interaction-style.md`](.claude/rules/interaction-style.md) fissa lo stile di ogni file scritto qui dentro, dal registro al paragrafo su riga unica alla tipografia italiana. [`.claude/rules/git-identity-and-repo.md`](.claude/rules/git-identity-and-repo.md) dice con quale identità si firma e con quale alias SSH si parla al remoto, e [`.claude/rules/git-commands-format.md`](.claude/rules/git-commands-format.md) come si consegnano all'utente i comandi, perché restino copiabili su qualunque terminale. [`.claude/rules/security-permissions.md`](.claude/rules/security-permissions.md) descrive le modalità di permesso e i limiti del sandbox su questa piattaforma. [`.claude/rules/token-economy.md`](.claude/rules/token-economy.md) raccoglie le pratiche di risparmio del contesto. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.

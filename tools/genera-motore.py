@@ -22,6 +22,15 @@ impresa, agevolazione o no, prezzo-valore attivo o no, categoria ordinaria o di 
 locazione, presenza del mutuo, più i casi limite che nella pratica rompono le formule, cioè rendita
 a zero, tasso a zero, durata a zero, canone a zero, mutuo pari all'intero prezzo.
 
+Il terzo pezzo, aggiunto il 9 settembre 2026, sono i vettori della simulazione del rischio, che
+stanno in un file a parte per una ragione di sostanza. La simulazione non è una funzione degli
+input soltanto: è una funzione degli input e delle estrazioni, e le estrazioni non si possono
+generare da due parti perché Python e JavaScript non condividono il generatore pseudocasuale.
+I vettori portano quindi anche il campione di estrazioni con cui sono stati prodotti, uno solo per
+tutti i casi, e la suite TypeScript lo usa come ingresso invece di estrarre per conto proprio. È
+la stessa disciplina dei vettori del motore applicata a una funzione che ha una fonte di casualità:
+la si rende deterministica passandogliela, invece di sperare che due generatori coincidano.
+
 La tolleranza è dichiarata qui e non dopo aver visto gli scarti, che è la sola sequenza onesta:
 1e-9 in termini relativi sui valori di modulo maggiore di uno, 1e-9 in termini assoluti sotto. Non è
 una tolleranza di comodo: le due implementazioni eseguono le stesse operazioni nello stesso ordine su
@@ -52,9 +61,19 @@ sys.path.insert(0, str(RADICE / "src"))
 
 from immobiliare import calcoli as C  # noqa: E402
 from immobiliare import parametri as P  # noqa: E402
+from immobiliare import rischio as R  # noqa: E402
 
 DESTINAZIONE_PARAMETRI = Path("app/src/motore/parametri.generati.ts")
 DESTINAZIONE_VETTORI = Path("app/test/vettori.generati.json")
+DESTINAZIONE_VETTORI_RISCHIO = Path("app/test/vettori.rischio.json")
+
+# Quante estrazioni entrano nei vettori del rischio. Mille, come nel foglio, farebbero un file
+# grande e non aggiungerebbero un ramo: sessantaquattro bastano a esercitare la mescolanza, i
+# limitatori e l'evento di morosità, e tengono il confronto leggibile quando fallisce.
+ESTRAZIONI_DI_RISCONTRO = 64
+# Di ogni caso si registrano per esteso i primi scenari, oltre alla sintesi: quando un vettore
+# fallisce, sapere quale colonna del singolo scenario ha divergato vale piu' di un percentile.
+SCENARI_REGISTRATI = 3
 
 TOLLERANZA_RELATIVA = 1e-9
 TOLLERANZA_ASSOLUTA = 1e-9
@@ -403,11 +422,141 @@ def genera_vettori() -> str:
     return json.dumps(documento, ensure_ascii=False, indent=1) + "\n"
 
 
+# ---------------------------------------------------------------------------
+# I vettori della simulazione del rischio
+# ---------------------------------------------------------------------------
+
+def _chiavi_cammello(valore):
+    """Converte le chiavi nella convenzione TypeScript, scendendo nei dizionari annidati.
+
+    La ricorsione non è un abbellimento: la sintesi contiene cinque distribuzioni, che sono
+    dataclass dentro una dataclass, e senza scendere le loro chiavi resterebbero in
+    `peggiore_5` mentre il tipo TypeScript dichiara `peggiore5`. Il difetto non si vedrebbe
+    nel generatore ma nella suite, come un valore mancante invece che come uno sbagliato.
+    """
+    if isinstance(valore, dict):
+        return {_cammello(k): _chiavi_cammello(v) for k, v in valore.items()}
+    if isinstance(valore, list):
+        return [_chiavi_cammello(v) for v in valore]
+    return _numero(valore)
+
+
+def _dizionario_cammello(oggetto) -> dict:
+    """Da dataclass a dizionario con le chiavi nella convenzione TypeScript."""
+    return _chiavi_cammello(dataclasses.asdict(oggetto))
+
+
+def _base_rischio(**modifiche) -> R.BaseSimulazione:
+    """Il caso precaricato del workbook, con le variazioni chieste.
+
+    I valori sono quelli che le celle con nome definito del workbook contengono dopo il
+    ricalcolo, così che i vettori parlino dello stesso caso su cui il foglio è stato
+    verificato con Excel.
+    """
+    valori = dict(
+        canone_mensile=500.0, ricavo_effettivo=5335.0, noi_annuo=1804.84,
+        costo_totale=131556.5, esborso=41556.5, prezzo=120000.0, mesi_sfitto=1.0,
+        morosita=0.03, aliquota_canone=0.21, tasso=0.032, durata_anni=25,
+        mutuo_importo=90000.0, rivalutazione=0.02, orizzonte_anni=25, costi_vendita=0.03,
+        rendimento_portafoglio=0.06, rendimento_obiettivo=0.04, condominio_annuo=1200.0,
+        quota_condominio=0.4, manutenzione_su_valore=0.01,
+        ristrutturazione_su_valore=1 / 3, ristrutturazione_anni=40,
+    )
+    valori.update(modifiche)
+    return R.BaseSimulazione(**valori)
+
+
+def _casi_rischio():
+    """Le combinazioni che nella simulazione cambiano ramo, più i limiti uno per volta."""
+    for correlazione, mutuo, prob_morosita, rendimento_portafoglio in product(
+        (0.0, 0.30, 1.0),
+        (0.0, 90_000.0),
+        (0.0, 0.05, 1.0),
+        (0.0, 0.06),
+    ):
+        yield (
+            _base_rischio(mutuo_importo=mutuo, rendimento_portafoglio=rendimento_portafoglio),
+            R.Incertezze(correlazione=correlazione, prob_morosita_grave=prob_morosita),
+        )
+
+    # I limiti. Ciascuno tocca una cosa sola, perché un vettore che fallisce deve dire
+    # quale ramo ha ceduto e non offrire una rosa di sospetti.
+    limiti = [
+        (_base_rischio(tasso=0.0), R.Incertezze()),
+        (_base_rischio(tasso=0.0, mutuo_importo=90_000.0), R.Incertezze(vol_tasso=0.01)),
+        (_base_rischio(durata_anni=0, mutuo_importo=90_000.0), R.Incertezze()),
+        (_base_rischio(orizzonte_anni=1), R.Incertezze()),
+        (_base_rischio(orizzonte_anni=40), R.Incertezze()),
+        (_base_rischio(canone_mensile=0.0, ricavo_effettivo=0.0, noi_annuo=-3530.16), R.Incertezze()),
+        (_base_rischio(morosita=1.0), R.Incertezze()),
+        (_base_rischio(costo_totale=0.0), R.Incertezze()),
+        (_base_rischio(esborso=0.0), R.Incertezze()),
+        (_base_rischio(ristrutturazione_anni=0), R.Incertezze()),
+        (_base_rischio(mutuo_importo=120_000.0), R.Incertezze(vol_tasso=0.01)),
+        (_base_rischio(), R.Incertezze(vol_sfitto=12.0)),
+        (_base_rischio(), R.Incertezze(vol_canone=1.0)),
+        (_base_rischio(), R.Incertezze(mesi_persi_morosita=0.0, prob_morosita_grave=1.0)),
+        (_base_rischio(), R.Incertezze(correlazione=-0.5)),
+        (_base_rischio(), R.Incertezze(correlazione=1.5)),
+    ]
+    for caso in limiti:
+        yield caso
+
+
+def calcola_rischio(base, incertezze, estrazioni) -> dict:
+    """La sintesi, i primi scenari per esteso, il tornado e il cash flow di riferimento."""
+    sintesi = R.simula(base, incertezze, estrazioni)
+    return {
+        "sintesi": _dizionario_cammello(sintesi),
+        "scenari": [
+            _dizionario_cammello(R.scenario(base, incertezze, e))
+            for e in estrazioni[:SCENARI_REGISTRATI]
+        ],
+        "tornado": [_dizionario_cammello(v) for v in R.tornado(base)],
+        "cashFlowRiferimento": _numero(R.cash_flow_riferimento(base)),
+    }
+
+
+def genera_vettori_rischio() -> str:
+    estrazioni = R.estrazioni_fisse(ESTRAZIONI_DI_RISCONTRO)
+    casi = list(_casi_rischio())
+    vettori = [
+        {
+            "n": i + 1,
+            # L'ingresso conserva i nomi di Python, come nei vettori del motore: le forme di
+            # ingresso del lato TypeScript rispecchiano una per una le dataclass, e tradurle
+            # qui costringerebbe a tradurle di nuovo là. Le grandezze calcolate, invece,
+            # escono nella convenzione TypeScript, che è quella dei tipi di esito.
+            "ingresso": {
+                "base": dataclasses.asdict(base),
+                "incertezze": dataclasses.asdict(incertezze),
+            },
+            "atteso": calcola_rischio(base, incertezze, estrazioni),
+        }
+        for i, (base, incertezze) in enumerate(casi)
+    ]
+    documento = {
+        "generatoDa": "tools/genera-motore.py",
+        "revisioneParametri": str(P.REVISIONE),
+        "tolleranzaRelativa": TOLLERANZA_RELATIVA,
+        "tolleranzaAssoluta": TOLLERANZA_ASSOLUTA,
+        "semeEstrazioni": R.SEME_PREDEFINITO,
+        "estrazioni": [
+            [e.comune, e.canone, e.sfitto, e.tasso, e.rivalutazione, e.evento]
+            for e in estrazioni
+        ],
+        "casi": len(vettori),
+        "vettori": vettori,
+    }
+    return json.dumps(documento, ensure_ascii=False, indent=1) + "\n"
+
+
 def main(argv) -> int:
     solo_controllo = "--check" in argv
     uscite = {
         RADICE / DESTINAZIONE_PARAMETRI: genera_parametri(),
         RADICE / DESTINAZIONE_VETTORI: genera_vettori(),
+        RADICE / DESTINAZIONE_VETTORI_RISCHIO: genera_vettori_rischio(),
     }
     scaduti = []
     for percorso, contenuto in uscite.items():
@@ -428,7 +577,9 @@ def main(argv) -> int:
     for percorso in uscite:
         print("scritto: " + os.path.relpath(percorso, RADICE).replace(os.sep, "/"))
     vettori = json.loads(uscite[RADICE / DESTINAZIONE_VETTORI])
+    rischio = json.loads(uscite[RADICE / DESTINAZIONE_VETTORI_RISCHIO])
     print(f"{vettori['casi']} casi di riscontro, parametri alla revisione {vettori['revisioneParametri']}")
+    print(f"{rischio['casi']} casi di rischio su {len(rischio['estrazioni'])} estrazioni, seme {rischio['semeEstrazioni']}")
     return 0
 
 
