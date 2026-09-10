@@ -6,7 +6,7 @@
 
 ```
 Branch attivo:         web
-Commit di riferimento: 201c68e, procedura di messa in rete
+Commit di riferimento: c69dce8, simulazione del rischio nel motore
 Ultimo aggiornamento:  2026-09-09
 Revisione fiscale:     2026-08-28, legge di bilancio 2026 (legge 199/2025)
 Verifica Euribor:      2026-09-01, serie BCE 1994-01 / 2026-08
@@ -28,7 +28,7 @@ Scopo:                 uso proprio piu' vendita a un'agenzia immobiliare, per AD
 Branch di lavoro:      web; fase uno e parte locale della fase due chiuse il 7 settembre
 ```
 
-Committato fino a `201c68e`, che porta la procedura di messa in rete in nove passi e il flusso che distribuisce. I tre commit del 7 settembre, che lo precedono, portano in ordine lo scopo commerciale con la piattaforma Cloudflare e la voce didattica 13, la fase uno cioè il motore TypeScript con i duecentoundici vettori, e la fase due in locale cioè schema, Worker e rotte autorizzate. Resta da committare il lavoro del 9 settembre, cioè la simulazione del rischio portata nel motore in due linguaggi: nuovi [`src/immobiliare/rischio.py`](../../src/immobiliare/rischio.py), [`tests/test_rischio.py`](../../tests/test_rischio.py), `app/src/motore/rischio.ts`, `app/test/rischio.test.ts`, `app/test/confronto.ts`, `app/test/vettori.rischio.json` e [`refactor-16-estrazioni-come-ingresso.md`](../context/refactor-16-estrazioni-come-ingresso.md), più le modifiche a [`tools/genera-motore.py`](../../tools/genera-motore.py), `app/test/motore.test.ts`, [`README.md`](../../README.md), [`CLAUDE.md`](../../CLAUDE.md), tre documenti sotto `docs/`, tre schede di contesto, [`decisions.md`](decisions.md) con ADR-026, [`progress.md`](progress.md) e questa scheda.
+Committato fino a `c69dce8`, che porta nel motore la simulazione del rischio in due linguaggi. L'albero è pulito e non resta nulla da committare. I quattro commit che lo precedono portano in ordine lo scopo commerciale con la piattaforma Cloudflare e la voce didattica 13, la fase uno cioè il motore TypeScript con i duecentoundici vettori, la fase due in locale cioè schema, Worker e rotte autorizzate, e la procedura di messa in rete in nove passi con il flusso che distribuisce.
 
 I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il commit del codice di calcolo che descrivono: nulla di quanto è seguito ha cambiato il modello.
 
@@ -87,7 +87,7 @@ Il materiale personale sta sotto `_notes/`, ignorato da git, con la mappa in [`_
 
 ## Punto di ripresa
 
-Il progetto ha due stati e conviene tenerli distinti. Lo strumento locale è completo, verificato e non ha voci di sviluppo aperte: workbook a ventun fogli che si ricalcola in Excel senza celle in errore, settantasette test verdi, e il quarto dei cinque limiti dichiarati chiuso il 4 settembre con il fattore comune nella simulazione del rischio. Su di esso il lavoro utile è uso e non sviluppo: manca la rendita catastale su tutti i quattordici immobili a registro, ed è il dato che sblocca il prezzo-valore, e l'aliquota IMU di Civitanova si legge aprendo il collegamento che `valuta.py comune --nome "Civitanova Marche"` costruisce, annotandola in `data/comuni-verifiche.csv` con la data.
+Il progetto ha due stati e conviene tenerli distinti. Lo strumento locale è completo, verificato e non ha voci di sviluppo aperte: workbook a ventun fogli che si ricalcola in Excel senza celle in errore, centosette test verdi, e il quarto dei cinque limiti dichiarati chiuso il 4 settembre con il fattore comune nella simulazione del rischio. Su di esso il lavoro utile è uso e non sviluppo: manca la rendita catastale su tutti i quattordici immobili a registro, ed è il dato che sblocca il prezzo-valore, e l'aliquota IMU di Civitanova si legge aprendo il collegamento che `valuta.py comune --nome "Civitanova Marche"` costruisce, annotandola in `data/comuni-verifiche.csv` con la data.
 
 Lo stato nuovo è la feature attiva, cioè il passaggio ad applicazione web autenticata su Cloudflare, con il doppio scopo di uso proprio e vendita a un'agenzia immobiliare. Vive sul branch `web`, allineato a `main`. È fatto tutto il lavoro che precede il codice: lo studio con le piattaforme misurate sulle fonti primarie, la scelta con il suo prezzo dichiarato in ADR-024, la scelta di prodotto in ADR-025, la riscrittura del vincolo di riservatezza, e la voce 13 dello studio didattico sul metodo di misura di una fascia gratuita. Nessuna riga dell'applicazione esiste ancora.
 
