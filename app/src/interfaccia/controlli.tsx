@@ -9,6 +9,28 @@
 
 import type { ReactNode } from "react";
 
+/**
+ * Un campo con la sua etichetta e, sotto, il testo che lo spiega.
+ *
+ * Il testo di aiuto sta fuori dall'etichetta e non dentro, ed e' una correzione fatta il 14
+ * settembre 2026 dopo che due prove non trovavano un campo per nome. Quando un `label` avvolge il
+ * suo controllo, il nome accessibile del controllo diventa tutto il testo contenuto: con l'aiuto
+ * dentro, il campo "Ruolo" si chiamava "Ruolo Tutto quello che fa un membro, piu' invitare e
+ * revocare colleghi...". Non lo trovava una prova, e non lo trova nemmeno chi naviga con un
+ * lettore di schermo, che se lo sente leggere per intero a ogni tabulazione.
+ */
+function Campo({ etichetta, controllo, nota }: { etichetta: string; controllo: ReactNode; nota?: ReactNode }) {
+  return (
+    <div className="campo">
+      <label>
+        <span>{etichetta}</span>
+        {controllo}
+      </label>
+      {nota && <small>{nota}</small>}
+    </div>
+  );
+}
+
 export function CampoTesto({
   etichetta,
   valore,
@@ -23,11 +45,13 @@ export function CampoTesto({
   nota?: ReactNode;
 }) {
   return (
-    <label>
-      <span>{etichetta}</span>
-      <input value={valore} placeholder={suggerimento} onChange={(e) => cambia(e.target.value)} />
-      {nota && <small>{nota}</small>}
-    </label>
+    <Campo
+      etichetta={etichetta}
+      nota={nota}
+      controllo={
+        <input value={valore} placeholder={suggerimento} onChange={(e) => cambia(e.target.value)} />
+      }
+    />
   );
 }
 
@@ -49,24 +73,26 @@ export function CampoNumero({
   nota?: ReactNode;
 }) {
   return (
-    <label>
-      <span>{etichetta}</span>
-      <input
-        type="number"
-        min={minimo}
-        max={massimo}
-        step={passo}
-        value={Number.isFinite(valore) ? valore : 0}
-        onChange={(e) => {
-          // Un campo numerico svuotato restituisce la stringa vuota, che diventerebbe NaN.
-          // Zero e' la lettura corretta di un campo vuoto in questo dominio: un costo che non
-          // si dichiara e' un costo che non c'e'.
-          const letto = Number(e.target.value);
-          cambia(Number.isFinite(letto) ? letto : 0);
-        }}
-      />
-      {nota && <small>{nota}</small>}
-    </label>
+    <Campo
+      etichetta={etichetta}
+      nota={nota}
+      controllo={
+        <input
+          type="number"
+          min={minimo}
+          max={massimo}
+          step={passo}
+          value={Number.isFinite(valore) ? valore : 0}
+          onChange={(e) => {
+            // Un campo numerico svuotato restituisce la stringa vuota, che diventerebbe NaN.
+            // Zero e' la lettura corretta di un campo vuoto in questo dominio: un costo che non
+            // si dichiara e' un costo che non c'e'.
+            const letto = Number(e.target.value);
+            cambia(Number.isFinite(letto) ? letto : 0);
+          }}
+        />
+      }
+    />
   );
 }
 
@@ -94,21 +120,23 @@ export function CampoPercentuale({
 }) {
   const mostrato = Number.isFinite(frazione) ? Math.round(frazione * 10_000) / 100 : 0;
   return (
-    <label>
-      <span>{etichetta}</span>
-      <input
-        type="number"
-        min={0}
-        max={massimo}
-        step={passo}
-        value={mostrato}
-        onChange={(e) => {
-          const letto = Number(e.target.value);
-          cambia(Number.isFinite(letto) ? letto / 100 : 0);
-        }}
-      />
-      {nota && <small>{nota}</small>}
-    </label>
+    <Campo
+      etichetta={etichetta}
+      nota={nota}
+      controllo={
+        <input
+          type="number"
+          min={0}
+          max={massimo}
+          step={passo}
+          value={mostrato}
+          onChange={(e) => {
+            const letto = Number(e.target.value);
+            cambia(Number.isFinite(letto) ? letto / 100 : 0);
+          }}
+        />
+      }
+    />
   );
 }
 

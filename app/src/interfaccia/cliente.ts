@@ -10,7 +10,13 @@
 // cliente vero contro un server finto, invece di esercitare un cliente finto.
 
 import type { Immobile, ImmobileInviato } from "../condiviso/immobile";
-import type { Ruolo } from "../condiviso/ruoli";
+import type {
+  AppartenenzaInviata,
+  Membro,
+  OrganizzazioneConMembri,
+  OrganizzazioneInviata,
+} from "../condiviso/organizzazione";
+import type { LivelloPiattaforma, Ruolo } from "../condiviso/ruoli";
 
 /** Un'appartenenza, cioe' un'organizzazione piu' il ruolo che vi si ha dentro. */
 export interface Appartenenza {
@@ -23,6 +29,15 @@ export interface Appartenenza {
 export interface Io {
   email: string;
   organizzazioni: Appartenenza[];
+  /**
+   * Il livello sulla piattaforma, o null per la stragrande maggioranza di chi entra.
+   *
+   * Arriva insieme alle appartenenze e non da una rotta propria, perche' l'interfaccia deve
+   * sapere se mostrare il pannello di amministrazione prima di poterlo chiedere: una rotta che
+   * rispondesse "non ti e' permesso" costringerebbe a interrogarla sempre e a trattare il
+   * rifiuto come un esito ordinario, che e' il modo in cui un rifiuto smette di essere notato.
+   */
+  livello: LivelloPiattaforma | null;
 }
 
 /**
@@ -64,6 +79,8 @@ async function esigi<T>(risposta: Response): Promise<T> {
   throw new ErroreApi(risposta.status, errori, messaggio);
 }
 
+const ORGANIZZAZIONI = "/api/piattaforma/organizzazioni";
+
 export function creaCliente(recupera: Recupero = RECUPERO_PREDEFINITO) {
   const json = (metodo: string, corpo: unknown): RequestInit => ({
     method: metodo,
@@ -71,7 +88,9 @@ export function creaCliente(recupera: Recupero = RECUPERO_PREDEFINITO) {
     body: JSON.stringify(corpo),
   });
 
-  const immobiliDi = (org: string) => `/api/organizzazioni/${encodeURIComponent(org)}/immobili`;
+  const sotto = (org: string) => `/api/organizzazioni/${encodeURIComponent(org)}`;
+  const immobiliDi = (org: string) => `${sotto(org)}/immobili`;
+  const membriDi = (org: string) => `${sotto(org)}/membri`;
 
   return {
     async io(): Promise<Io> {
@@ -101,6 +120,58 @@ export function creaCliente(recupera: Recupero = RECUPERO_PREDEFINITO) {
       await esigi<void>(
         await recupera(`${immobiliDi(org)}/${encodeURIComponent(id)}`, { method: "DELETE" }),
       );
+    },
+
+    // --- chi fa parte di un'organizzazione ---
+
+    async elencaMembri(org: string): Promise<Membro[]> {
+      const esito = await esigi<{ membri: Membro[] }>(await recupera(membriDi(org)));
+      return esito.membri;
+    },
+
+    /**
+     * Aggiunge un membro o ne cambia il ruolo, e restituisce l'elenco come e' rimasto.
+     *
+     * Una sola chiamata per le due cose, perche' dal punto di vista di chi amministra lo sono: si
+     * dichiara quale ruolo una persona deve avere, e che ci fosse gia' o no e' un dettaglio. Il
+     * server risponde con l'elenco completo invece che con la riga toccata, cosi' l'interfaccia
+     * non ricostruisce uno stato che il server conosce meglio di lei.
+     */
+    async scriviMembro(org: string, appartenenza: AppartenenzaInviata): Promise<Membro[]> {
+      const esito = await esigi<{ membri: Membro[] }>(
+        await recupera(membriDi(org), json("PUT", appartenenza)),
+      );
+      return esito.membri;
+    },
+
+    async rimuoviMembro(org: string, email: string): Promise<Membro[]> {
+      const esito = await esigi<{ membri: Membro[] }>(
+        await recupera(`${membriDi(org)}/${encodeURIComponent(email)}`, { method: "DELETE" }),
+      );
+      return esito.membri;
+    },
+
+    // --- l'amministrazione del prodotto ---
+
+    async elencaOrganizzazioni(): Promise<OrganizzazioneConMembri[]> {
+      const esito = await esigi<{ organizzazioni: OrganizzazioneConMembri[] }>(
+        await recupera(ORGANIZZAZIONI),
+      );
+      return esito.organizzazioni;
+    },
+
+    async creaOrganizzazione(nuova: OrganizzazioneInviata): Promise<OrganizzazioneConMembri[]> {
+      const esito = await esigi<{ organizzazioni: OrganizzazioneConMembri[] }>(
+        await recupera(ORGANIZZAZIONI, json("POST", nuova)),
+      );
+      return esito.organizzazioni;
+    },
+
+    async rimuoviOrganizzazione(id: string): Promise<OrganizzazioneConMembri[]> {
+      const esito = await esigi<{ organizzazioni: OrganizzazioneConMembri[] }>(
+        await recupera(`${ORGANIZZAZIONI}/${encodeURIComponent(id)}`, { method: "DELETE" }),
+      );
+      return esito.organizzazioni;
     },
   };
 }

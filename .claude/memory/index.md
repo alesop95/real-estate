@@ -18,9 +18,10 @@ Test:                  107 in Python: 52 motore e moduli, 26 struttura, 29 risch
 Motore TypeScript:     211 vettori di riscontro dal motore Python, tutti passati
 Simulazione rischio:   in Python e in TypeScript, 52 vettori su 64 estrazioni, accordo con
                        Excel entro 1,5e-13 sui trenta numeri del foglio
-Applicazione web:      132 prove verdi in due ambienti, schema, cinque rotte, interfaccia e
-                       due delle sei aree; niente di remoto
-Messa in rete:         procedura in nove passi scritta, flusso di distribuzione scritto, zero passi eseguiti
+Applicazione web:      174 prove verdi in due ambienti, schema a due migrazioni, undici rotte,
+                       interfaccia con due delle sei aree e l'amministrazione; niente di remoto
+Messa in rete:         procedura in nove passi, flusso di distribuzione verde; eseguito il passo 1,
+                       cioe' l'account senza metodo di pagamento
 Vault Obsidian:        aperto sulla radice, 48 note e 186 collegamenti, nessun orfano
 Parametri comunali:    imposta di soggiorno di Civitanova letta il 2026-09-04, IMU da leggere
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
@@ -30,9 +31,12 @@ Scopo:                 uso proprio piu' vendita a un'agenzia immobiliare, per AD
 Interfaccia:           React con TypeScript costruito da Vite, servito dal Worker come
                        risorse statiche; aree immobile e costo scritte, quattro da scrivere.
                        Il contesto di lavoro sta nel guscio, per ADR-028
-Regole condivise:      app/src/condiviso/, per ADR-027: forma dell'immobile, ruoli, forma del
-                       documento delle ipotesi, catalogo delle trenta verifiche e predefiniti
-                       delle dataclass di ingresso, questi ultimi due generati da Python
+Regole condivise:      app/src/condiviso/, per ADR-027: forma dell'immobile e dell'organizzazione,
+                       ruoli e livelli, forma del documento delle ipotesi, catalogo delle trenta
+                       verifiche e predefiniti delle dataclass, questi ultimi due generati da Python
+Livelli di accesso:    quattro, per ADR-029: lettore, membro e amministratore dentro
+                       un'organizzazione, piu' supporto e superamministratore sulla piattaforma.
+                       Il livello di piattaforma non legge i dati di alcuna organizzazione
 Branch di lavoro:      web; fase uno e parte locale della fase due chiuse il 7 settembre,
                        fase tre cominciata il 14 settembre
 ```
@@ -51,7 +55,7 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il 
 | [`.claude/context/dev-testing.md`](../context/dev-testing.md) | `tools/verifica-excel.ps1`, `tests/**` | aggiornata al 1 settembre, da ancorare al commit |
 | [`.claude/context/current-work.md`](../context/current-work.md) | feature attiva | aggiornata al 14 settembre con la fase tre e la prima area |
 | [`.claude/context/roadmap.md`](../context/roadmap.md) | direzione | aggiornata al 1 settembre, sezione "Prossimo" chiusa |
-| [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md) e i diciotto `refactor-NN` | evoluzioni strutturali del progetto | diciotto voci; la tredicesima è la prima che non nasce da una riga di codice e riguarda il metodo con cui si misura una fascia gratuita, la quattordicesima è il presidio fra le due implementazioni del motore, la quindicesima è l'autorizzazione dichiarata in un posto solo, la sedicesima è la casualità passata invece che contenuta, la diciassettesima è la regola che vale da due lati e si scrive una volta, la diciottesima è il contesto di lavoro che passa al guscio quando arriva la seconda area |
+| [`.claude/context/studio-didattico-master.md`](../context/studio-didattico-master.md) e i diciannove `refactor-NN` | evoluzioni strutturali del progetto | diciannove voci; la tredicesima è la prima che non nasce da una riga di codice e riguarda il metodo con cui si misura una fascia gratuita, la quattordicesima è il presidio fra le due implementazioni del motore, la quindicesima è l'autorizzazione dichiarata in un posto solo, la sedicesima è la casualità passata invece che contenuta, la diciassettesima è la regola che vale da due lati e si scrive una volta, la diciottesima è il contesto di lavoro che passa al guscio quando arriva la seconda area, la diciannovesima è il livello di piattaforma con il perimetro definito per sottrazione |
 | [`docs/manuale-operativo.md`](../../docs/manuale-operativo.md) | `tools/valuta.py`, registro, workbook | ogni comando, ogni campo, ogni foglio, diagnostica; include la catena dei tassi e la build LaTeX |
 | `docs/matematica/matematica-finanziaria.tex` | tutte le formule del modello | 32 pagine: capitolo sulla notazione per chi parte da zero, 27 paragrafi In parole, derivazioni, tavola simbolo-cella-funzione, caso svolto |
 | [`docs/da-zero.md`](../../docs/da-zero.md) | avvio, `tools/valuta.py` | allineata, include `tassi --risalita` e l'indice navigabile |
@@ -69,7 +73,7 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il 
 | [`docs/vault-obsidian.md`](../../docs/vault-obsidian.md) | il vault Obsidian aperto sulla radice | configurazione applicata, forma del grafo misurata invece che prevista, e la conversione dei riferimenti con i suoi limiti |
 | [`docs/architettura-web.md`](../../docs/architettura-web.md) | la scelta della piattaforma | lo studio con le fasce gratuite misurate e le alternative escluse; dall'8 settembre non tiene più la propria lista di passi e rimanda alla procedura |
 | [`docs/struttura-del-progetto.md`](../../docs/struttura-del-progetto.md) | `app/**`, la mappa del repository | scritta il 7 settembre, aggiornata l'8 con la cartella dei flussi di lavoro e il 14 con l'interfaccia, le sezioni e il modulo condiviso |
-| [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md) | la procedura verso l'esercizio | nove passi, ciascuno con ragione, azione, che cosa riportare e verifica; il registro in fondo dice zero passi eseguiti |
+| [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md) | la procedura verso l'esercizio | nove passi, ciascuno con ragione, azione, che cosa riportare e verifica; il registro in fondo dice che il passo 1 è chiuso, e il passo 8 dal 14 settembre si riduce a una sola scrittura a mano |
 | [`docs/fonti.md`](../../docs/fonti.md) | tutte | allineata, include l'uso della serie storica Euribor |
 
 ## Che cosa esiste e funziona

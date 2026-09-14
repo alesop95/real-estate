@@ -103,20 +103,23 @@ Che cosa fare. Riportare in `app/wrangler.toml` il nome della squadra e l'etiche
 
 Come si verifica. Dopo l'accesso da Access, l'indirizzo seguito da `/api/io` risponde con il proprio indirizzo di posta e un elenco vuoto di organizzazioni. L'elenco vuoto è corretto: l'identità esiste, l'appartenenza no.
 
-## Passo 8. La prima organizzazione, e la prima appartenenza
+## Passo 8. Il primo superamministratore, e tutto il resto dal pannello
 
-Perché esiste. Un utente autenticato che non appartiene a nessuna organizzazione entra e non vede niente, per costruzione. La prima organizzazione e la prima appartenenza si creano quindi dall'esterno, perché non esiste ancora una rotta per crearle: crearla adesso significherebbe esporre una scrittura che chiunque, appena entrato, potrebbe usare per fabbricarsi un'organizzazione. Verrà quando ci sarà un pannello di amministrazione con un ruolo che la protegge.
+Perché esiste. Un utente autenticato che non appartiene a nessuna organizzazione entra e non vede niente, per costruzione. Qualcuno deve quindi creare la prima organizzazione, e quel qualcuno non può essere una rotta aperta a chiunque entri, perché sarebbe una scrittura che il primo arrivato userebbe per fabbricarsi un'organizzazione. Fino al 14 settembre 2026 la risposta era inserire a mano nel database l'organizzazione e la sua prima appartenenza; dal 14 settembre esistono il livello di piattaforma e il pannello che lo usa, quindi la scrittura a mano si riduce a una sola riga, una volta sola nella vita del sistema: quella che dice chi amministra la piattaforma.
 
-Che cosa fare. È un'azione dell'ambiente di sviluppo, e sono due inserimenti nel database remoto da eseguire in quest'ordine, perché il secondo ha una chiave esterna verso il primo e invertirli produce un rifiuto dello schema, che è il comportamento voluto. L'indirizzo di posta è quello ammesso nella politica del passo sei, e deve coincidere carattere per carattere con quello che Access consegna, perché l'appartenenza è per posta elettronica e non per identificativo utente. L'identificativo dell'organizzazione lo si scrive a mano una volta sola e non cambia più: conviene breve e parlante, perché comparirà negli indirizzi delle rotte.
+Il perimetro di quel livello va conosciuto prima di attribuirlo, ed è ADR-029: un superamministratore crea e rimuove organizzazioni e ne nomina il primo amministratore, e non vede gli immobili di nessuna organizzazione di cui non sia membro. Se vuole vederli deve aggiungersi fra i suoi membri, e quell'aggiunta lascia una riga. Non è impossibilità, è tracciabilità, e la differenza va detta al cliente per intero.
+
+Che cosa fare. È un'azione dell'ambiente di sviluppo, ed è un inserimento solo. L'indirizzo di posta è quello ammesso nella politica del passo sei, e deve coincidere carattere per carattere con quello che Access consegna, perché il livello è per posta elettronica e non per identificativo utente; l'applicazione normalizza in minuscolo ciò che scrive lei, quindi anche qui si scrive in minuscolo.
 
 ```
-npx wrangler d1 execute valutazione-immobili --remote --command "INSERT INTO organizzazioni (id, nome, creata_il) VALUES ('org-propria', 'Organizzazione propria', datetime('now'))"
-npx wrangler d1 execute valutazione-immobili --remote --command "INSERT INTO membri (organizzazione_id, email, ruolo, aggiunto_il) VALUES ('org-propria', 'la-propria-posta@esempio.it', 'amministratore', datetime('now'))"
+npx wrangler d1 execute valutazione-immobili --remote --command "INSERT INTO gestori (email, livello, aggiunto_il) VALUES ('la-propria-posta@esempio.it', 'superamministratore', datetime('now'))"
 ```
 
-Il ruolo è amministratore e non membro, ed è una scelta e non una comodità: dei tre ruoli ammessi dallo schema è il solo che può cancellare un immobile, quindi la prima persona che entra deve averlo, altrimenti non esisterebbe nessuno in grado di disfare un proprio errore.
+Da qui in avanti non si scrive più nel database a mano. Si apre l'indirizzo dell'applicazione, si va alla voce Amministrazione, e nel pannello delle organizzazioni si crea la prima: identificativo, nome e primo amministratore, che è obbligatorio. Le due scritture, cioè l'organizzazione e la sua prima appartenenza, partono insieme in un lotto, perché un'organizzazione creata senza amministratore sarebbe un'organizzazione che nessuno può amministrare, e ripararla richiederebbe di nuovo una scrittura a mano.
 
-Come si verifica. L'indirizzo seguito da `/api/io` risponde con un'organizzazione e il ruolo di amministratore, e la rotta degli immobili di quell'organizzazione risponde con un elenco vuoto invece che con un rifiuto.
+Il ruolo del primo amministratore è amministratore e non membro, ed è una scelta e non una comodità: dei tre ruoli è il solo che può eliminare un immobile e cambiare chi fa parte dell'organizzazione, quindi la prima persona che entra deve averlo, altrimenti non esisterebbe nessuno in grado di disfare un proprio errore. Un'organizzazione non può nemmeno restare senza amministratori dopo: revocare o retrocedere l'ultimo viene rifiutato con un messaggio che dice di nominarne un altro prima.
+
+Come si verifica. L'indirizzo seguito da `/api/io` risponde con il proprio indirizzo di posta e il livello `superamministratore`, e con un elenco di organizzazioni vuoto finché non ce se ne aggiunge a una: l'elenco vuoto accanto al livello pieno è la prova che le due cose sono separate davvero. Creata la prima organizzazione dal pannello, la rotta dei suoi immobili risponde con un elenco vuoto invece che con un rifiuto a chi ne è stato nominato amministratore.
 
 ## Passo 9. La distribuzione automatica dal repository
 
@@ -134,14 +137,14 @@ Una riga per passo, con la data e l'esito. Si aggiorna appena un passo si chiude
 
 | Passo | Stato | Data | Esito e valori |
 |---|---|---|---|
-| 1. Account senza metodo di pagamento | da fare | | |
+| 1. Account senza metodo di pagamento | fatto | 2026-09-14 | Account nuovo, creato con una registrazione ordinaria. Nessun metodo di pagamento collegato, e nessuno da scollegare: la gratuità è quindi una proprietà dell'account e non una promessa da sorvegliare. |
 | 2. Riga di comando autorizzata | da fare | | |
 | 3. Database creato | da fare | | |
 | 4. Schema applicato in locale e in remoto | da fare | | |
 | 5. Prima distribuzione, rifiuto predefinito verificato | da fare | | |
 | 6. Zero Trust e politica di accesso | da fare | | |
 | 7. Applicazione configurata con squadra e destinatario | da fare | | |
-| 8. Prima organizzazione e prima appartenenza | da fare | | |
+| 8. Primo superamministratore, e prima organizzazione dal pannello | da fare | | |
 | 9. Distribuzione automatica dal repository | da fare | | |
 
 ## Dove finiscono i valori

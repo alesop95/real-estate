@@ -195,6 +195,21 @@ small {
   color: var(--text-secondary);
 }
 
+/* Il testo di aiuto sta accanto all'etichetta e non dentro, perche' un `label` che avvolge il
+   proprio controllo gli presta tutto il testo che contiene come nome accessibile. Il contenitore
+   serve a tenere insieme i due, che restano una cosa sola per chi guarda. */
+.campo {
+  margin-bottom: 1rem;
+}
+
+.campo label {
+  margin-bottom: 0;
+}
+
+.campo small {
+  margin-top: 0.3rem;
+}
+
 fieldset {
   border: 1px solid var(--border-clean);
   border-radius: var(--raggio);
@@ -608,4 +623,65 @@ main {
 .vuoto {
   color: var(--text-secondary);
   font-size: 0.9rem;
+}
+
+/* --- amministrazione --- */
+
+.amministrazione {
+  display: grid;
+  gap: var(--pad-scheda);
+  max-width: 64rem;
+}
+
+.aree .area.amministra {
+  margin-left: auto;
+}
+
+table.membri {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--pad-scheda);
+}
+
+table.membri th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border-clean);
+}
+
+table.membri td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--border-clean);
+  vertical-align: middle;
+}
+
+table.membri td select {
+  width: auto;
+  min-width: 9rem;
+}
+
+table.membri .identificativo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Un'organizzazione senza amministratori non e' un caso che l'applicazione possa produrre, per
+   l'invariante difeso in membri.ts: se compare, viene da una scrittura fatta fuori di qui, e va
+   vista subito perche' nessuno la puo' piu' amministrare dal pannello. */
+.senza-amministratore {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--semantic-negative);
+}
+
+.conferma-in-riga {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
 }

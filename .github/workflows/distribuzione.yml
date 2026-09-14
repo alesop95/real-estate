@@ -27,9 +27,9 @@ jobs:
     name: Prove del motore, delle rotte e dei limiti
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: npm
@@ -52,7 +52,7 @@ jobs:
         working-directory: app
         run: npm test
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
@@ -74,9 +74,9 @@ jobs:
     # resta per la prima volta.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: npm
@@ -85,6 +85,22 @@ jobs:
       - name: Installazione delle dipendenze
         working-directory: app
         run: npm ci
+
+      # Il controllo che il segnaposto non arrivi in esercizio sta qui e non fra le prove, ed e'
+      # una correzione del 14 settembre 2026. Era un'asserzione dentro test/limiti.test.ts, in
+      # forma di "se la variabile CI vale true allora l'identificativo non deve essere il
+      # segnaposto": su CI ci si arriva a ogni spinta, quindi il flusso risultava rosso a ogni
+      # corsa mentre il lavoro di distribuzione veniva correttamente saltato, e un presidio che
+      # suona sempre e' un presidio che si impara a ignorare. Qui suona una volta sola, nel
+      # momento in cui conta, e rifiuta cio' che va rifiutato invece di colorare di rosso una
+      # corsa che non distribuiva niente.
+      - name: L'identificativo del database non e' un segnaposto
+        working-directory: app
+        run: |
+          if grep -q 'database_id = "da-compilare-alla-creazione"' wrangler.toml; then
+            echo "::error::wrangler.toml porta ancora il segnaposto dell'identificativo D1. Eseguire il passo 3 di docs/messa-in-rete.md e riportare l'identificativo vero prima di distribuire."
+            exit 1
+          fi
 
       # L'interfaccia si costruisce qui e non si versiona: wrangler distribuisce il
       # contenuto di app/statico/, che senza questo passo sarebbe vuoto. Distribuire un

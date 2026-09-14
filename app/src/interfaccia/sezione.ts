@@ -9,7 +9,9 @@
 // all'altra.
 
 import type { Immobile, ImmobileInviato } from "../condiviso/immobile";
-import type { Ruolo } from "../condiviso/ruoli";
+import type { LivelloPiattaforma, Ruolo } from "../condiviso/ruoli";
+
+import type { Cliente } from "./cliente";
 
 export interface ProprietaSezione {
   /** L'immobile aperto, oppure null quando si sta creando il primo o uno nuovo. */
@@ -27,4 +29,25 @@ export interface ProprietaSezione {
    * cioe' una funzione che non fa niente, lascerebbe all'area il compito di ricordarsene.
    */
   rimuovi: (() => Promise<void>) | null;
+}
+
+/**
+ * Che cosa riceve la schermata di amministrazione, che non e' una delle sei aree.
+ *
+ * Ha un contratto proprio e non riusa quello sopra, e la differenza non e' burocratica: le sei
+ * aree lavorano su un immobile, questa lavora su chi puo' vedere gli immobili. Allargare
+ * `ProprietaSezione` con il cliente e l'organizzazione per farci stare anche questa avrebbe
+ * consegnato il cliente anche alle sei, cioe' rimesso in mano a ciascuna la possibilita' di
+ * caricarsi l'elenco e scegliersi l'immobile per conto proprio, che e' precisamente cio' che
+ * ADR-028 toglie. Due contratti distinti costano una interfaccia in piu' e conservano il
+ * vincolo dove serve.
+ */
+export interface ProprietaAmministrazione {
+  cliente: Cliente;
+  /** L'organizzazione aperta, o null se chi guarda non appartiene a nessuna. */
+  organizzazione: string | null;
+  /** Il ruolo dentro quell'organizzazione, o null per la stessa ragione. */
+  ruolo: Ruolo | null;
+  /** Il livello sulla piattaforma, o null per la stragrande maggioranza di chi entra. */
+  livello: LivelloPiattaforma | null;
 }

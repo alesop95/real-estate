@@ -9,6 +9,7 @@ import { applyD1Migrations, env } from "cloudflare:test";
 import { beforeEach } from "vitest";
 
 beforeEach(async () => {
+  await env.DB.exec("DROP TABLE IF EXISTS gestori");
   await env.DB.exec("DROP TABLE IF EXISTS immobili");
   await env.DB.exec("DROP TABLE IF EXISTS membri");
   await env.DB.exec("DROP TABLE IF EXISTS organizzazioni");

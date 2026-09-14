@@ -21,7 +21,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { ImmobileInviato } from "../condiviso/immobile";
-import { NOME_RUOLO, ruoloSufficiente } from "../condiviso/ruoli";
+import { NOME_LIVELLO, NOME_RUOLO, ruoloSufficiente } from "../condiviso/ruoli";
+import { SezioneAmministrazione } from "../sezioni/amministrazione/sezione";
 import { SezioneCosto } from "../sezioni/costo/sezione";
 import { SezioneImmobile } from "../sezioni/immobile/sezione";
 import { useImmobili } from "../sezioni/immobile/hook";
@@ -35,6 +36,15 @@ interface Proprieta {
   /** Iniettabile: le prove passano un cliente che parla con un server finto. */
   cliente?: Cliente;
 }
+
+/**
+ * La chiave della schermata di amministrazione.
+ *
+ * Non sta in AREE e la ragione e' scritta in ProprietaAmministrazione: non lavora su un immobile,
+ * lavora su chi puo' vederli. Compare in coda alla navigazione, e per la maggior parte delle
+ * persone quel che ci trovano e' soltanto con chi condividono l'archivio.
+ */
+const AMMINISTRAZIONE = "amministrazione";
 
 export function Applicazione({ cliente: clienteEsterno }: Proprieta = {}) {
   const cliente = useMemo(() => clienteEsterno ?? creaCliente(), [clienteEsterno]);
@@ -83,7 +93,14 @@ export function Applicazione({ cliente: clienteEsterno }: Proprieta = {}) {
     );
   }
 
-  if (!io || io.organizzazioni.length === 0) {
+  // Chi non appartiene a nulla e non ha nemmeno un livello di piattaforma non ha niente da
+  // vedere, ed e' il comportamento voluto dallo schema. Chi un livello ce l'ha invece prosegue,
+  // anche senza appartenenze: e' il caso del primo superamministratore, che prima di creare
+  // qualunque organizzazione non ne ha nessuna, e che fermato qui non potrebbe mai arrivare al
+  // pannello con cui se ne crea una. E' il difetto piu' facile da introdurre in un pannello di
+  // amministrazione, perche' si manifesta una volta sola, all'inizio, quando non c'e' ancora
+  // nessuno che possa accorgersene.
+  if (!io || (io.organizzazioni.length === 0 && !io.livello)) {
     return (
       <main className="avvio">
         <h1>Sei entrato, ma non appartieni ancora a nessuna organizzazione</h1>
@@ -126,7 +143,11 @@ function Scrivania({
   cambiaOrganizzazione: (id: string) => void;
 }) {
   const elenco = useImmobili(cliente, organizzazione);
-  const [area, setArea] = useState<string>("immobile");
+  // Chi entra senza appartenenze ma con un livello di piattaforma parte dall'amministrazione, che
+  // e' la sola schermata che per lui abbia qualcosa dentro.
+  const [area, setArea] = useState<string>(
+    io.organizzazioni.length === 0 ? AMMINISTRAZIONE : "immobile",
+  );
   const [sceltoId, setSceltoId] = useState<string | null>(null);
 
   const appartenenza = io.organizzazioni.find((o) => o.id === organizzazione) ?? null;
@@ -166,6 +187,7 @@ function Scrivania({
   };
 
   const aperta = AREE.find((a) => a.chiave === area) ?? AREE[0];
+  const suAmministrazione = area === AMMINISTRAZIONE;
 
   return (
     <div className="guscio">
@@ -187,11 +209,14 @@ function Scrivania({
               </select>
             </label>
           ) : (
-            <span className="organizzazione">{io.organizzazioni[0].nome}</span>
+            <span className="organizzazione">
+              {io.organizzazioni[0]?.nome ?? "nessuna organizzazione"}
+            </span>
           )}
           <span className="chi">
             {io.email}
             {appartenenza ? ` - ${NOME_RUOLO[appartenenza.ruolo]}` : ""}
+            {io.livello ? ` - ${NOME_LIVELLO[io.livello]} della piattaforma` : ""}
           </span>
         </div>
       </header>
@@ -209,8 +234,26 @@ function Scrivania({
             {!a.disponibile && <span className="dopo">in arrivo</span>}
           </button>
         ))}
+        <button
+          type="button"
+          className={suAmministrazione ? "area scelta amministra" : "area amministra"}
+          onClick={() => setArea(AMMINISTRAZIONE)}
+          title="Chi fa parte dell'organizzazione, e le organizzazioni che esistono"
+        >
+          Amministrazione
+        </button>
       </nav>
 
+      {suAmministrazione ? (
+        <main>
+          <SezioneAmministrazione
+            cliente={cliente}
+            organizzazione={organizzazione}
+            ruolo={appartenenza?.ruolo ?? null}
+            livello={io.livello}
+          />
+        </main>
+      ) : (
       <main className="scrivania">
         <Elenco
           immobili={elenco.immobili}
@@ -235,6 +278,7 @@ function Scrivania({
           </section>
         )}
       </main>
+      )}
     </div>
   );
 }

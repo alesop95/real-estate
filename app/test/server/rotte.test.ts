@@ -11,25 +11,9 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import applicazione from "../../src/server/indice";
 import { registro, ruoloSufficiente } from "../../src/server/autorizzazione";
 
-const AMBIENTE = { ...env, MODALITA: "sviluppo" };
-
-/** Una richiesta come la manderebbe il browser, con l'identita' della modalita' sviluppo. */
-function richiesta(metodo: string, percorso: string, email: string | null, corpo?: unknown): Request {
-  const intestazioni: Record<string, string> = { "Content-Type": "application/json" };
-  if (email) intestazioni["X-Utente-Sviluppo"] = email;
-  return new Request(`https://prova.invalid${percorso}`, {
-    method: metodo,
-    headers: intestazioni,
-    body: corpo === undefined ? undefined : JSON.stringify(corpo),
-  });
-}
-
-async function chiama(metodo: string, percorso: string, email: string | null, corpo?: unknown): Promise<Response> {
-  return applicazione.fetch(richiesta(metodo, percorso, email, corpo), AMBIENTE);
-}
+import { chiama, popolaDueOrganizzazioni } from "./chiamate";
 
 const IMMOBILE = {
   titolo: "Monolocale in centro",
@@ -43,18 +27,7 @@ const IMMOBILE = {
   ipotesi: { orizzonte_anni: 25, gestione: { regime: "cedolare_libero" } },
 };
 
-beforeEach(async () => {
-  // Due organizzazioni con tre persone: e' il minimo per poter dimostrare un isolamento.
-  // Con una sola organizzazione ogni prova passerebbe anche senza filtri.
-  await env.DB.batch([
-    env.DB.prepare("INSERT INTO organizzazioni (id, nome, creata_il) VALUES (?, ?, ?)").bind("agenzia-a", "Agenzia A", "2026-09-07"),
-    env.DB.prepare("INSERT INTO organizzazioni (id, nome, creata_il) VALUES (?, ?, ?)").bind("agenzia-b", "Agenzia B", "2026-09-07"),
-    env.DB.prepare("INSERT INTO membri (organizzazione_id, email, ruolo, aggiunto_il) VALUES (?, ?, ?, ?)").bind("agenzia-a", "capo@a.invalid", "amministratore", "2026-09-07"),
-    env.DB.prepare("INSERT INTO membri (organizzazione_id, email, ruolo, aggiunto_il) VALUES (?, ?, ?, ?)").bind("agenzia-a", "socio@a.invalid", "membro", "2026-09-07"),
-    env.DB.prepare("INSERT INTO membri (organizzazione_id, email, ruolo, aggiunto_il) VALUES (?, ?, ?, ?)").bind("agenzia-a", "ospite@a.invalid", "lettore", "2026-09-07"),
-    env.DB.prepare("INSERT INTO membri (organizzazione_id, email, ruolo, aggiunto_il) VALUES (?, ?, ?, ?)").bind("agenzia-b", "capo@b.invalid", "amministratore", "2026-09-07"),
-  ]);
-});
+beforeEach(popolaDueOrganizzazioni);
 
 describe("identita' e appartenenza", () => {
   it("senza identita' non si entra da nessuna parte", async () => {
@@ -229,18 +202,47 @@ describe("integrita' del database", () => {
 });
 
 describe("il registro delle rotte", () => {
-  it("ogni rotta sotto un'organizzazione dichiara il proprio ruolo minimo", () => {
-    // Il registro esiste per questo: non si puo' scrivere una rotta autorizzata senza
-    // passare da `rotta`, e `rotta` pretende il ruolo. Il test verifica che nessuna rotta
-    // sia stata aggiunta altrove, cioe' che il numero e le forme siano quelle attese.
-    expect(registro).toHaveLength(5);
+  it("ogni rotta dichiara il proprio requisito, e il requisito e' di una delle due famiglie", () => {
+    // Il registro esiste per questo: non si puo' scrivere una rotta autorizzata senza passare da
+    // `rotta` o da `rottaPiattaforma`, ed entrambe pretendono il requisito. Il test verifica che
+    // nessuna rotta sia stata aggiunta altrove, cioe' che il numero e le forme siano quelle attese.
+    expect(registro).toHaveLength(11);
     for (const r of registro) {
-      expect(r.percorso.startsWith("/api/organizzazioni/:org/")).toBe(true);
-      expect(["lettore", "membro", "amministratore"]).toContain(r.ruoloMinimo);
+      if (r.requisito.tipo === "organizzazione") {
+        expect(r.percorso.startsWith("/api/organizzazioni/:org/")).toBe(true);
+        expect(["lettore", "membro", "amministratore"]).toContain(r.requisito.ruoloMinimo);
+      } else {
+        expect(r.percorso.startsWith("/api/piattaforma/")).toBe(true);
+        expect(["supporto", "superamministratore"]).toContain(r.requisito.livelloMinimo);
+      }
     }
-    const scritture = registro.filter((r) => r.metodo !== "get");
-    expect(scritture.every((r) => r.ruoloMinimo !== "lettore")).toBe(true);
+  });
+
+  it("nessuna scrittura sotto un'organizzazione si accontenta del lettore", () => {
+    const scritture = registro.filter(
+      (r) => r.metodo !== "get" && r.requisito.tipo === "organizzazione",
+    );
+    expect(scritture.length).toBeGreaterThan(0);
+    expect(
+      scritture.every((r) => r.requisito.tipo === "organizzazione" && r.requisito.ruoloMinimo !== "lettore"),
+    ).toBe(true);
+  });
+
+  it("ogni cancellazione chiede il livello piu' alto della sua famiglia", () => {
     const cancellazioni = registro.filter((r) => r.metodo === "delete");
-    expect(cancellazioni.every((r) => r.ruoloMinimo === "amministratore")).toBe(true);
+    expect(cancellazioni.length).toBeGreaterThan(0);
+    for (const r of cancellazioni) {
+      if (r.requisito.tipo === "organizzazione") expect(r.requisito.ruoloMinimo).toBe("amministratore");
+      else expect(r.requisito.livelloMinimo).toBe("superamministratore");
+    }
+  });
+
+  it("nessuna rotta di piattaforma vive sotto un'organizzazione, e viceversa", () => {
+    // E' la separazione di ADR-029 vista dal registro: le due famiglie non si mescolano nemmeno
+    // negli indirizzi, cosi' che leggere un percorso basti a sapere quale porta si sta aprendo.
+    for (const r of registro) {
+      const sottoOrganizzazione = r.percorso.startsWith("/api/organizzazioni/");
+      expect(sottoOrganizzazione).toBe(r.requisito.tipo === "organizzazione");
+    }
   });
 });

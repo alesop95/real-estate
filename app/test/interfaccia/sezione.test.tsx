@@ -8,8 +8,9 @@
 // quando cambia l'immobile aperto, e la corsa fra due caricamenti. Tutto il resto e' gia' provato
 // senza browser, e riprovarlo attraverso un clic costerebbe di piu' e verificherebbe di meno.
 
-import { cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
-import { act } from "react";
+// `act` si prende dalla libreria di prova e non da React: quella di React non dichiara da se'
+// l'ambiente di prova, e la resa emetteva a ogni corsa l'avviso "not configured to support act".
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Immobile } from "../../src/condiviso/immobile";

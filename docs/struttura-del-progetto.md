@@ -31,7 +31,7 @@ real-estate/
   app/                  l'applicazione web
     src/motore/         il porto TypeScript del modello, piu' esitoCompleto e il rischio
     src/condiviso/      le regole che il Worker e il browser applicano entrambi
-    src/server/         il Worker: identita', autorizzazione, rotte
+    src/server/         il Worker: identita', autorizzazione, rotte di dati e di piattaforma
     src/interfaccia/    il guscio: cliente, elenco, ciclo di bozza, controlli, stile
     src/sezioni/        una cartella per area, con sezione, modello e tipi
     migrazioni/         lo schema del database, un file per passo
@@ -61,7 +61,9 @@ Il percorso di una richiesta è la cosa da capire per prima, perché su questa p
 
 Chi apre l'indirizzo incontra Cloudflare Access, che non è codice nostro. Se non ha una sessione valida gli viene chiesto di identificarsi, con un codice monouso spedito alla sua posta o con un fornitore di identità esterno. Superato quel passaggio, ogni richiesta che arriva al Worker porta un token firmato che dice chi è quella persona.
 
-Il Worker fa tre cose, in quest'ordine, e sono in tre file diversi apposta. Verifica il token e ne ricava un indirizzo di posta, in `identita.ts`. Risolve l'appartenenza di quell'indirizzo all'organizzazione richiesta e il suo ruolo, in `autorizzazione.ts`. Solo allora esegue il gestore della rotta, in `immobili.ts`, che riceve un contesto già autorizzato e non ha modo di vedere la richiesta grezza.
+Il Worker fa tre cose, in quest'ordine, e sono in tre file diversi apposta. Verifica il token e ne ricava un indirizzo di posta, in `identita.ts`. Risolve l'appartenenza di quell'indirizzo all'organizzazione richiesta e il suo ruolo, in `autorizzazione.ts`. Solo allora esegue il gestore della rotta, in `immobili.ts` o in `membri.ts`, che riceve un contesto già autorizzato e non ha modo di vedere la richiesta grezza.
+
+Dal 14 settembre 2026 le famiglie di rotte sono due, per ADR-029, e la differenza va conosciuta perché è una difesa e non una classificazione. Le rotte sotto un'organizzazione toccano i dati e chiedono un ruolo; quelle di piattaforma, in `piattaforma.ts`, toccano il registro delle organizzazioni e chiedono un livello. Le due non si sommano e non si implicano: un superamministratore crea l'organizzazione di un cliente e ne nomina l'amministratore, e non ne legge gli immobili. Se vuole leggerli deve aggiungersi fra i membri, e l'aggiunta lascia una riga; la protezione è quindi tracciabilità e non impossibilità, e vale dirlo per intero perché le due promesse si confondono con facilità.
 
 Il calcolo non passa da qui. Gira nel browser, con il motore TypeScript, sui dati che l'utente ha inserito. Il server conserva gli input e non conserva nessun risultato, ed è una scelta di cui parla la sezione seguente.
 
