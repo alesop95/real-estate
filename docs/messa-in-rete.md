@@ -24,7 +24,7 @@ Come si verifica. Alla voce Workers del pannello il piano indicato è "Free". Ne
 
 Perché esiste. Da qui in avanti si potrebbe fare tutto dal pannello a video, e sarebbe la strada sbagliata: ogni configurazione fatta cliccando esiste in un posto solo, non lascia traccia nel repository e non si può rifare su un altro account senza ricordarsela. Con la riga di comando, invece, la configurazione atterra in `app/wrangler.toml`, che è versionato, e la stessa applicazione si ricrea da zero altrove eseguendo gli stessi comandi. È lo stesso principio per cui in questo progetto il workbook si genera da codice invece di essere modificato a mano.
 
-Che cosa fare. Dalla cartella `app/`, eseguire il comando di accesso. Si apre il browser, si conferma l'autorizzazione con l'account del passo uno, e la riga di comando conserva un token locale.
+Che cosa fare. Dalla cartella `app/`, eseguire il comando di accesso. Si apre il browser, si conferma l'autorizzazione con l'account del passo uno, e la riga di comando conserva un token locale. Che cosa succeda esattamente in quei pochi secondi, dove finisca il token e che cosa significhi ciascuno dei quindici permessi che la pagina elenca, sta in [`wrangler.md`](wrangler.md), che è la scheda da leggere la prima volta che si esegue un comando di questo strumento.
 
 ```
 npx wrangler login
@@ -138,7 +138,7 @@ Una riga per passo, con la data e l'esito. Si aggiorna appena un passo si chiude
 | Passo | Stato | Data | Esito e valori |
 |---|---|---|---|
 | 1. Account senza metodo di pagamento | fatto | 2026-09-14 | Account nuovo, creato con una registrazione ordinaria. Nessun metodo di pagamento collegato, e nessuno da scollegare: la gratuità è quindi una proprietà dell'account e non una promessa da sorvegliare. |
-| 2. Riga di comando autorizzata | da fare | | |
+| 2. Riga di comando autorizzata | fatto | 2026-09-14 | Accesso OAuth concesso dal browser e token salvato nel profilo utente della macchina di sviluppo. `whoami` conferma l'account della registrazione del passo 1, con i quindici permessi predefiniti di Wrangler. L'identificativo dell'account non è trascritto qui perché il repository è pubblico e perché non serve: con l'accesso interattivo wrangler lo ricava da sé, e la riga che lo dichiarerebbe in `app/wrangler.toml` resta commentata. |
 | 3. Database creato | da fare | | |
 | 4. Schema applicato in locale e in remoto | da fare | | |
 | 5. Prima distribuzione, rifiuto predefinito verificato | da fare | | |

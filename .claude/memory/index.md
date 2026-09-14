@@ -20,8 +20,8 @@ Simulazione rischio:   in Python e in TypeScript, 52 vettori su 64 estrazioni, a
                        Excel entro 1,5e-13 sui trenta numeri del foglio
 Applicazione web:      174 prove verdi in due ambienti, schema a due migrazioni, undici rotte,
                        interfaccia con due delle sei aree e l'amministrazione; niente di remoto
-Messa in rete:         procedura in nove passi, flusso di distribuzione verde; eseguito il passo 1,
-                       cioe' l'account senza metodo di pagamento
+Messa in rete:         procedura in nove passi, flusso di distribuzione verde; eseguiti i passi 1 e 2,
+                       cioe' l'account senza metodo di pagamento e la riga di comando autorizzata
 Vault Obsidian:        aperto sulla radice, 48 note e 186 collegamenti, nessun orfano
 Parametri comunali:    imposta di soggiorno di Civitanova letta il 2026-09-04, IMU da leggere
 Workbook:              21 fogli, ricalcolato con Excel, nessuna cella in errore
@@ -69,10 +69,11 @@ I frontmatter delle schede di contesto restano ancorati ad `a0b3420`, che è il 
 | [`docs/comprare-in-piu-persone.md`](../../docs/comprare-in-piu-persone.md) | foglio Comproprietà | allineata |
 | [`docs/guida-al-workbook.md`](../../docs/guida-al-workbook.md) | workbook, tutti i fogli | nata il 3 settembre dalla fusione delle due guide d'uso, in tre parti |
 | [`docs/guida-tecnica(catena-calcolo-e-normativa).md`](<../../docs/guida-tecnica(catena-calcolo-e-normativa).md>) | workbook e `src/**` | allineata a ventun fogli |
-| [`docs/README.md`](../../docs/README.md) | indice della documentazione | i quattro percorsi di lettura e i diciotto documenti per tipo di domanda; dal 3 settembre ogni nome citato è un collegamento vero |
+| [`docs/README.md`](../../docs/README.md) | indice della documentazione | i quattro percorsi di lettura e i diciannove documenti per tipo di domanda; dal 3 settembre ogni nome citato è un collegamento vero |
 | [`docs/vault-obsidian.md`](../../docs/vault-obsidian.md) | il vault Obsidian aperto sulla radice | configurazione applicata, forma del grafo misurata invece che prevista, e la conversione dei riferimenti con i suoi limiti |
 | [`docs/architettura-web.md`](../../docs/architettura-web.md) | la scelta della piattaforma | lo studio con le fasce gratuite misurate e le alternative escluse; dall'8 settembre non tiene più la propria lista di passi e rimanda alla procedura |
 | [`docs/struttura-del-progetto.md`](../../docs/struttura-del-progetto.md) | `app/**`, la mappa del repository | scritta il 7 settembre, aggiornata l'8 con la cartella dei flussi di lavoro e il 14 con l'interfaccia, le sezioni e il modulo condiviso |
+| [`docs/wrangler.md`](../../docs/wrangler.md) | `app/wrangler.toml`, i comandi di Cloudflare | scritta il 14 settembre: che cosa succede durante l'accesso, dove vive il token, i quindici permessi uno per uno, locale contro remoto, ogni comando con la sua diagnostica |
 | [`docs/messa-in-rete.md`](../../docs/messa-in-rete.md) | la procedura verso l'esercizio | nove passi, ciascuno con ragione, azione, che cosa riportare e verifica; il registro in fondo dice che il passo 1 è chiuso, e il passo 8 dal 14 settembre si riduce a una sola scrittura a mano |
 | [`docs/fonti.md`](../../docs/fonti.md) | tutte | allineata, include l'uso della serie storica Euribor |
 

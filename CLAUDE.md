@@ -79,7 +79,7 @@ Schede di dominio, sotto `docs/`. Sono la parte di conoscenza del progetto: spie
 
 ```
 docs/README.md               indice della documentazione: i quattro percorsi di lettura,
-                              i diciotto documenti per tipo di domanda, le sovrapposizioni note
+                              i diciannove documenti per tipo di domanda, le sovrapposizioni note
 docs/da-zero.md              avvio da zero: cosa installare, quali documenti procurarsi,
                               la prima valutazione completa in sette passi
 docs/fiscalita-acquisto.md   imposte di trasferimento, prezzo-valore, prima casa, mutuo,
@@ -124,6 +124,9 @@ docs/struttura-del-progetto.md
                               presidio che le lega, le tre decisioni di architettura, come si prova
 docs/messa-in-rete.md        procedura passo per passo per portare l'applicazione in rete, con la
                               ragione di ogni passo e il registro di cio' che e' stato fatto
+docs/wrangler.md             lo strumento a riga di comando di Cloudflare spiegato da zero: che cosa
+                              succede durante l'accesso, dove vive il token, i quindici permessi uno
+                              per uno, locale contro remoto, ogni comando e la sua diagnostica
 docs/fonti.md                registro completo delle fonti: cosa fornisce ciascuna, dove
                               atterra nel codice o nel workbook, stato di verifica, lacune
 ```

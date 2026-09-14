@@ -20,7 +20,7 @@ Tenerli separati è una scelta e non un accumulo: la stessa cosa spiegata in due
 
 **Devo intervenire sul codice, o verificare un calcolo.** [`guida-tecnica(catena-calcolo-e-normativa).md`](<guida-tecnica(catena-calcolo-e-normativa).md>) per l'architettura e il riferimento di ogni voce, `matematica/matematica-finanziaria.tex` per le derivazioni, [`metodo-e-metriche.md`](metodo-e-metriche.md) per le scelte metodologiche.
 
-## I diciotto documenti
+## I diciannove documenti
 
 ### Guide d'uso, per chi usa lo strumento
 
@@ -54,6 +54,7 @@ Sono la parte di conoscenza del progetto: spiegano la materia, non il codice. Si
 | [`vault-obsidian.md`](vault-obsidian.md) | Come questa cartella si dispone in un vault Obsidian: la struttura, i due hub, il frontmatter già presente, che cosa si rompe e la configurazione minima. Si legge se si valuta di aprire il progetto in Obsidian. |
 | [`struttura-del-progetto.md`](struttura-del-progetto.md) | La mappa del repository e la ragione di ogni cartella: le due basi di codice, Python come riferimento e TypeScript come porto, il presidio che le tiene allineate, le tre decisioni di architettura dell'applicazione, e come si prova senza account. Si apre prima di toccare un file la prima volta, e quando si aggiunge una cartella. |
 | [`messa-in-rete.md`](messa-in-rete.md) | La procedura per portare l'applicazione dal disco al proprio indirizzo, passo per passo: per ciascuno la ragione tecnologica, l'azione esatta, che cosa riportare e come si verifica. In fondo il registro di ciò che è stato fatto, con le date. Si apre quando si esegue un passo, e quando si vuole sapere che cosa era stato fatto. |
+| [`wrangler.md`](wrangler.md) | Lo strumento a riga di comando con cui si parla con Cloudflare, spiegato da zero: che cos'è e perché non si fa tutto dal pannello, che cosa succede davvero durante l'accesso, dove vive il token e che cosa significa ciascuno dei quindici permessi, la differenza fra locale e remoto, ogni comando del progetto con quello che fa e quello che stampa, e la diagnostica degli errori. Si apre la prima volta che si esegue un comando `wrangler`, e quando uno di quei comandi fa qualcosa di inatteso. |
 | [`architettura-web.md`](architettura-web.md) | Lo studio dello stack per portare lo strumento in rete: che cosa cambia nel vincolo di riservatezza, le fasce gratuite misurate con le due piattaforme escluse e il perché, lo stack scelto con le alternative rifiutate, dove vive il motore di calcolo, e che fine fanno i cinque limiti dichiarati. Si apre prima di scrivere una riga dell'applicazione, e quando una di quelle scelte viene rimessa in discussione. |
 | [`fonti.md`](fonti.md) | Da dove viene ogni dato: cosa fornisce ciascuna fonte, dove atterra nel codice o nel workbook, con quale grado di verifica, e le lacune dichiarate. Si apre prima di fidarsi di un numero, e obbligatoriamente prima di modificare un parametro fiscale. |
 
