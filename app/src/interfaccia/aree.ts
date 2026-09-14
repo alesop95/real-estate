@@ -33,8 +33,8 @@ export const AREE: readonly Area[] = [
     chiave: "costo",
     nome: "Costo dell'operazione",
     descrizione: "Imposte, provvigione, notaio e accessori: quanto serve davvero per comprare.",
-    fogli: "Costo operazione, Dossier tecnico",
-    disponibile: false,
+    fogli: "Costo operazione",
+    disponibile: true,
   },
   {
     chiave: "finanziamento",

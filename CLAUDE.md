@@ -52,7 +52,7 @@ python tools/valuta.py indicatori                  euro short-term rate e inflaz
 python tools/valuta.py omi cerca --comune ...      quotazioni OMI della zona
 python tools/valuta.py comune --nome ...           atti IMU e imposta di soggiorno del Comune
 python tools/valuta.py llm stato                   raggiungibilita' del modello locale
-python tools/genera-motore.py                      parametri TypeScript e vettori di riscontro
+python tools/genera-motore.py                      parametri, vettori, verifiche e predefiniti
 python tools/genera-motore.py --check              dice se i vettori sono scaduti
 cd app && npm test                                 motore, interfaccia, rotte, identita', limiti
 cd app && npm run tipi                             controllo dei tipi dell'applicazione
@@ -151,7 +151,7 @@ Schede tecniche, sotto `.claude/context/`, con frontmatter di riconciliazione.
 Pacchetto `studio-didattico`, sotto `.claude/context/`. È il registro delle evoluzioni di progetto: il file master porta le voci numerate in ordine cronologico, ciascuna con contesto, com'era e perché era fragile, il salto compiuto e il rimando all'approfondimento. Gli approfondimenti mostrano il codice reale, prima e dopo, e chiudono con il modo di estendere il pattern. Si legge quando si deve capire perché una scelta è fatta così, prima di rifarla diversamente.
 
 ```
-studio-didattico-master.md                  indice narrativo, diciassette voci numerate
+studio-didattico-master.md                  indice narrativo, diciotto voci numerate
 refactor-01-formule-vive.md                 workbook come modello, non come rapporto
 refactor-02-denominatore.md                 il denominatore dei rendimenti
 refactor-03-verifica-con-excel.md           automazione COM e locale italiano
@@ -176,6 +176,9 @@ refactor-16-estrazioni-come-ingresso.md     la casualita' si passa invece di con
 refactor-17-una-regola-due-lati.md          una regola che vale da due lati si scrive una
                                             volta, e dove i lati non condividono il
                                             linguaggio si genera invece di ricopiarla
+refactor-18-contesto-nel-guscio.md          alla seconda area una soluzione diventa un
+                                            pattern: il contesto passa al guscio e la
+                                            conservazione diventa l'unica strada
 ```
 
 Regole modulari sotto `.claude/rules/`, che sono cinque e che questo indice elencava soltanto come cartella. [`.claude/rules/interaction-style.md`](.claude/rules/interaction-style.md) fissa lo stile di ogni file scritto qui dentro, dal registro al paragrafo su riga unica alla tipografia italiana. [`.claude/rules/git-identity-and-repo.md`](.claude/rules/git-identity-and-repo.md) dice con quale identità si firma e con quale alias SSH si parla al remoto, e [`.claude/rules/git-commands-format.md`](.claude/rules/git-commands-format.md) come si consegnano all'utente i comandi, perché restino copiabili su qualunque terminale. [`.claude/rules/security-permissions.md`](.claude/rules/security-permissions.md) descrive le modalità di permesso e i limiti del sandbox su questa piattaforma. [`.claude/rules/token-economy.md`](.claude/rules/token-economy.md) raccoglie le pratiche di risparmio del contesto. Lo standard di sistema completo resta in `E:\template-claude-developing\.claude\PROJECT-SYSTEM.md`.

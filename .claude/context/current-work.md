@@ -44,7 +44,10 @@ Stato al 14 settembre 2026. La fase tre è cominciata e la prima delle sei aree 
 - [x] Fase tre, prima area: l'immobile con anagrafica, regime di acquisto per singolo immobile, le trenta verifiche con stato e note, e l'anteprima esatta delle imposte di trasferimento calcolata dal motore mentre si digita
 - [x] Fase tre, prove: cinquantuno nuove fra modulo condiviso, modello puro dell'area, cliente e sezione con il suo hook, per un totale di centotre
 - [x] Fase tre, design: sgrossatura iniziale sul sistema di `minimalist_real_estate_spec.md`, con i caratteri dichiarati nei token ma nessuna richiesta a un dominio di terzi; il raffinamento passerà da Claude Design
-- [ ] Fase tre, le altre cinque aree: costo dell'operazione, finanziamento, messa a reddito, decisione, portafoglio
+- [x] Fase tre, architettura delle aree: il contesto di lavoro passa al guscio e una sezione riceve immobile, ruolo e salvataggio, per ADR-028; la forma del documento delle ipotesi è dichiarata una volta in `app/src/condiviso/ipotesi.ts` e la conservazione diventa l'unico modo di scrivere
+- [x] Fase tre, predefiniti generati: quinta uscita del presidio, i valori delle dataclass di ingresso di `calcoli.py` emessi in TypeScript, e i tre che l'introspezione non vede derivati con una prova che li presidia
+- [x] Fase tre, seconda area: il costo dell'operazione, con mediazione, notaio, altri costi e gli oneri iniziali del mutuo, il costo totale, l'esborso iniziale e l'avviso sul rapporto fra mutuo e prezzo
+- [ ] Fase tre, le altre quattro aree: finanziamento, messa a reddito, decisione, portafoglio
 - [ ] Fase quattro: migrazione del registro immobili e delle verifiche comunali, ed esportazione del workbook come ponte
 - [ ] Fase cinque: una voce didattica per ogni passo che introduce un pattern, con il codice reale prima e dopo
 - [ ] Licenza rivista, perché MIT permette a chiunque di rivendere lo stesso codice
@@ -145,7 +148,7 @@ Nel foglio Confronto immobili restano globali l'opzione prezzo-valore e la quali
 
 ## Prossima azione concreta
 
-La seconda delle sei aree, cioè il costo dell'operazione, che prosegue la fase tre e non richiede l'account. Ha già il motore che le serve, e la forma da seguire è quella stabilita il 14 settembre: una sezione che mostra, un modello puro che decide, un hook che parla con i dati, e i tipi nel modulo condiviso quando la regola vale da due lati.
+La terza delle sei aree, cioè il finanziamento, che prosegue la fase tre e non richiede l'account. Ha già il motore che le serve, cioè rata, piano di ammortamento, detrazione degli interessi e TAEG, e scrive nella stessa sezione delle ipotesi che l'area del costo già tocca, che è precisamente il caso per cui quella sezione è dichiarata in un posto solo. La forma da seguire è quella stabilita il 14 settembre: una sezione che mostra, un modello puro che decide, il ciclo di bozza condiviso, e i tipi nel modulo condiviso quando la regola vale da due lati.
 
 Resta aperta, e dipende dall'utente, la parte remota della fase due: aprire l'account Cloudflare ed eseguire i primi passi della procedura, perché tutto ciò che si poteva scrivere senza account è scritto e provato. Le fasi uno e due-in-locale sono chiuse, la procedura e il flusso di distribuzione esistono, e nessuno dei nove passi è stato eseguito: il registro in fondo a [`messa-in-rete.md`](../../docs/messa-in-rete.md) lo dice riga per riga e va aggiornato appena uno si chiude. All'ambiente di sviluppo servono poi tre valori, nessuno segreto, cioè l'identificativo del database, il nome dell'organizzazione Zero Trust e l'etichetta del destinatario di Access; il solo segreto della catena è il token di interfaccia, che sta fra i segreti del repository con il nome `CLOUDFLARE_API_TOKEN`.
 

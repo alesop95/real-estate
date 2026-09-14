@@ -68,6 +68,7 @@ DESTINAZIONE_PARAMETRI = Path("app/src/motore/parametri.generati.ts")
 DESTINAZIONE_VETTORI = Path("app/test/vettori.generati.json")
 DESTINAZIONE_VETTORI_RISCHIO = Path("app/test/vettori.rischio.json")
 DESTINAZIONE_VERIFICHE = Path("app/src/condiviso/verifiche.generate.ts")
+DESTINAZIONE_PREDEFINITI = Path("app/src/condiviso/predefiniti.generate.ts")
 
 # Quante estrazioni entrano nei vettori del rischio. Mille, come nel foglio, farebbero un file
 # grande e non aggiungerebbero un ramo: sessantaquattro bastano a esercitare la mescolanza, i
@@ -158,6 +159,61 @@ def genera_parametri() -> str:
             valore = getattr(istanza, campo.name)
             righe.append(f"  {_cammello(campo.name)}: {_valore_ts(valore)} as {_tipo_ts(valore)},")
         righe.append("} as const;")
+        righe.append("")
+    return "\n".join(righe)
+
+
+# Le dataclass di ingresso del motore che hanno un valore predefinito per ogni campo. I loro
+# predefiniti servono all'interfaccia, che deve poter aprire una scheda vuota con le stesse
+# assunzioni con cui il motore Python calcolerebbe lo stesso caso: ricopiarli a mano
+# significherebbe che un tasso predefinito cambiato in calcoli.py resterebbe vecchio nel
+# browser, senza che nulla fallisca.
+#
+# `Immobile` non compare, e l'assenza e' un'informazione. Il suo campo `prezzo` non ha un
+# valore predefinito per scelta, perche' una valutazione senza prezzo non e' una valutazione
+# incompleta, e' una valutazione che non esiste: dargliene uno qui significherebbe inventare
+# il numero da cui dipende ogni altro. I predefiniti della riga di un immobile stanno quindi
+# in app/src/condiviso/immobile.ts, dove descrivono un record da compilare e non un ingresso
+# di calcolo, e sono gli stessi che il Worker assegna a chi non li manda.
+INGRESSI = {
+    "ACQUIRENTE_PREDEFINITO": ("Acquirente", "Acquirente"),
+    "FINANZIAMENTO_PREDEFINITO": ("Finanziamento", "Finanziamento"),
+    "GESTIONE_PREDEFINITA": ("Gestione", "Gestione"),
+}
+
+
+def genera_predefiniti() -> str:
+    """Emette i valori predefiniti delle dataclass di ingresso del motore.
+
+    Sono la quinta uscita di questo strumento e la terza specie di contenuto che attraversa il
+    confine fra i due linguaggi, dopo i parametri fiscali e il catalogo delle verifiche. La
+    ragione e' identica: un valore predefinito ricopiato a mano e' un valore che diverge al
+    primo aggiornamento, e la divergenza non produce un errore ma una scheda vuota che in
+    Python assume un tasso e nel browser un altro.
+
+    I nomi dei campi restano quelli di Python, con i trattini bassi, perche' questi oggetti
+    sono ingressi del motore TypeScript e le sue interfacce in src/motore/tipi.ts rispecchiano
+    le dataclass campo per campo: e' la condizione che rende ricalcolabili i vettori di
+    riscontro senza tradurre nulla.
+    """
+    righe = [
+        "// Generato da tools/genera-motore.py: non modificare a mano.",
+        "//",
+        "// I valori vengono dalle dataclass di ingresso di src/immobiliare/calcoli.py, che resta la",
+        "// sola fonte di verita'. Sono i predefiniti con cui l'interfaccia apre una scheda vuota, e",
+        "// devono coincidere con quelli del motore di riferimento: se divergono, lo stesso caso",
+        "// lasciato intatto da una parte e dall'altra produce due numeri diversi, e nulla fallisce.",
+        "",
+        "import type { Acquirente, Finanziamento, Gestione } from \"../motore/tipi\";",
+        "",
+    ]
+    for nome_ts, (nome_py, tipo_ts) in INGRESSI.items():
+        classe = getattr(C, nome_py)
+        istanza = classe()
+        righe.append(f"export const {nome_ts}: {tipo_ts} = {{")
+        for campo in dataclasses.fields(istanza):
+            righe.append(f"  {campo.name}: {_valore_ts(getattr(istanza, campo.name))},")
+        righe.append("};")
         righe.append("")
     return "\n".join(righe)
 
@@ -638,6 +694,7 @@ def main(argv) -> int:
         RADICE / DESTINAZIONE_VETTORI: genera_vettori(),
         RADICE / DESTINAZIONE_VETTORI_RISCHIO: genera_vettori_rischio(),
         RADICE / DESTINAZIONE_VERIFICHE: genera_verifiche(),
+        RADICE / DESTINAZIONE_PREDEFINITI: genera_predefiniti(),
     }
     scaduti = []
     for percorso, contenuto in uscite.items():

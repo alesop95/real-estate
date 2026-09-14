@@ -14,11 +14,9 @@ import { imposteAcquisto } from "../../src/motore/motore";
 import {
   anteprima,
   conVerifica,
-  regimeDa,
   schedaDa,
   schedaNuova,
   verificheAperte,
-  verificheDa,
   verificheInScheda,
   versoInvio,
   versoMotore,
@@ -76,37 +74,6 @@ describe("il documento delle ipotesi, scritto da piu' aree", () => {
     const primo = versoInvio(schedaDa(immobileFinto(originali)), originali);
     const secondo = versoInvio(schedaDa({ ...immobileFinto(primo.ipotesi) }), primo.ipotesi);
     expect(secondo.ipotesi).toEqual(primo.ipotesi);
-  });
-});
-
-describe("la lettura tollerante di un documento scritto da un'altra versione", () => {
-  it("un documento assente da' il regime predefinito", () => {
-    expect(regimeDa({})).toEqual({
-      venditore_impresa: false,
-      nuova_costruzione: false,
-      prima_casa: true,
-      prezzo_valore: true,
-    });
-  });
-
-  it("un regime scritto male non rompe la scheda", () => {
-    expect(regimeDa({ regime_acquisto: "si" }).prima_casa).toBe(true);
-    expect(regimeDa({ regime_acquisto: ["no"] }).prima_casa).toBe(true);
-    expect(regimeDa({ regime_acquisto: { prima_casa: "forse" } }).prima_casa).toBe(true);
-  });
-
-  it("scarta gli esiti di verifiche che il catalogo non conosce piu'", () => {
-    const letti = verificheDa({
-      verifiche: {
-        v01: { stato: "fatto", note: "ok" },
-        verifica_sparita: { stato: "fatto", note: "resto di una versione vecchia" },
-      },
-    });
-    expect(Object.keys(letti)).toEqual(["v01"]);
-  });
-
-  it("scarta uno stato che non esiste invece di mostrarlo", () => {
-    expect(verificheDa({ verifiche: { v01: { stato: "quasi" } } })).toEqual({});
   });
 });
 

@@ -3,42 +3,19 @@
 // La distinzione va tenuta perche' si paga se si dimentica. Sul filo passa un `ImmobileInviato`,
 // cioe' nove campi piatti di cui uno, `ipotesi`, e' un documento libero che il database non
 // guarda: e' la forma giusta per un'interfaccia di programmazione che non vuole migrare una
-// tabella ogni volta che il modello cresce. Dentro la sezione quella stessa informazione
-// conviene invece che sia tipizzata, perche' qui si scrive codice che la legge campo per campo
-// e un `Record<string, unknown>` toglie al compilatore ogni possibilita' di aiutare.
+// tabella ogni volta che il modello cresce. Dentro la sezione quella stessa informazione conviene
+// invece che sia tipizzata, perche' qui si scrive codice che la legge campo per campo e un
+// `Record<string, unknown>` toglie al compilatore ogni possibilita' di aiutare.
 //
-// Il ponte fra le due forme e' modello.ts, ed e' li' che sta la regola che conta: cio' che la
-// sezione non conosce dentro `ipotesi` va conservato, non riscritto. Le altre cinque aree
-// scriveranno nello stesso documento, e un'area che salvasse solo cio' che sa cancellerebbe
-// il lavoro delle altre senza che nulla fallisca.
+// Le due sezioni del documento che quest'area governa, cioe' il regime di acquisto e gli esiti
+// delle verifiche, non sono dichiarate qui ma in src/condiviso/ipotesi.ts, insieme a quelle di
+// tutte le altre aree. Qui restano i tipi che esistono soltanto dentro questa schermata: la
+// scheda su cui si lavora, la riga di verifica come la si mostra, e i numeri che si leggono.
 
+import type { EsitoVerifica, RegimeAcquisto } from "../../condiviso/ipotesi";
 import type { StatoVerifica } from "../../condiviso/verifiche.generate";
 
-/**
- * Il regime di acquisto, dichiarato per singolo immobile.
- *
- * Nel workbook questi quattro valori vivono in celle del foglio Immobile, quindi valgono per
- * uno alla volta, e il foglio Confronto immobili li eredita globali: e' uno dei cinque limiti
- * dichiarati del modello, perche' una lista in cui un immobile e' prima casa e un altro no
- * viene valutata come se lo fossero tutti. Qui il limite non si aggira, sparisce: sono
- * attributi dell'immobile, come `docs/architettura-web.md` prevedeva.
- */
-export interface RegimeAcquisto {
-  /** Vendita da impresa costruttrice soggetta a IVA invece che a imposta di registro. */
-  venditore_impresa: boolean;
-  /** Attiva le tutele del decreto legislativo 122/2005, cioe' fideiussione e polizza decennale. */
-  nuova_costruzione: boolean;
-  /** Si chiede l'agevolazione prima casa. Sulle categorie di lusso non spetta comunque. */
-  prima_casa: boolean;
-  /** Si chiede al notaio la tassazione sul valore catastale invece che sul prezzo. */
-  prezzo_valore: boolean;
-}
-
-/** Lo stato di una verifica su questo immobile, piu' le note di chi l'ha seguita. */
-export interface EsitoVerifica {
-  stato: StatoVerifica;
-  note: string;
-}
+export type { EsitoVerifica, RegimeAcquisto };
 
 /** Come l'area immobile vede un immobile mentre lo si compila. */
 export interface Scheda {

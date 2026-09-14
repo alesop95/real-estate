@@ -310,9 +310,9 @@ main {
   margin: 3rem auto;
 }
 
-/* --- area immobile --- */
+/* --- la scrivania: elenco a sinistra, area aperta a destra --- */
 
-.area-immobile {
+.scrivania {
   display: grid;
   grid-template-columns: minmax(15rem, 22rem) 1fr;
   gap: var(--pad-scheda);
@@ -320,7 +320,7 @@ main {
 }
 
 @media (max-width: 64rem) {
-  .area-immobile {
+  .scrivania {
     grid-template-columns: 1fr;
   }
 }
@@ -470,6 +470,21 @@ main {
   color: var(--accent-investment);
 }
 
+/* Il segno di un numero finanziario e' l'unico caso in cui il colore porta informazione e non
+   decorazione: si usa dove il lettore deve vedere un verso, mai per abbellire una riga. */
+.numeri dd.positivo {
+  color: var(--semantic-positive);
+}
+
+.numeri dd.negativo {
+  color: var(--semantic-negative);
+}
+
+.numeri + .numeri,
+.numeri h3 + dl + h3 {
+  margin-top: 1.25rem;
+}
+
 .nota {
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -548,8 +563,14 @@ main {
 
 .azioni {
   display: flex;
+  align-items: center;
   gap: 0.75rem;
   margin-top: var(--pad-scheda-ampia);
+}
+
+.non-salvato {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .errori {
