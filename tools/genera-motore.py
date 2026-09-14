@@ -62,10 +62,12 @@ sys.path.insert(0, str(RADICE / "src"))
 from immobiliare import calcoli as C  # noqa: E402
 from immobiliare import parametri as P  # noqa: E402
 from immobiliare import rischio as R  # noqa: E402
+from immobiliare import verifiche as V  # noqa: E402
 
 DESTINAZIONE_PARAMETRI = Path("app/src/motore/parametri.generati.ts")
 DESTINAZIONE_VETTORI = Path("app/test/vettori.generati.json")
 DESTINAZIONE_VETTORI_RISCHIO = Path("app/test/vettori.rischio.json")
+DESTINAZIONE_VERIFICHE = Path("app/src/condiviso/verifiche.generate.ts")
 
 # Quante estrazioni entrano nei vettori del rischio. Mille, come nel foglio, farebbero un file
 # grande e non aggiungerebbero un ramo: sessantaquattro bastano a esercitare la mescolanza, i
@@ -157,6 +159,84 @@ def genera_parametri() -> str:
             righe.append(f"  {_cammello(campo.name)}: {_valore_ts(valore)} as {_tipo_ts(valore)},")
         righe.append("} as const;")
         righe.append("")
+    return "\n".join(righe)
+
+
+def genera_verifiche() -> str:
+    """Emette in TypeScript il catalogo delle verifiche pre-acquisto.
+
+    È il terzo genere di contenuto che questo strumento porta da una parte all'altra, dopo i
+    parametri fiscali e i casi di riscontro, e la ragione è la stessa dei primi due: dal 14
+    settembre 2026 le trenta voci servono sia al foglio Checklist sia all'area immobile
+    dell'applicazione, e un catalogo trascritto a mano diverge al primo aggiornamento senza
+    che nulla fallisca. Qui non c'è un calcolo da verificare, quindi non servono vettori di
+    riscontro: serve che il testo sia lo stesso, e lo si ottiene generandolo.
+
+    I nomi dei campi diventano quelli della convenzione TypeScript. In particolare `perché`
+    perde l'accento e diventa `percheConta`, e vale dirlo perché contraddice in apparenza la
+    regola tipografica del progetto: quella regola vale sulla prosa, mentre qui si tratta di
+    un identificatore, cioè della stessa distinzione per cui negli strumenti di tipografia si
+    mascherano gli argomenti delle macro di composizione. Il testo delle voci, che è prosa,
+    conserva ogni accento.
+    """
+    fasi = V.fasi()
+    righe = [
+        "// Generato da tools/genera-motore.py: non modificare a mano.",
+        "//",
+        "// Le voci vengono da src/immobiliare/verifiche.py, che resta la sola fonte di verita' e",
+        "// che alimenta anche il foglio Checklist del workbook. Modificare questo file significa",
+        "// creare un secondo catalogo: non produrrebbe un errore, produrrebbe due elenchi di",
+        "// verifiche legali diversi fra il foglio e l'applicazione, che e' il genere di divergenza",
+        "// che si scopre davanti a un notaio.",
+        "",
+        "/** Gli stati che una verifica puo' assumere. */",
+        "export type StatoVerifica =",
+    ]
+    righe += [f"  | {json.dumps(s, ensure_ascii=False)}" for s in V.STATI]
+    righe[-1] += ";"
+    righe += [
+        "",
+        "export const STATI_VERIFICA = [",
+        "  " + ", ".join(json.dumps(s, ensure_ascii=False) for s in V.STATI),
+        "] as const;",
+        "",
+        "/** Le fasi nell'ordine in cui si incontrano, che non e' quello alfabetico. */",
+        "export const FASI_VERIFICA = [",
+    ]
+    righe += [f"  {json.dumps(f, ensure_ascii=False)}," for f in fasi]
+    righe += [
+        "] as const;",
+        "",
+        "export type FaseVerifica = (typeof FASI_VERIFICA)[number];",
+        "",
+        "export interface Verifica {",
+        "  /** Chiave stabile, costruita dalla posizione nel catalogo: sopravvive a un cambio di testo. */",
+        "  id: string;",
+        "  fase: FaseVerifica;",
+        "  verifica: string;",
+        "  percheConta: string;",
+        "  fonte: string;",
+        "  chi: string;",
+        "  statoIniziale: StatoVerifica;",
+        "  note: string;",
+        "}",
+        "",
+        "export const VERIFICHE: readonly Verifica[] = [",
+    ]
+    for i, (fase, verifica, perche, fonte, chi, stato, note) in enumerate(V.VERIFICHE, start=1):
+        righe += [
+            "  {",
+            f"    id: {json.dumps(f'v{i:02d}')},",
+            f"    fase: {json.dumps(fase, ensure_ascii=False)},",
+            f"    verifica: {json.dumps(verifica, ensure_ascii=False)},",
+            f"    percheConta: {json.dumps(perche, ensure_ascii=False)},",
+            f"    fonte: {json.dumps(fonte, ensure_ascii=False)},",
+            f"    chi: {json.dumps(chi, ensure_ascii=False)},",
+            f"    statoIniziale: {json.dumps(stato, ensure_ascii=False)},",
+            f"    note: {json.dumps(note, ensure_ascii=False)},",
+            "  },",
+        ]
+    righe += ["] as const;", ""]
     return "\n".join(righe)
 
 
@@ -557,6 +637,7 @@ def main(argv) -> int:
         RADICE / DESTINAZIONE_PARAMETRI: genera_parametri(),
         RADICE / DESTINAZIONE_VETTORI: genera_vettori(),
         RADICE / DESTINAZIONE_VETTORI_RISCHIO: genera_vettori_rischio(),
+        RADICE / DESTINAZIONE_VERIFICHE: genera_verifiche(),
     }
     scaduti = []
     for percorso, contenuto in uscite.items():

@@ -30,9 +30,14 @@ real-estate/
   tests/                le prove dello strumento locale, in Python
   app/                  l'applicazione web
     src/motore/         il porto TypeScript del modello, piu' esitoCompleto e il rischio
+    src/condiviso/      le regole che il Worker e il browser applicano entrambi
     src/server/         il Worker: identita', autorizzazione, rotte
+    src/interfaccia/    il guscio: cliente, formato, aree, applicazione, stile
+    src/sezioni/        una cartella per area, con sezione, hook, tipi e modello
     migrazioni/         lo schema del database, un file per passo
-    test/               le prove: motore in Node, rotte e identita' in workerd
+    test/               le prove: motore e interfaccia in Node, rotte e identita' in workerd
+    statico/            l'interfaccia costruita da Vite, non versionata
+    index.html vite.config.ts   la pagina d'ingresso e la costruzione
     wrangler.toml       la configurazione del Worker
   docs/                 la conoscenza del dominio e le decisioni tecniche
   .claude/              memoria di progetto, schede di contesto, regole, studio didattico
@@ -42,7 +47,11 @@ real-estate/
   _notes/               materiale personale, non versionato
 ```
 
-Due cartelle non ci sono e vale dire perché. Non c'è una cartella condivisa fra Python e TypeScript, perché l'unica cosa che i due condividono sono i parametri e i casi di prova, e quelli passano dal generatore invece che da un formato comune: un formato comune andrebbe mantenuto, il generatore no. E non c'è una cartella per l'interfaccia, perché la fase tre non è cominciata: quando comincerà starà in `app/src/sezioni/`, con la stessa forma del progetto gemello di questa macchina, cioè una sezione, un hook per i dati, un tipo per la forma.
+Una cartella non c'è e vale dire perché. Non c'è una cartella condivisa fra Python e TypeScript, perché ciò che i due condividono, cioè i parametri fiscali, i casi di prova e dal 14 settembre 2026 il catalogo delle verifiche pre-acquisto, passa dal generatore invece che da un formato comune: un formato comune andrebbe mantenuto, il generatore no.
+
+Due cartelle ci sono dal 14 settembre 2026, con l'apertura della fase tre, e vale dire che cosa distingue l'una dall'altra. In `app/src/condiviso/` stanno le regole che il Worker e il browser applicano entrambi, per ADR-027: la forma di un immobile con la sua validazione e i suoi valori predefiniti, la gerarchia dei ruoli, e il catalogo delle verifiche che il generatore emette. Le due applicazioni non hanno lo stesso statuto, e confonderle sarebbe grave: quella del Worker è la difesa, perché chiunque può parlare all'interfaccia di programmazione senza passare dalla pagina, mentre quella del browser evita all'utente un giro di rete per sapere una cosa che si poteva sapere prima.
+
+In `app/src/sezioni/` sta una cartella per area, con la forma del progetto gemello di questa macchina: una sezione che mostra, un hook che parla con i dati, un tipo per la forma, più un modello di funzioni pure dove sta ogni regola di dominio dell'area. La ripartizione non è estetica ed è la ragione per cui le prove sono sostenibili: una funzione pura si prova con un'asserzione, mentre la stessa regola scritta dentro un componente si prova solo simulando un clic, il che costa dieci volte tanto e verifica meno. La regola pratica che ne discende è che in un file di sezione non compaia un solo ramo che riguardi il dominio. Il guscio, cioè identità, scelta dell'organizzazione e navigazione fra le sei aree, sta in `app/src/interfaccia/` insieme al cliente, che è l'unico punto dell'applicazione che parla con il server.
 
 Una riorganizzazione più radicale, per esempio spostare il codice Python sotto `python/` per simmetria con `app/`, è stata considerata e scartata: rinominare `src/` significherebbe toccare ogni importazione, ogni test, ogni comando documentato e centinaia di riferimenti nella documentazione, in cambio di una simmetria che non risolve nessun problema reale. La leggibilità di una struttura si ottiene spiegandola, non pareggiandola.
 
@@ -55,6 +64,8 @@ Chi apre l'indirizzo incontra Cloudflare Access, che non è codice nostro. Se no
 Il Worker fa tre cose, in quest'ordine, e sono in tre file diversi apposta. Verifica il token e ne ricava un indirizzo di posta, in `identita.ts`. Risolve l'appartenenza di quell'indirizzo all'organizzazione richiesta e il suo ruolo, in `autorizzazione.ts`. Solo allora esegue il gestore della rotta, in `immobili.ts`, che riceve un contesto già autorizzato e non ha modo di vedere la richiesta grezza.
 
 Il calcolo non passa da qui. Gira nel browser, con il motore TypeScript, sui dati che l'utente ha inserito. Il server conserva gli input e non conserva nessun risultato, ed è una scelta di cui parla la sezione seguente.
+
+Dal 14 settembre 2026 il Worker fa una quarta cosa, e va detta perché è una trappola evitata. Tutto ciò che non comincia per `/api` e non corrisponde a un file statico riceve la pagina dell'applicazione, servita attraverso il legame `ASSETS`. Quel ripiego lo farebbe anche l'impostazione `single-page-application` delle risorse statiche, che però scatta prima del Worker e risponderebbe la pagina anche a `/api/qualcosa`: una chiamata sbagliata all'interfaccia di programmazione riceverebbe venti kilobyte di HTML invece di un rifiuto in JSON. La configurazione lascia quindi passare al Worker tutto ciò che non trova, e il ripiego è scritto dopo le rotte, dove si legge e si prova.
 
 ## Le tre decisioni di architettura che spiegano il resto
 

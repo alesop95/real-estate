@@ -1,0 +1,590 @@
+/*
+  Il sistema di design, in un foglio solo e senza dipendenze.
+
+  E' la sgrossatura iniziale presa da minimalist_real_estate_spec.md: fondi neutri, bordo
+  netto da un pixel invece dell'ombra, un solo accento usato per l'azione principale e per i
+  valori che decidono, e due colori semantici riservati al segno di un numero finanziario.
+  Il raffinamento visivo passera' da Claude Design; qui si fissa l'impianto.
+
+  Due scelte si discostano dalla specifica, ed entrambe hanno una ragione che vale scritta.
+
+  La prima sono i caratteri. La specifica chiede Inter e Plus Jakarta Sans, che si
+  prenderebbero da un fornitore esterno; questa applicazione mostra dossier di trattative in
+  corso, e un carattere remoto racconta a quel fornitore chi sta guardando che cosa, a ogni
+  apertura di pagina. Le due famiglie restano dichiarate nei token, con il ripiego di sistema
+  subito dietro e nessuna richiesta in rete: il giorno in cui si ospiteranno in proprio bastera'
+  aggiungere il file, senza toccare una sola regola di questo foglio.
+
+  La seconda e' la distinzione fra cio' che si scrive e cio' che si legge, che nel workbook e'
+  il giallo contro il grigio ed e' una convenzione che i suoi utenti conoscono. Non si perde:
+  si esprime nella tavolozza nuova, cioe' un campo scrivibile sta sul fondo primario con il
+  bordo che si accende sull'accento quando ha il fuoco, e un blocco di soli numeri calcolati
+  sta sul fondo secondario. Il significato resta, il colore cambia.
+*/
+
+:root {
+  /* Fondi */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #f1f3f5;
+
+  /* Testo e struttura */
+  --text-primary: #121212;
+  --text-secondary: #6c757d;
+  --text-tertiary: #adb5bd;
+  --border-clean: #e9ecef;
+
+  /* Accento: solo azione principale e indicatori che decidono */
+  --accent-investment: #0f52ba;
+  --accent-investment-light: #e6eefa;
+
+  /* Segno di un numero finanziario */
+  --semantic-positive: #2b8a3e;
+  --semantic-negative: #c92a2a;
+
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", var(--font-main);
+
+  /* Spaziature: due sole misure per l'imbottitura di una scheda, come da specifica. */
+  --pad-scheda: 24px;
+  --pad-scheda-ampia: 32px;
+  --raggio: 8px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+legend,
+summary {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* --- controlli --- */
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-clean);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent-investment);
+  color: var(--accent-investment);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/*
+  L'azione principale e' piatta, senza sfumature, e usa l'unico accento del sistema. Ce n'e'
+  una sola per schermata: se in una vista ci fossero due pulsanti pieni, nessuno dei due
+  sarebbe piu' l'azione principale.
+*/
+.azioni button:first-child {
+  background: var(--accent-investment);
+  border-color: var(--accent-investment);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.azioni button:first-child:hover:not(:disabled) {
+  color: #ffffff;
+  opacity: 0.92;
+}
+
+button.pericolo {
+  color: var(--semantic-negative);
+  border-color: var(--border-clean);
+}
+
+button.pericolo:hover:not(:disabled) {
+  border-color: var(--semantic-negative);
+  color: var(--semantic-negative);
+}
+
+input,
+select {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-clean);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  width: 100%;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent-investment);
+  box-shadow: 0 0 0 3px var(--accent-investment-light);
+}
+
+input:disabled,
+select:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+label > span {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+}
+
+label.interruttore {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+label.interruttore input {
+  width: auto;
+  accent-color: var(--accent-investment);
+}
+
+label.interruttore > span {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-primary);
+}
+
+small {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+fieldset {
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  padding: var(--pad-scheda);
+  margin: 0;
+  background: var(--bg-primary);
+}
+
+fieldset > label:last-of-type {
+  margin-bottom: 0;
+}
+
+legend {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  padding: 0 0.4rem;
+}
+
+/* --- guscio --- */
+
+.testata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem var(--pad-scheda-ampia);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-clean);
+}
+
+.testata h1 {
+  font-size: 1.05rem;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.identita {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.identita label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.identita label > span {
+  margin: 0;
+}
+
+.identita .organizzazione {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.aree {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.75rem var(--pad-scheda-ampia);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-clean);
+}
+
+.aree .area {
+  border-color: transparent;
+  color: var(--text-secondary);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+}
+
+.aree .area:hover:not(:disabled) {
+  border-color: var(--border-clean);
+}
+
+.aree .area.scelta {
+  background: var(--accent-investment-light);
+  border-color: var(--accent-investment-light);
+  color: var(--accent-investment);
+  font-weight: 600;
+}
+
+.aree .dopo {
+  margin-left: 0.45rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+main {
+  padding: var(--pad-scheda-ampia);
+}
+
+.avvio,
+.in-arrivo {
+  max-width: 42rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  padding: var(--pad-scheda-ampia);
+}
+
+.avvio {
+  margin: 3rem auto;
+}
+
+/* --- area immobile --- */
+
+.area-immobile {
+  display: grid;
+  grid-template-columns: minmax(15rem, 22rem) 1fr;
+  gap: var(--pad-scheda);
+  align-items: start;
+}
+
+@media (max-width: 64rem) {
+  .area-immobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.elenco {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  padding: var(--pad-scheda);
+}
+
+.elenco-testa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.elenco h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.elenco ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  La scheda di un immobile e' la sola superficie interattiva della lista: al passaggio del
+  puntatore il bordo diventa l'accento, che e' la regola di comportamento della specifica.
+*/
+.elenco .voce {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--raggio);
+}
+
+.elenco .voce.scelta {
+  border-color: var(--accent-investment);
+  background: var(--accent-investment-light);
+  color: var(--text-primary);
+}
+
+.voce-titolo {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.voce-dettaglio {
+  display: block;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.voce-stato {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-top: 0.2rem;
+}
+
+.scheda {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  padding: var(--pad-scheda-ampia);
+}
+
+.scheda > header {
+  margin-bottom: 1.5rem;
+}
+
+.scheda h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.fascia {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 46rem;
+}
+
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--pad-scheda);
+  align-items: start;
+}
+
+/*
+  Il riquadro dei numeri e' l'unico blocco di sola lettura della schermata, e lo dice con il
+  fondo secondario: nessun campo qui dentro si compila.
+*/
+.numeri {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  padding: var(--pad-scheda);
+}
+
+.numeri h3 {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.numeri dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.numeri dt {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.numeri dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.numeri dd.forte {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent-investment);
+}
+
+.nota {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0.75rem 0 0;
+}
+
+/* --- verifiche --- */
+
+.verifiche {
+  margin-top: var(--pad-scheda-ampia);
+  border-top: 1px solid var(--border-clean);
+  padding-top: var(--pad-scheda);
+}
+
+.verifiche summary {
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.verifiche .fase h4 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.verifiche ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.verifiche li {
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  padding: var(--pad-scheda);
+  margin-bottom: 0.75rem;
+  background: var(--bg-primary);
+}
+
+.verifiche li:hover {
+  border-color: var(--accent-investment);
+}
+
+.verifica-testa {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.verifica-testa strong {
+  font-family: var(--font-display);
+}
+
+.verifica-testa select {
+  width: auto;
+  min-width: 10rem;
+}
+
+.perche {
+  margin: 0.6rem 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.fonte {
+  margin: 0 0 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+/* --- messaggi --- */
+
+.azioni {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: var(--pad-scheda-ampia);
+}
+
+.errori {
+  background: var(--bg-primary);
+  border: 1px solid var(--semantic-negative);
+  border-radius: var(--raggio);
+  color: var(--semantic-negative);
+  margin: 0 0 1rem;
+  padding: 1rem 1rem 1rem 2rem;
+}
+
+.errore {
+  color: var(--semantic-negative);
+}
+
+.conferma {
+  background: var(--bg-primary);
+  border: 1px solid var(--semantic-positive);
+  border-radius: var(--raggio);
+  color: var(--semantic-positive);
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.avviso {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-clean);
+  border-radius: var(--raggio);
+  color: var(--text-secondary);
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.attesa,
+.vuoto {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}

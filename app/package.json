@@ -2,8 +2,14 @@
   "name": "valutazione-immobili",
   "private": true,
   "type": "module",
-  "description": "Applicazione web di valutazione immobiliare: fase uno, il solo motore di calcolo",
+  "description": "Applicazione web di valutazione immobiliare: motore, interfaccia di programmazione autorizzata e le sue sezioni",
   "scripts": {
+    "sviluppo": "vite",
+    "costruisci": "vite build",
+    "anteprima": "wrangler dev",
+    "prepara:statico": "node -e \"require('fs').mkdirSync('statico',{recursive:true})\"",
+    "pretest": "npm run prepara:statico",
+    "preanteprima": "npm run prepara:statico",
     "test": "vitest run",
     "test:guarda": "vitest",
     "test:motore": "vitest run --config vitest.config.ts",
@@ -14,11 +20,21 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.5.35",
     "@cloudflare/workers-types": "^4.20260702.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^25.0.1",
     "typescript": "^5.6.3",
+    "vite": "^5.4.21",
     "vitest": "^2.1.8",
     "wrangler": "3.99.0"
   },
   "dependencies": {
-    "hono": "4.6.14"
+    "hono": "4.6.14",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   }
 }

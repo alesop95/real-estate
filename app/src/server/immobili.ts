@@ -1,108 +1,23 @@
-// Le rotte degli immobili, e la validazione di cio' che arriva dal browser.
+// Le rotte degli immobili: dal database alla risposta, e ritorno.
 //
-// Sulla validazione vale una precisazione, perche' il confine e' sottile e altrove in questo
-// progetto si e' detto il contrario. Il calcolo non ha bisogno di essere protetto: gira nel
-// browser, e chi ne alterasse le formule ingannerebbe solo se stesso. La forma dei dati e'
-// un'altra cosa: una riga scritta male non danneggia chi la scrive, danneggia l'elenco
-// dell'organizzazione, cioe' anche i colleghi, e rompe un ordinamento o una somma per tutti.
-// Il server quindi non si fida della forma, pur non avendo ragione di diffidare dei numeri.
+// Il file si occupa di una cosa sola, cioe' di leggere e scrivere righe dentro il perimetro
+// dell'organizzazione gia' risolta dal contesto. La forma di cio' che arriva dal browser non
+// si decide qui: sta in src/condiviso/immobile.ts, che il Worker e l'interfaccia importano
+// entrambi, perche' una regola di validazione scritta due volte e' una regola che al primo
+// aggiornamento esiste in due versioni e fa accettare al modulo cio' che il server rifiuta.
+//
+// Quel che resta qui, e che non puo' stare altrove, e' la clausola sull'organizzazione:
+// compare in ogni interrogazione di questo file, comprese quelle che seguono una lettura
+// gia' filtrata, ed e' la ragione per cui l'indice del database e' costruito su quella
+// colonna per prima.
+
+import type { Immobile, Ipotesi } from "../condiviso/immobile";
+import { validaImmobile } from "../condiviso/immobile";
 
 import type { Contesto } from "./autorizzazione";
 
-/** Il documento delle ipotesi di valutazione, che il motore legge e il database non guarda. */
-type Ipotesi = Record<string, unknown>;
-
-export interface ImmobileInviato {
-  titolo: string;
-  comune: string;
-  indirizzo: string;
-  prezzo: number;
-  superficie_mq: number;
-  categoria: string;
-  rendita_catastale: number;
-  stato: string;
-  ipotesi: Ipotesi;
-}
-
-const STATI = ["da valutare", "in valutazione", "trattativa", "scartato", "acquistato"];
-const CATEGORIE = /^[A-C]\/\d{1,2}$/;
-
-/**
- * Controlla la forma e restituisce l'elenco dei problemi, vuoto se va bene.
- *
- * Restituisce tutti gli errori e non il primo, perche' un modulo che si fa correggere un
- * campo per volta e' un modulo che si compila tre volte.
- */
-export function validaImmobile(corpo: unknown): { errori: string[]; valore?: ImmobileInviato } {
-  const errori: string[] = [];
-  if (corpo === null || typeof corpo !== "object") return { errori: ["il corpo non e' un oggetto"] };
-  const d = corpo as Record<string, unknown>;
-
-  const testo = (campo: string, obbligatorio: boolean, massimo = 200): string => {
-    const v = d[campo];
-    if (v === undefined || v === null) {
-      if (obbligatorio) errori.push(`${campo}: manca`);
-      return "";
-    }
-    if (typeof v !== "string") {
-      errori.push(`${campo}: deve essere testo`);
-      return "";
-    }
-    const pulito = v.trim();
-    if (obbligatorio && !pulito) errori.push(`${campo}: non puo' essere vuoto`);
-    if (pulito.length > massimo) errori.push(`${campo}: oltre ${massimo} caratteri`);
-    return pulito;
-  };
-
-  const numero = (campo: string, minimo: number, massimo: number): number => {
-    const v = d[campo];
-    if (v === undefined || v === null) return 0;
-    if (typeof v !== "number" || !Number.isFinite(v)) {
-      errori.push(`${campo}: deve essere un numero finito`);
-      return 0;
-    }
-    if (v < minimo || v > massimo) errori.push(`${campo}: fuori dall'intervallo ${minimo} - ${massimo}`);
-    return v;
-  };
-
-  const titolo = testo("titolo", true);
-  const comune = testo("comune", false);
-  const indirizzo = testo("indirizzo", false);
-  const categoria = testo("categoria", false, 8) || "A/2";
-  if (categoria && !CATEGORIE.test(categoria)) errori.push("categoria: forma attesa tipo A/2");
-  const stato = testo("stato", false) || "da valutare";
-  if (stato && !STATI.includes(stato)) errori.push(`stato: uno fra ${STATI.join(", ")}`);
-
-  // Gli estremi non sono arbitrari: un prezzo di dieci milioni o una superficie di
-  // diecimila metri non appartengono al residenziale che questo strumento valuta, e
-  // lasciarli passare significa vedere una graduatoria dominata da un errore di battitura.
-  const prezzo = numero("prezzo", 0, 10_000_000);
-  const superficie = numero("superficie_mq", 0, 10_000);
-  const rendita = numero("rendita_catastale", 0, 100_000);
-
-  const ipotesi = d.ipotesi === undefined ? {} : d.ipotesi;
-  if (ipotesi === null || typeof ipotesi !== "object" || Array.isArray(ipotesi)) {
-    errori.push("ipotesi: deve essere un oggetto");
-  } else if (JSON.stringify(ipotesi).length > 20_000) {
-    errori.push("ipotesi: documento oltre i 20.000 caratteri");
-  }
-
-  if (errori.length) return { errori };
-  return {
-    errori: [],
-    valore: {
-      titolo,
-      comune,
-      indirizzo,
-      prezzo,
-      superficie_mq: superficie,
-      categoria,
-      rendita_catastale: rendita,
-      stato,
-      ipotesi: ipotesi as Ipotesi,
-    },
-  };
-}
+export type { ImmobileInviato } from "../condiviso/immobile";
+export { validaImmobile } from "../condiviso/immobile";
 
 interface RigaImmobile {
   id: string;
@@ -120,15 +35,13 @@ interface RigaImmobile {
   aggiornato_il: string;
 }
 
-function versoFuori(riga: RigaImmobile) {
+/** Dalla riga del database alla forma che il browser conosce, che e' quella condivisa. */
+function versoFuori(riga: RigaImmobile): Immobile {
   const { ipotesi, organizzazione_id, ...resto } = riga;
   return { ...resto, organizzazione: organizzazione_id, ipotesi: JSON.parse(ipotesi) as Ipotesi };
 }
 
 export async function elencaImmobili(ctx: Contesto): Promise<Response> {
-  // Il filtro per organizzazione non e' un'opzione dell'interrogazione: e' l'interrogazione.
-  // Ogni SELECT di questo file ha questa clausola, ed e' la ragione per cui l'indice del
-  // database e' costruito su quella colonna per prima.
   const esito = await ctx.db
     .prepare(
       "SELECT * FROM immobili WHERE organizzazione_id = ? ORDER BY aggiornato_il DESC, id ASC",

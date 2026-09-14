@@ -43,9 +43,11 @@ jobs:
         working-directory: app
         run: npm run tipi
 
-      # Trentacinque prove in due ambienti: motore e limiti del piano gratuito in Node,
-      # rotte e identita' dentro il runtime di Cloudflare con un D1 vero. Non servono
-      # account ne' rete, ed e' la ragione per cui girano qui senza alcun segreto.
+      # Centotre prove in due ambienti: motore, regole condivise, modello e sezioni
+      # dell'interfaccia in Node, rotte e identita' dentro il runtime di Cloudflare con un
+      # D1 vero. Non servono account ne' rete, ed e' la ragione per cui girano qui senza
+      # alcun segreto. Lo script "pretest" crea la cartella delle risorse statiche, che
+      # wrangler.toml dichiara e senza la quale la suite delle rotte non parte.
       - name: Prove
         working-directory: app
         run: npm test
@@ -83,6 +85,14 @@ jobs:
       - name: Installazione delle dipendenze
         working-directory: app
         run: npm ci
+
+      # L'interfaccia si costruisce qui e non si versiona: wrangler distribuisce il
+      # contenuto di app/statico/, che senza questo passo sarebbe vuoto. Distribuire un
+      # Worker senza la sua pagina non fallisce, risponde una pagina che non c'e': e' il
+      # genere di guasto che si scopre aprendo l'indirizzo, non guardando il flusso.
+      - name: Costruzione dell'interfaccia
+        working-directory: app
+        run: npm run costruisci
 
       # Le migrazioni si applicano prima di distribuire, e non dopo: uno schema vecchio
       # sotto codice nuovo rompe alla prima richiesta, mentre uno schema nuovo sotto codice

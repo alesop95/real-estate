@@ -35,6 +35,20 @@ database_name = "valutazione-immobili"
 database_id = "da-compilare-alla-creazione"
 migrations_dir = "migrazioni"
 
-# La sezione delle risorse statiche arrivera' con la fase tre, quando esistera' qualcosa da
-# costruire: dichiararla adesso, puntando a una cartella che non c'e', farebbe fallire ogni
-# comando locale per un motivo che non ha niente a che vedere con quello che si sta provando.
+# Le risorse statiche dell'interfaccia, dalla fase tre. La cartella la produce "npm run
+# costruisci", cioe' Vite: qui si dichiara soltanto dove guardare.
+#
+# Le due righe che contano sono le ultime, e la ragione va scritta perche' la configurazione
+# comoda e' anche quella sbagliata. Con "single-page-application" ogni indirizzo che non
+# corrisponde a un file statico riceve la pagina dell'applicazione, ed e' cio' che si vuole
+# per un collegamento profondo tipo /immobili/abc; il guaio e' che quella regola scatta prima
+# del Worker e si mangerebbe anche /api/io, che smetterebbe di essere un'interfaccia di
+# programmazione e comincerebbe a rispondere HTML. Qui percio' il non trovato non viene
+# gestito dalle risorse statiche ma passa al Worker, che distingue: se il percorso comincia
+# per /api risponde lui, altrimenti chiede la pagina al legame ASSETS. Il ripiego resta, ma
+# e' scritto in un file che si legge e si prova, invece che in un'impostazione che decide al
+# posto nostro.
+[assets]
+directory = "./statico"
+binding = "ASSETS"
+not_found_handling = "none"

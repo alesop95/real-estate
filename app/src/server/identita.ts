@@ -18,6 +18,15 @@ export interface Ambiente {
   MODALITA: string;
   ACCESS_TEAM: string;
   ACCESS_AUD: string;
+  /**
+   * Le risorse statiche dell'interfaccia, quando ci sono.
+   *
+   * E' facoltativo di proposito, e non per prudenza. In esercizio il legame c'e' sempre,
+   * perche' wrangler.toml lo dichiara; in sviluppo la pagina la serve Vite sulla propria
+   * porta e il Worker vede solo le chiamate inoltrate, quindi un Worker che pretendesse il
+   * legame per avviarsi renderebbe impossibile proprio il modo in cui si lavora ogni giorno.
+   */
+  ASSETS?: Fetcher;
 }
 
 export interface Identita {

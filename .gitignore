@@ -60,5 +60,11 @@ app/node_modules/
 app/dist/
 app/.wrangler/
 app/coverage/
+# L'interfaccia costruita da Vite: si rifa' con "npm run costruisci" dentro app/, e il flusso
+# di distribuzione la ricostruisce a ogni corsa. La cartella deve esistere anche prima di
+# essere costruita, perche' wrangler.toml la dichiara e senza di essa non parte nemmeno la
+# suite delle rotte; non la si versiona con un segnaposto, che la costruzione successiva
+# cancellerebbe svuotando la cartella, ma la si ricrea con lo script "prepara:statico".
+app/statico/
 # Le variabili dello sviluppo locale: il modello e' app/.dev.vars.example, versionato.
 app/.dev.vars

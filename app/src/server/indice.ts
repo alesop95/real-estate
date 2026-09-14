@@ -61,4 +61,32 @@ rotta(app, "delete", `${IMMOBILI}/:id`, "amministratore", (ctx, c) => rimuoviImm
 
 app.all("/api/*", (c) => c.json({ errore: "rotta non trovata" }, 404));
 
+/**
+ * Tutto cio' che non e' l'interfaccia di programmazione e' l'applicazione.
+ *
+ * Serve perche' l'interfaccia e' una pagina sola con piu' indirizzi: /immobili/abc esiste
+ * per chi naviga e per chi salva un collegamento, ma non esiste come file, quindi la
+ * richiesta arriva fin qui e la risposta corretta e' la pagina, che poi legge l'indirizzo e
+ * mostra la sezione giusta. La stessa cosa la farebbe l'impostazione "single-page-application"
+ * delle risorse statiche, che pero' scatta prima del Worker e risponderebbe la pagina anche a
+ * /api/qualcosa: il ripiego sta qui, dopo le rotte, cosi' una chiamata sbagliata
+ * all'interfaccia di programmazione continua a ricevere un 404 in JSON e non venti kilobyte
+ * di HTML che nessun programma sa leggere.
+ *
+ * La richiesta non si inoltra tale e quale: si chiede sempre la radice. Chiedere al legame
+ * un percorso che non esiste otterrebbe il suo 404, cioe' esattamente il caso che si sta
+ * cercando di evitare.
+ */
+app.all("*", async (c) => {
+  if (!c.env.ASSETS) {
+    return c.text(
+      "L'interfaccia non e' costruita. In sviluppo si apre da Vite, con \"npm run sviluppo\"; " +
+        "per provarla dentro il Worker serve prima \"npm run costruisci\".",
+      503,
+    );
+  }
+  const radice = new URL("/", c.req.url);
+  return c.env.ASSETS.fetch(new Request(radice, { headers: c.req.raw.headers }));
+});
+
 export default app;

@@ -18,23 +18,15 @@
 
 import type { Context, Hono } from "hono";
 
+import { ruoloSufficiente, type Ruolo } from "../condiviso/ruoli";
+
 import { identita, type Ambiente, type FonteChiavi, type Identita } from "./identita";
 
-export type Ruolo = "amministratore" | "membro" | "lettore";
-
-/**
- * I ruoli sono ordinati, e l'ordine e' l'unica semantica che hanno.
- *
- * Un amministratore puo' fare tutto cio' che puo' fare un membro, e un membro tutto cio' che
- * puo' fare un lettore. Tenere la gerarchia in una tabella invece che in una catena di
- * confronti sparsi evita la variante piu' comune di questo difetto, cioe' una rotta che
- * controlla l'uguaglianza con un ruolo e nega a chi ne ha uno superiore.
- */
-const GERARCHIA: Record<Ruolo, number> = { lettore: 1, membro: 2, amministratore: 3 };
-
-export function ruoloSufficiente(posseduto: Ruolo, richiesto: Ruolo): boolean {
-  return GERARCHIA[posseduto] >= GERARCHIA[richiesto];
-}
+// I ruoli e la loro gerarchia stanno in src/condiviso/ruoli.ts, perche' dal 14 settembre
+// 2026 la stessa domanda se la fa anche l'interfaccia, per non mostrare un pulsante che
+// produrrebbe soltanto un rifiuto. Qui si riesportano perche' questo resta il modulo che
+// le rotte importano: la difesa e' quella che si applica di seguito, non quella del browser.
+export { ruoloSufficiente, type Ruolo } from "../condiviso/ruoli";
 
 /** Che cosa un gestore riceve: tutto gia' risolto, niente da verificare. */
 export interface Contesto {
